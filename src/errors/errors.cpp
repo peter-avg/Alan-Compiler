@@ -1,8 +1,8 @@
-#include <stdio.h>
 #include <stdlib.h>
 #include <string>
 
 #include "errors.hpp"
+#include "../colors/colors.hpp"
 
 std::string newTypeError(int code) {
 
@@ -21,6 +21,12 @@ std::string newTypeError(int code) {
         case charTypeError_c:
             message = "Char type error";
             break;
+        case integerOverflowError_c:
+            message = "Integer overflow error";
+            break;
+        case byteOverflowError_c:
+            message = "Byte overflow error";
+            break;
     }
 
     return message;
@@ -28,7 +34,8 @@ std::string newTypeError(int code) {
 
 void RaiseTypeError(int code) {
     std::string message = newTypeError(code);
-    printf("%s\n", message.c_str());
+    std::cout << colors::Color::RED << "TypeError: " 
+              << colors::Color::RESET << message << std::endl;
     exit(EXIT_FAILURE);
 }
 

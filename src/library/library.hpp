@@ -7,12 +7,12 @@
 #include <stdint.h>
 
 void writeInteger(int16_t integer);
-void writeByte(unsigned char byte);
+void writeByte(char byte);
 void writeChar(uint8_t character);
 void writeString(uint8_t* refbyte);
 
 int16_t readInteger();
-uint8_t readByte();
+int16_t readByte();
 uint8_t readChar();
 void readString(int32_t n, uint8_t* refbyte);
 

@@ -4,11 +4,11 @@
 #ifndef __ERRORS_HPP__
 #define __ERRORS_HPP__
 
-#include <stdint.h>
-
 typedef enum {
-    stringTypeError_c = 100,
+    stringTypeError_c,
     integerTypeError_c,
+    integerOverflowError_c,
+    byteOverflowError_c,
     byteTypeError_c,
     charTypeError_c,
 } TypeErrorCodes;

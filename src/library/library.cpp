@@ -14,8 +14,8 @@ void writeInteger(int16_t integer) {
     printf("%d\n", integer);
 }
 
-void writeByte(unsigned char byte) {
-    printf("%hu\n", byte);
+void writeByte(char byte) {
+    printf("%d\n", (int)byte);
 }
 
 void writeChar(uint8_t character) {
@@ -34,16 +34,25 @@ int16_t readInteger() {
     if (scanf("%d", &i) <= 0) {
         RaiseTypeError(integerTypeError_c);
     }
-    
+
+    if (i > 32767 || i < -32768) {
+        RaiseTypeError(integerOverflowError_c);
+    }
+
     return i;
 }
 
-unsigned char readByte() {
-    unsigned char i;
-    if (scanf("%hhu", &i) <= 0){
+int16_t readByte() {
+    char i;
+    if (scanf("%c", &i) <= 0){
         RaiseTypeError(byteTypeError_c);
     }
-    return i;
+
+    if ((int16_t)i > 255 || (int16_t)i < 0) {
+        RaiseTypeError(byteTypeError_c);
+    }
+
+    return (int16_t)i;
 }
 
 uint8_t readChar(){
@@ -63,8 +72,7 @@ void readString(int32_t n, uint8_t* refbyte){
         } else {
             c = '\0';
         }
-
-        if ( c == '\n' || c == EOF) {
+if ( c == '\n' || c == EOF) {
             c = '\0';
             *refbyte ++ = c;
             break;
