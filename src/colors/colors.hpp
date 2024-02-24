@@ -3,6 +3,7 @@
 
 #include <iostream>
 
+
 namespace colors
 {
     enum class Color
@@ -18,8 +19,30 @@ namespace colors
         RESET
     };
 
-    std::ostream &operator<<(std::ostream &os, Color color){
-        return os << "\033[" << static_cast<int>(color) << "m";
+    enum class Style {
+        NORMAL = 0,
+        BOLD, 
+        DIM,
+        UNDERLINED,
+        BLINK,
+        REVERSE,
+        HIDDEN
+
+    };
+
+    typedef struct { 
+        Color color;
+        Style style;
+    } Font;
+    
+    std::ostream & operator << (std::ostream &os, Font font){
+        if (font.style == Style::NORMAL) {
+            os << "\033[" << static_cast<int>(font.color) << "m";
+        }
+        else {
+            os << "\033[" << static_cast<int>(font.style) << ";" << static_cast<int>(font.color) << "m";
+        }
+        return os;
     };
 }
 

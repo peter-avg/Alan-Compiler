@@ -48,18 +48,25 @@ std::string newTypeError(int code) {
 
 void RaiseTokenError(int code) { 
     std::string message = newTokenError(code);
-    std::cout << colors::Color::GREEN << "{File: " 
+    colors::Font green_bold = {colors::Color::GREEN,colors::Style::BOLD};
+    colors::Font red_normal = {colors::Color::RED,colors::Style::NORMAL};
+    colors::Font white_normal = {colors::Color::WHITE,colors::Style::NORMAL};
+    std::cout << green_bold << "{File: " 
               << file_name << "}::" << "{Line: " << line_number 
-              << "}" << colors::Color::RED << "\nTokenError: " 
-              << colors::Color::WHITE << message << std::endl;
+              << "}" << red_normal << "\nTokenError: " 
+              << white_normal << message << std::endl;
+
     exit(EXIT_FAILURE);
 }
 
 void RaiseTypeError(int code) {
     std::string message = newTypeError(code);
-    std::cout << colors::Color::GREEN << "{File: " 
+    colors::Font green_bold = {colors::Color::GREEN,colors::Style::BLINK};
+    colors::Font red_normal = {colors::Color::RED,colors::Style::NORMAL};
+    colors::Font white_normal = {colors::Color::WHITE,colors::Style::NORMAL};
+    std::cout << green_bold << "{File: " 
               << file_name << "}::" << "{Line: " << line_number 
-              << "}" << colors::Color::RED << "\nTypeError: " 
-              << colors::Color::WHITE << message << std::endl;
+              << "}" << red_normal << "\nTypeError: " 
+              << white_normal << message << std::endl;
     exit(EXIT_FAILURE);
 }
