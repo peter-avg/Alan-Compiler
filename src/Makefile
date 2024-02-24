@@ -1,9 +1,10 @@
-OBJS = ./errors/errors.cpp ./library/library.cpp
-CC = g++
-FLAGS = -Wall -g
+OBJS = ./errors/errors.cpp ./lexer/lexer.cpp
+CC = c++
+CPP = c++11
+FLAGS = -Wall -g -std=$(CPP)
 
 all: $(OBJS)
-	$(CC) $(OBJS) -o main
+	$(CC) $(FLAGS) $(OBJS) -o main
 
 clean:
 	rm -f main

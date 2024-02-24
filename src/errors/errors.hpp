@@ -4,6 +4,15 @@
 #ifndef __ERRORS_HPP__
 #define __ERRORS_HPP__
 
+#include <string>
+
+extern int line_number;
+extern std::string file_name;
+
+typedef enum {
+    invalidTokenError_c,
+} TokenErrorCodes;
+
 typedef enum {
     stringTypeError_c,
     integerTypeError_c,
@@ -13,11 +22,10 @@ typedef enum {
     charTypeError_c,
 } TypeErrorCodes;
 
-typedef struct {
-    int code;
-    char* message;
-} TypeError;
+std::string newTokenError(int code);
+std::string newTypeError(int code);
 
 void RaiseTypeError(int code);
+void RaiseTokenError(int code);
 
 #endif // __ERRORS_HPP__

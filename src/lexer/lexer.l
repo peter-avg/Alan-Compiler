@@ -12,6 +12,14 @@
 #define T_true 1009 
 #define T_id 1010
 #define T_const 1011
+#define T_else 1012
+
+#include "../errors/errors.hpp"
+
+
+int line_number = 1;
+std::string file_name = "hello.txt";
+
 %}
 
 L [a-zA-Z]
@@ -39,8 +47,10 @@ W [ \t\n\r]
 {W}+ { /* nothing */ }
 \'.*\n' { /* nothing */ }
 
-. { fprintf(stderr, "illegal character\n"); exit(1); }
+. { RaiseTokenError(invalidTokenError_c); }
 %%
+
+int yywrap(){return(1);}
 
 int main() {
     int token;
