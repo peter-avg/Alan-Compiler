@@ -13,7 +13,15 @@
 #define T_id 1010
 #define T_const 1011
 #define T_else 1012
-
+#define T_equal 1013
+#define T_notequal 1014
+#define T_lessequal 1015
+#define T_greaterequal 1016 
+#define T_string 1017
+#define T_enter 1018
+#define T_blanks 1019
+#define T_character 1020
+#define T_linecomment 1021
 #include "../errors/errors.hpp"
 
 
@@ -24,35 +32,50 @@ std::string file_name = "hello.txt";
 
 L [a-zA-Z]
 D [0-9]
-W [ \t\n\r]
+W [ \t\r]
+
+%option noyywrap
 
 %%
-
-"byte" { return T_byte; }
-"else" { return T_else; }
-"false" { return T_false; }
-"if" { return T_if; }
-"int" { return T_int; }
-"proc" { return T_proc; }
+"byte"      { return T_byte; }
+"else"      { return T_else; }
+"false"     { return T_false; }
+"if"        { return T_if; }
+"int"       { return T_int; }
+"proc"      { return T_proc; }
 "reference" { return T_reference; }
-"return" { return T_return; }
-"while" { return T_while; }
-"true" { return T_true; }
+"return"    { return T_return; }
+"while"     { return T_while; }
+"true"      { return T_true; }
 
-[=\+\-\*/%\(\)] { return yytext[0];}
 
-{L} { return T_id; }
-{D}+ { return T_const; }
+[=\+\-\*\/\%\(\)\|\!\<\>\,\:\;\[\]\{\}] { return yytext[0];}
+"=="                                    { return T_equal;}
+"!="                                    { return T_notequal;}
+"<="                                    { return T_lessequal;}
+">="                                    { return T_greaterequal;}
 
-{W}+ { /* nothing */ }
-\'.*\n' { /* nothing */ }
+{L}({L}|{D})*   { return T_id; }
+{D}+            { return T_const; }
 
-. { RaiseTokenError(invalidTokenError_c); }
+\"([^\"])*\"    { return T_string; }
+\'([^\'])\'     { return T_character; }
+
+\-\-.*\n        { return T_linecomment; }
+
+{W}+            { return T_blanks; }
+\n              { ++line_number; }
+.               { RaiseTokenError(invalidTokenError_c); }
 %%
 
-int yywrap(){return(1);}
+
+//int yywrap(){
+//    return(1);
+//}
+
 
 int main() {
+
     int token;
     do {
         token = yylex();
