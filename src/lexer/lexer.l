@@ -22,6 +22,7 @@
 #define T_blanks 1019
 #define T_character 1020
 #define T_linecomment 1021
+#define T_multilinecomment 1022
 #include "../errors/errors.hpp"
 
 
@@ -55,18 +56,39 @@ W [ \t\r]
 "<="                                    { return T_lessequal;}
 ">="                                    { return T_greaterequal;}
 
-{L}({L}|{D})*   { return T_id; }
-{D}+            { return T_const; }
+{L}({L}|{D})*       { return T_id; }
+{D}+                { return T_const; }
 
-\"([^\"])*\"    { return T_string; }
-\'([^\'])\'     { return T_character; }
+\"([^\"])*\"        { return T_string; }
+\'([^\'])\'         { return T_character; }
 
-\-\-.*\n        { return T_linecomment; }
-
-{W}+            { return T_blanks; }
-\n              { ++line_number; }
-.               { RaiseTokenError(invalidTokenError_c); }
+\-\-.*\n            { return T_linecomment; }
+\(\*([^\(\*])*\*\)  { return T_multilinecomment;  }
+{W}+                { return T_blanks; }
+\n                  { ++line_number; }
+.                   { RaiseTokenError(invalidTokenError_c); }
 %%
+/*"(*"            {   int nesting_level = 1;
+                    while (nesting_level > 0) {
+                        char c = yylex();
+                        if (c == T_eof) {
+                            RaiseTokenError(invalidTokenError_c);
+                            break;
+                        }
+                        else if (c == "(") {
+                            c = yylex();
+                            if (c =="*")
+                                nesting_level++;
+                        }
+                        else if (c == "*"){
+                            c = yylex();
+                            if (c == ")")
+                                nesting_level--;
+                        }
+                    }
+                    return T_multilinecomment;
+                }
+                */
 
 
 //int yywrap(){
