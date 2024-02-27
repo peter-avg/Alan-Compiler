@@ -26,6 +26,6 @@ std::string newTokenError(int code);
 std::string newTypeError(int code);
 
 void RaiseTypeError(int code);
-void RaiseTokenError(int code);
+void RaiseTokenError(int code, char token, int ascii);
 
 #endif // __ERRORS_HPP__

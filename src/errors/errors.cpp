@@ -46,7 +46,7 @@ std::string newTypeError(int code) {
     return message;
 }
 
-void RaiseTokenError(int code) { 
+void RaiseTokenError(int code, char token, int ascii) { 
     std::string message = newTokenError(code);
     colors::Font green_bold = {colors::Color::GREEN,colors::Style::BOLD};
     colors::Font red_normal = {colors::Color::RED,colors::Style::NORMAL};
@@ -54,7 +54,7 @@ void RaiseTokenError(int code) {
     std::cout << green_bold << "{File: " 
               << file_name << "}::" << "{Line: " << line_number 
               << "}" << red_normal << "\nTokenError: " 
-              << white_normal << message << std::endl;
+              << white_normal << message << ": '" << token << "' (ASCII: " << ascii << ")" << std::endl;
 
     exit(EXIT_FAILURE);
 }

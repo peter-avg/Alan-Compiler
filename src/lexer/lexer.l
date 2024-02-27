@@ -1,33 +1,14 @@
 %{
 
 #define T_eof 0
-#define T_byte 1001  
-#define T_false 1002
-#define T_if 1003
-#define T_int 1004
-#define T_proc 1005 
-#define T_reference 1006
-#define T_return 1007
-#define T_while 1008
-#define T_true 1009 
-#define T_id 1010
-#define T_const 1011
-#define T_else 1012
-#define T_equal 1013
-#define T_notequal 1014
-#define T_lessequal 1015
-#define T_greaterequal 1016 
-#define T_string 1017
-#define T_enter 1018
-#define T_blanks 1019
-#define T_character 1020
-#define T_linecomment 1021
-#define T_multilinecomment 1022
+
+#include "../parser/parser.hpp"
+#include "../lexer/lexer.h"
 #include "../errors/errors.hpp"
 
 
-int line_number = 1;
-std::string file_name = "hello.txt";
+int line_number = 0;
+std::string file_name;
 
 %}
 
@@ -35,6 +16,7 @@ L [a-zA-Z]
 D [0-9]
 W [ \t\r]
 
+%x COMMENT
 %option noyywrap
 
 %%
@@ -50,7 +32,7 @@ W [ \t\r]
 "true"      { return T_true; }
 
 
-[=\+\-\*\/\%\(\)\|\!\<\>\,\:\;\[\]\{\}] { return yytext[0];}
+[()\[\]{}=+\-*/\%!&\|<>,:;]             { return yytext[0];}
 "=="                                    { return T_equal;}
 "!="                                    { return T_notequal;}
 "<="                                    { return T_lessequal;}
@@ -60,47 +42,17 @@ W [ \t\r]
 {D}+                { return T_const; }
 
 \"([^\"])*\"        { return T_string; }
-\'([^\'])\'         { return T_character; }
+\'([^\'])\'         { return T_char; }
 
-\-\-.*\n            { return T_linecomment; }
-\(\*([^\(\*])*\*\)  { return T_multilinecomment;  }
-{W}+                { return T_blanks; }
+\-\-.*\n            { /* ignore single line comment */ }
+\(\*([^\(\*])*\*\)  { /* ignore multi line comment */}
+{W}+                { /* ignore whitespace */ }
 \n                  { ++line_number; }
-.                   { RaiseTokenError(invalidTokenError_c); }
+.                   { RaiseTokenError(invalidTokenError_c, yytext[0], yytext[0]); }
+
 %%
-/*"(*"            {   int nesting_level = 1;
-                    while (nesting_level > 0) {
-                        char c = yylex();
-                        if (c == T_eof) {
-                            RaiseTokenError(invalidTokenError_c);
-                            break;
-                        }
-                        else if (c == "(") {
-                            c = yylex();
-                            if (c =="*")
-                                nesting_level++;
-                        }
-                        else if (c == "*"){
-                            c = yylex();
-                            if (c == ")")
-                                nesting_level--;
-                        }
-                    }
-                    return T_multilinecomment;
-                }
-                */
 
+void yyerror(const char *s) {
 
-//int yywrap(){
-//    return(1);
-//}
-
-
-int main() {
-
-    int token;
-    do {
-        token = yylex();
-        printf("token=%d, lexeme=\"%s\"\n", token, yytext);
-    } while (token != T_eof);
 }
+

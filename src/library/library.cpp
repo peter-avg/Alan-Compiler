@@ -162,24 +162,3 @@ int testString() {
     return 0;
 }
 
-int main() {
-    int8_t i = readInteger();
-    printf("%d\n", i);
-    return 0;
-}
-
-// int main() {
-//     uint8_t refbyte[300];
-//     uint8_t refbyte2[300];
-//
-//     readString(100, refbyte);
-//     readString(100, refbyte2);
-//
-//     alan_strcpy(refbyte2, refbyte);
-//
-//     printf("%s\n", refbyte);
-//     printf("%s\n", refbyte2);
-//
-//     return 0;
-// }
-
