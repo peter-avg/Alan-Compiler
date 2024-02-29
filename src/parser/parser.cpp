@@ -556,13 +556,13 @@ static const yytype_int8 yytranslate[] =
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint8 yyrline[] =
 {
-       0,    55,    55,    56,    60,    61,    65,    66,    70,    71,
-      72,    73,    74,    75,    76,    77,    78,    79,    80,    81,
-      85,    86,    87,    91,    92,    93,    94,    95,    96,    97,
-      98,    99,   100,   101,   102,   107,   108,   109,   113,   117,
-     118,   119,   120,   121,   122,   123,   124,   128,   129,   133,
-     138,   139,   143,   144,   148,   149,   155,   156,   160,   161,
-     162,   166,   170
+       0,    49,    49,    50,    54,    55,    59,    60,    64,    65,
+      66,    67,    68,    69,    70,    71,    72,    73,    74,    75,
+      79,    80,    81,    85,    86,    87,    88,    89,    90,    91,
+      92,    93,    94,    95,    96,   101,   102,   103,   107,   111,
+     112,   113,   114,   115,   116,   117,   118,   122,   123,   127,
+     132,   133,   137,   138,   142,   143,   149,   150,   154,   155,
+     156,   160,   164
 };
 #endif
 
@@ -1213,349 +1213,355 @@ yyreduce:
   switch (yyn)
     {
   case 2: /* data_type: "int"  */
-#line 55 "./parser/parser.y"
-                { }
+#line 49 "./parser/parser.y"
+                {}
 #line 1219 "./parser/parser.cpp"
     break;
 
   case 3: /* data_type: "byte"  */
-#line 56 "./parser/parser.y"
-                { }
+#line 50 "./parser/parser.y"
+                {}
 #line 1225 "./parser/parser.cpp"
     break;
 
   case 4: /* type: data_type '[' ']'  */
-#line 60 "./parser/parser.y"
-                        { }
+#line 54 "./parser/parser.y"
+                        {}
 #line 1231 "./parser/parser.cpp"
     break;
 
   case 5: /* type: data_type  */
-#line 61 "./parser/parser.y"
-                        { }
+#line 55 "./parser/parser.y"
+                        {}
 #line 1237 "./parser/parser.cpp"
     break;
 
   case 6: /* r_type: data_type  */
-#line 65 "./parser/parser.y"
-                        {  }
+#line 59 "./parser/parser.y"
+                        {}
 #line 1243 "./parser/parser.cpp"
     break;
 
   case 7: /* r_type: "proc"  */
-#line 66 "./parser/parser.y"
-                        {  }
+#line 60 "./parser/parser.y"
+                        {}
 #line 1249 "./parser/parser.cpp"
     break;
 
   case 8: /* cond: "true"  */
-#line 70 "./parser/parser.y"
-                        {  }
+#line 64 "./parser/parser.y"
+                        {}
 #line 1255 "./parser/parser.cpp"
     break;
 
   case 9: /* cond: "false"  */
-#line 71 "./parser/parser.y"
-                        {  }
+#line 65 "./parser/parser.y"
+                        {}
 #line 1261 "./parser/parser.cpp"
     break;
 
   case 10: /* cond: '(' cond ')'  */
-#line 72 "./parser/parser.y"
-                        {  }
+#line 66 "./parser/parser.y"
+                        {}
 #line 1267 "./parser/parser.cpp"
     break;
 
   case 11: /* cond: '!' cond  */
-#line 73 "./parser/parser.y"
-                        {  }
+#line 67 "./parser/parser.y"
+                        {}
 #line 1273 "./parser/parser.cpp"
     break;
 
   case 12: /* cond: expr '<' expr  */
-#line 74 "./parser/parser.y"
-                        {  }
+#line 68 "./parser/parser.y"
+                        {}
 #line 1279 "./parser/parser.cpp"
     break;
 
   case 13: /* cond: expr '>' expr  */
-#line 75 "./parser/parser.y"
-                        {  }
+#line 69 "./parser/parser.y"
+                        {}
 #line 1285 "./parser/parser.cpp"
     break;
 
   case 14: /* cond: expr "==" expr  */
-#line 76 "./parser/parser.y"
-                        {  }
+#line 70 "./parser/parser.y"
+                        {}
 #line 1291 "./parser/parser.cpp"
     break;
 
   case 15: /* cond: expr "!=" expr  */
-#line 77 "./parser/parser.y"
-                        {  }
+#line 71 "./parser/parser.y"
+                        {}
 #line 1297 "./parser/parser.cpp"
     break;
 
   case 16: /* cond: expr "<=" expr  */
-#line 78 "./parser/parser.y"
-                        {  }
+#line 72 "./parser/parser.y"
+                        {}
 #line 1303 "./parser/parser.cpp"
     break;
 
   case 17: /* cond: expr ">=" expr  */
-#line 79 "./parser/parser.y"
-                        {  }
+#line 73 "./parser/parser.y"
+                        {}
 #line 1309 "./parser/parser.cpp"
     break;
 
   case 18: /* cond: cond '&' cond  */
-#line 80 "./parser/parser.y"
-                        {  }
+#line 74 "./parser/parser.y"
+                        {}
 #line 1315 "./parser/parser.cpp"
     break;
 
   case 19: /* cond: cond '|' cond  */
-#line 81 "./parser/parser.y"
-                        {  }
+#line 75 "./parser/parser.y"
+                        {}
 #line 1321 "./parser/parser.cpp"
     break;
 
   case 20: /* l_value: T_string  */
-#line 85 "./parser/parser.y"
-                        {  }
+#line 79 "./parser/parser.y"
+                        {}
 #line 1327 "./parser/parser.cpp"
     break;
 
   case 21: /* l_value: T_id '[' expr ']'  */
-#line 86 "./parser/parser.y"
-                        {  }
+#line 80 "./parser/parser.y"
+                        {}
 #line 1333 "./parser/parser.cpp"
     break;
 
   case 22: /* l_value: T_id  */
-#line 87 "./parser/parser.y"
-                        {  }
+#line 81 "./parser/parser.y"
+                        {}
 #line 1339 "./parser/parser.cpp"
     break;
 
   case 23: /* expr: T_char  */
-#line 91 "./parser/parser.y"
-                        {  }
+#line 85 "./parser/parser.y"
+                        {}
 #line 1345 "./parser/parser.cpp"
     break;
 
   case 24: /* expr: T_const  */
-#line 92 "./parser/parser.y"
-                        {  }
+#line 86 "./parser/parser.y"
+                        {}
 #line 1351 "./parser/parser.cpp"
     break;
 
   case 25: /* expr: l_value  */
-#line 93 "./parser/parser.y"
-                        {  }
+#line 87 "./parser/parser.y"
+                        {}
 #line 1357 "./parser/parser.cpp"
     break;
 
   case 26: /* expr: '(' expr ')'  */
-#line 94 "./parser/parser.y"
-                        {  }
+#line 88 "./parser/parser.y"
+                        {}
 #line 1363 "./parser/parser.cpp"
     break;
 
   case 27: /* expr: func_call  */
-#line 95 "./parser/parser.y"
-                        {  }
+#line 89 "./parser/parser.y"
+                        {}
 #line 1369 "./parser/parser.cpp"
     break;
 
   case 28: /* expr: '+' expr  */
-#line 96 "./parser/parser.y"
-                        {  }
+#line 90 "./parser/parser.y"
+                        {}
 #line 1375 "./parser/parser.cpp"
     break;
 
   case 29: /* expr: '-' expr  */
-#line 97 "./parser/parser.y"
-                        {  }
+#line 91 "./parser/parser.y"
+                        {}
 #line 1381 "./parser/parser.cpp"
     break;
 
   case 30: /* expr: expr '+' expr  */
-#line 98 "./parser/parser.y"
-                        {  }
+#line 92 "./parser/parser.y"
+                        {}
 #line 1387 "./parser/parser.cpp"
     break;
 
   case 31: /* expr: expr '-' expr  */
-#line 99 "./parser/parser.y"
-                        {  }
+#line 93 "./parser/parser.y"
+                        {}
 #line 1393 "./parser/parser.cpp"
     break;
 
   case 32: /* expr: expr '*' expr  */
-#line 100 "./parser/parser.y"
-                        {  }
+#line 94 "./parser/parser.y"
+                        {}
 #line 1399 "./parser/parser.cpp"
     break;
 
   case 33: /* expr: expr '/' expr  */
-#line 101 "./parser/parser.y"
-                        {  }
+#line 95 "./parser/parser.y"
+                        {}
 #line 1405 "./parser/parser.cpp"
     break;
 
   case 34: /* expr: expr '%' expr  */
-#line 102 "./parser/parser.y"
-                        {  }
+#line 96 "./parser/parser.y"
+                        {}
 #line 1411 "./parser/parser.cpp"
     break;
 
   case 36: /* expr_list: expr_list ',' expr  */
-#line 108 "./parser/parser.y"
+#line 102 "./parser/parser.y"
                             {}
 #line 1417 "./parser/parser.cpp"
     break;
 
   case 37: /* expr_list: expr  */
-#line 109 "./parser/parser.y"
+#line 103 "./parser/parser.y"
                             {}
 #line 1423 "./parser/parser.cpp"
     break;
 
   case 38: /* func_call: T_id '(' expr_list ')'  */
-#line 113 "./parser/parser.y"
+#line 107 "./parser/parser.y"
                              {}
 #line 1429 "./parser/parser.cpp"
     break;
 
   case 39: /* stmt: ';'  */
-#line 117 "./parser/parser.y"
+#line 111 "./parser/parser.y"
                             {}
 #line 1435 "./parser/parser.cpp"
     break;
 
   case 40: /* stmt: l_value '=' expr ';'  */
-#line 118 "./parser/parser.y"
+#line 112 "./parser/parser.y"
                             {}
 #line 1441 "./parser/parser.cpp"
     break;
 
   case 41: /* stmt: compound_stmt  */
-#line 119 "./parser/parser.y"
+#line 113 "./parser/parser.y"
                             {}
 #line 1447 "./parser/parser.cpp"
     break;
 
   case 42: /* stmt: func_call ';'  */
-#line 120 "./parser/parser.y"
+#line 114 "./parser/parser.y"
                             {}
 #line 1453 "./parser/parser.cpp"
     break;
 
   case 43: /* stmt: "if" '(' cond ')' stmt  */
-#line 121 "./parser/parser.y"
-                                                         {}
+#line 115 "./parser/parser.y"
+                                            {}
 #line 1459 "./parser/parser.cpp"
     break;
 
   case 44: /* stmt: "if" '(' cond ')' stmt "else" stmt  */
-#line 122 "./parser/parser.y"
+#line 116 "./parser/parser.y"
                                             {}
 #line 1465 "./parser/parser.cpp"
     break;
 
   case 45: /* stmt: "while" '(' cond ')' stmt  */
-#line 123 "./parser/parser.y"
+#line 117 "./parser/parser.y"
                                             {}
 #line 1471 "./parser/parser.cpp"
     break;
 
   case 46: /* stmt: "return" expr ';'  */
-#line 124 "./parser/parser.y"
+#line 118 "./parser/parser.y"
                                             {}
 #line 1477 "./parser/parser.cpp"
     break;
 
-  case 48: /* stmt_list: stmt_list stmt  */
-#line 129 "./parser/parser.y"
+  case 47: /* stmt_list: %empty  */
+#line 122 "./parser/parser.y"
                         {}
 #line 1483 "./parser/parser.cpp"
     break;
 
-  case 49: /* compound_stmt: '{' stmt_list '}'  */
-#line 133 "./parser/parser.y"
+  case 48: /* stmt_list: stmt_list stmt  */
+#line 123 "./parser/parser.y"
                         {}
 #line 1489 "./parser/parser.cpp"
     break;
 
-  case 50: /* var_def: T_id ':' data_type ';'  */
-#line 138 "./parser/parser.y"
-                            {}
+  case 49: /* compound_stmt: '{' stmt_list '}'  */
+#line 127 "./parser/parser.y"
+                        {}
 #line 1495 "./parser/parser.cpp"
     break;
 
-  case 51: /* var_def: T_id ':' data_type '[' T_const ']' ';'  */
-#line 139 "./parser/parser.y"
-                                             {}
+  case 50: /* var_def: T_id ':' data_type ';'  */
+#line 132 "./parser/parser.y"
+                            {}
 #line 1501 "./parser/parser.cpp"
     break;
 
-  case 52: /* local_def: func_def  */
-#line 143 "./parser/parser.y"
-               {}
+  case 51: /* var_def: T_id ':' data_type '[' T_const ']' ';'  */
+#line 133 "./parser/parser.y"
+                                             {}
 #line 1507 "./parser/parser.cpp"
     break;
 
-  case 53: /* local_def: var_def  */
-#line 144 "./parser/parser.y"
-              {}
+  case 52: /* local_def: func_def  */
+#line 137 "./parser/parser.y"
+                {}
 #line 1513 "./parser/parser.cpp"
     break;
 
-  case 55: /* local_def_list: local_def_list local_def  */
-#line 149 "./parser/parser.y"
-                               {}
+  case 53: /* local_def: var_def  */
+#line 138 "./parser/parser.y"
+                {}
 #line 1519 "./parser/parser.cpp"
     break;
 
-  case 56: /* fpar_def: T_id ':' "reference" type  */
-#line 155 "./parser/parser.y"
-                                {}
+  case 55: /* local_def_list: local_def_list local_def  */
+#line 143 "./parser/parser.y"
+                               {}
 #line 1525 "./parser/parser.cpp"
     break;
 
-  case 57: /* fpar_def: T_id ':' type  */
-#line 156 "./parser/parser.y"
-                    {}
+  case 56: /* fpar_def: T_id ':' "reference" type  */
+#line 149 "./parser/parser.y"
+                                {}
 #line 1531 "./parser/parser.cpp"
     break;
 
-  case 59: /* fpar_list: fpar_list ',' fpar_def  */
-#line 161 "./parser/parser.y"
-                             {}
+  case 57: /* fpar_def: T_id ':' type  */
+#line 150 "./parser/parser.y"
+                                {}
 #line 1537 "./parser/parser.cpp"
     break;
 
-  case 60: /* fpar_list: fpar_def  */
-#line 162 "./parser/parser.y"
-               {}
+  case 59: /* fpar_list: fpar_list ',' fpar_def  */
+#line 155 "./parser/parser.y"
+                             {}
 #line 1543 "./parser/parser.cpp"
     break;
 
-  case 61: /* func_def: T_id '(' fpar_list ')' ':' r_type local_def_list compound_stmt  */
-#line 166 "./parser/parser.y"
-                                                                     {}
+  case 60: /* fpar_list: fpar_def  */
+#line 156 "./parser/parser.y"
+                             {}
 #line 1549 "./parser/parser.cpp"
     break;
 
-  case 62: /* program: func_def  */
-#line 170 "./parser/parser.y"
-               {}
+  case 61: /* func_def: T_id '(' fpar_list ')' ':' r_type local_def_list compound_stmt  */
+#line 160 "./parser/parser.y"
+                                                                     {}
 #line 1555 "./parser/parser.cpp"
     break;
 
+  case 62: /* program: func_def  */
+#line 164 "./parser/parser.y"
+               {}
+#line 1561 "./parser/parser.cpp"
+    break;
 
-#line 1559 "./parser/parser.cpp"
+
+#line 1565 "./parser/parser.cpp"
 
       default: break;
     }
@@ -1748,7 +1754,7 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 173 "./parser/parser.y"
+#line 167 "./parser/parser.y"
 
 
 int main(int argc, char *argv[]) {
