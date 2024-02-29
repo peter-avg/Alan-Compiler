@@ -201,15 +201,43 @@ program
 %%
 
 int main(int argc, char *argv[]) {
-    
-    yydebug = 1;
-
-    int res = yyparse();
-    if (res == 0) {
-        std::cout << "Parsing successful" << std::endl;
-        exit(EXIT_SUCCESS);
+    if (argc != 2) {
+        std::cerr << "Usage: " << argv[0] << " <filename>" << std::endl;
+        return 1;
     }
 
-    std::cout << "Parsing failed at " << line_number << std::endl;
-    exit(EXIT_FAILURE);
+    const char *filename = argv[1];
+    FILE *inputFile = fopen(filename, "r");
+
+    if (!inputFile) {
+        std::cerr << "Error: Unable to open file " << filename << std::endl;
+        return 1;
+    }
+
+    yyin = inputFile;  // Set yyin to read from the provided file
+
+    int res = yyparse();  // Use the generated parser
+    fclose(inputFile);   // Close the file when done
+
+    if (res == 0) {
+        std::cout << "Parsing successful" << std::endl;
+        return 0;
+    }
+
+    std::cerr << "Parsing failed at line " << line_number << std::endl;
+    return 1;
 }
+
+//int main(int argc, char *argv[]) {
+//    
+//    yydebug = 1;
+//
+//    int res = yyparse();
+//    if (res == 0) {
+//        std::cout << "Parsing successful" << std::endl;
+//        exit(EXIT_SUCCESS);
+//    }
+//
+//    std::cout << "Parsing failed at " << line_number << std::endl;
+//    exit(EXIT_FAILURE);
+//}
