@@ -41,26 +41,38 @@ extern int line_number;
 %nonassoc NOELSE
 %nonassoc "else"
 
+
 %union {
     Block *block;
     Var *var;
     Array *array;
-    Char *char;
-    Const *const;
+    Char *chh;
+    Const *conn;
     String *string;
     Cond *cond;
     BinOp *op;
     Assign *assign;
     Call *call;
-    If *if;
-    While *while;
-    Return *return;
+    If *ff;
+    While *ww;
+    Return *rr;
     Param *param;
     Func *func;
     std::string str;
     int val;
     char ch;
 }
+
+%type<block> program stmt_list compound_stmt
+%type<var> var_def
+%type<array> local_def
+%type<array> local_def_list
+%type<param> fpar_def
+%type<param> fpar_list
+%type<func> func_def
+%type<cond> cond
+%type<op> expr
+%type<assign> stmt
 
 %start program
 
