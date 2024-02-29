@@ -14,7 +14,7 @@ extern int line_number;
 %union {
     int ival;
     char cval;
-    char *sval;
+    std::string sval;
 }
 
 %token T_byte "byte"  
@@ -37,12 +37,12 @@ extern int line_number;
 %token<cval> T_char
 %token<sval> T_string
 
-%left '&'
-%left '|'
-%nonassoc '<' '>' "==" "!=" "<=" ">="
+%left<binop> '&'
+%left<binop> '|'
+%nonassoc<binop> '<' '>' "==" "!=" "<=" ">="
 
-%left '+' '-'
-%left '*' '/' '%'
+%left<binop> '+' '-'
+%left<binop> '*' '/' '%'
 
 %nonassoc NOELSE
 %nonassoc "else"
@@ -52,54 +52,54 @@ extern int line_number;
 %%
 
 data_type
-    : "int"     { }
-    | "byte"    { }
+    : "int"     { $$ = new Int();  }
+    | "byte"    { $$ = new Byte(); }
     ;
 
 type
-    : data_type '[' ']' { }
-    | data_type         { }
+    : data_type '[' ']' { $$ = new Array($1); }
+    | data_type         { $$ = $1;            }
     ;
 
 r_type
-    : data_type         {  }
-    | "proc"            {  }
+    : data_type         { $$ = new Return($1);       }
+    | "proc"            { $$ = new Return(nullptr);  }
     ;
 
 cond
-    : "true"            {  }
-    | "false"           {  }
-    | '(' cond ')'      {  }
-    | '!' cond          {  }
-    | expr '<' expr     {  }
-    | expr '>' expr     {  }
-    | expr "==" expr    {  }
-    | expr "!=" expr    {  }
-    | expr "<=" expr    {  }
-    | expr ">=" expr    {  }
-    | cond '&' cond     {  }
-    | cond '|' cond     {  }
+    : "true"            { $$ = new Condition("true", nullptr, nullptr);  }
+    | "false"           { $$ = new Condition("false", nullptr, nullptr); }
+    | '(' cond ')'      { $$ = $2;                                       }
+    | '!' cond          { $$ = new Condition("not", nullptr, $2);        }
+    | expr '<' expr     { $$ = new Condition("<", $1, $3);               }
+    | expr '>' expr     { $$ = new Condition(">", $1, $3);               }
+    | expr "==" expr    { $$ = new Condition("==", $1, $3);              }
+    | expr "!=" expr    { $$ = new Condition("!=", $1, $3);              }
+    | expr "<=" expr    { $$ = new Condition("<=", $1, $3);              }
+    | expr ">=" expr    { $$ = new Condition(">=", $1, $3);              }
+    | cond '&' cond     { $$ = new Condition("and", $1, $3);             }
+    | cond '|' cond     { $$ = new Condition("or", $1, $3);              }
     ;
 
 l_value
-    : T_string          {  }
-    | T_id '[' expr ']' {  }
-    | T_id              {  }
+    : T_string          { }
+    | T_id '[' expr ']' { }
+    | T_id              { }
     ;
 
 expr
-    : T_char            {  }
-    | T_const           {  }
-    | l_value           {  }
-    | '(' expr ')'      {  }
-    | func_call         {  }
-    | '+' expr          {  }
-    | '-' expr          {  }
-    | expr '+' expr     {  }
-    | expr '-' expr     {  }
-    | expr '*' expr     {  }
-    | expr '/' expr     {  }
-    | expr '%' expr     {  }
+    : T_char            { $$ = new Char($1);                    }       
+    | T_const           { $$ = new Const($1);                   }
+    | l_value           { $$ = new LValue($1);                  }
+    | '(' expr ')'      { $$ = $2;                              }
+    | func_call         { $$ = new FunctionCall($1);            }
+    | '+' expr          {                                       }
+    | '-' expr          {                                       }
+    | expr '+' expr     { $$ = new BinaryOperation($1, $2, $3); }
+    | expr '-' expr     { $$ = new BinaryOperation($1, $2, $3); }
+    | expr '*' expr     { $$ = new BinaryOperation($1, $2, $3); }
+    | expr '/' expr     { $$ = new BinaryOperation($1, $2, $3); }
+    | expr '%' expr     { $$ = new BinaryOperation($1, $2, $3); }
     ;
 
 
@@ -114,23 +114,23 @@ func_call
     ;
 
 stmt
-    : ';'                   {}
-    | l_value '=' expr ';'  {}
-    | compound_stmt         {}
-    | func_call ';'         {}
-    | "if" '(' cond ')' stmt %prec NOELSE                {}
-    | "if" '(' cond ')' stmt "else" stmt    {}
-    | "while" '(' cond ')' stmt             {}
-    | "return" expr ';'                     {}
+    : ';'                   { }
+    | l_value '=' expr ';'  { $$ = new LValue($3); }
+    | compound_stmt         { $$ = new Statement($1); }
+    | func_call ';'         { }
+    | "if" '(' cond ')' stmt %prec NOELSE   { $$ = new If($3,$5,nullptr);    }
+    | "if" '(' cond ')' stmt "else" stmt    { $$ = new If($3,$5,$7); }
+    | "while" '(' cond ')' stmt             { $$ = new While($3,$5); }
+    | "return" expr ';'                     { $$ = new Return($2);   }
     ;
 
-stmt_list
-    :
-    | stmt_list stmt    {}
+stmt_list               
+    :                   { $$ = new Block(); }
+    | stmt_list stmt    { $1->append($2); $$ = $1; }
     ;
 
 compound_stmt
-    : '{' stmt_list '}' {}
+    : '{' stmt_list '}' { $$ = new Block(); }
     ;
 
 
@@ -140,8 +140,8 @@ var_def
     ;
 
 local_def
-    : func_def {}
-    | var_def {}
+    : func_def  {}
+    | var_def   {}
     ;
 
 local_def_list
@@ -153,21 +153,21 @@ local_def_list
 
 fpar_def
     : T_id ':' "reference" type {}
-    | T_id ':' type {}
+    | T_id ':' type             {}
     ;
 
 fpar_list
     : 
     | fpar_list ',' fpar_def {}
-    | fpar_def {}
+    | fpar_def               {}
     ;
 
 func_def
-    : T_id '(' fpar_list ')' ':' r_type local_def_list compound_stmt {}
+    : T_id '(' fpar_list ')' ':' r_type local_def_list compound_stmt { $$ = new Function(); }
     ;
 
 program
-    : func_def {}
+    : func_def { std::cout << "AST: " *$1 << std::endl; }
     ;
 
 %%
