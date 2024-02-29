@@ -26,142 +26,164 @@ extern int line_number;
 %token T_lessequal "<="
 %token T_greaterequal ">=" 
 
-%token T_id
-%token T_const
-%token T_char
-%token T_string
+%token<str> T_id
+%token<val> T_const
+%token<ch> T_char
+%token<str> T_string
 
-%left '&'
-%left '|'
-%nonassoc '<' '>' "==" "!=" "<=" ">="
+%left<op> '&'
+%left<op> '|'
+%nonassoc<op> '<' '>' "==" "!=" "<=" ">="
 
-%left '+' '-'
-%left '*' '/' '%'
+%left<op> '+' '-'
+%left<op> '*' '/' '%'
 
 %nonassoc NOELSE
 %nonassoc "else"
+
+%union {
+    Block *block;
+    Var *var;
+    Array *array;
+    Char *char;
+    Const *const;
+    String *string;
+    Cond *cond;
+    BinOp *op;
+    Assign *assign;
+    Call *call;
+    If *if;
+    While *while;
+    Return *return;
+    Param *param;
+    Func *func;
+    std::string str;
+    int val;
+    char ch;
+}
 
 %start program
 
 %%
 
 data_type
-    : "int"     {}
-    | "byte"    {}
+    : "int"     { $$ = new Int();  }
+    | "byte"    { $$ = new Byte(); }
     ;
 
 type
-    : data_type '[' ']' {}
-    | data_type         {}
+    : data_type '[' ']' { $$ = new Array($1); }
+    | data_type         { $$ = $1;            }
     ;
 
 r_type
-    : data_type         {}
-    | "proc"            {}
+    : data_type         { $$ = $1;                   }
+    | "proc"            { $$ = nullptr;              }
     ;
 
 cond
-    : "true"            {}
-    | "false"           {}
-    | '(' cond ')'      {}
-    | '!' cond          {}
-    | expr '<' expr     {}
-    | expr '>' expr     {}
-    | expr "==" expr    {}
-    | expr "!=" expr    {}
-    | expr "<=" expr    {}
-    | expr ">=" expr    {}
-    | cond '&' cond     {}
-    | cond '|' cond     {}
+    : "true"            { $$ = new Cond("true");     }
+    | "false"           { $$ = new Cond("false");    }
+    | '(' cond ')'      { $$ = $2;                   }
+    | '!' cond          { $$ = new Cond($1, $2);     }
+    | expr '<' expr     { $$ = new Cond($1, $2, $3); }
+    | expr '>' expr     { $$ = new Cond($1, $2, $3); }
+    | expr "==" expr    { $$ = new Cond($1, $2, $3); }
+    | expr "!=" expr    { $$ = new Cond($1, $2, $3); }
+    | expr "<=" expr    { $$ = new Cond($1, $2, $3); }
+    | expr ">=" expr    { $$ = new Cond($1, $2, $3); }
+    | cond '&' cond     { $$ = new Cond($1, $2, $3); }
+    | cond '|' cond     { $$ = new Cond($1, $2, $3); }
     ;
 
 l_value
-    : T_string          {}
-    | T_id '[' expr ']' {}
-    | T_id              {}
+    : T_string          { $$ = new String($1);    }
+    | T_id '[' expr ']' { $$ = new Array($1, $3); }
+    | T_id              { $$ = new Var($1);       }
     ;
 
 expr
-    : T_char            {}       
-    | T_const           {}
-    | l_value           {}
-    | '(' expr ')'      {}
-    | func_call         {}
-    | '+' expr          {}
-    | '-' expr          {}
-    | expr '+' expr     {}
-    | expr '-' expr     {}
-    | expr '*' expr     {}
-    | expr '/' expr     {}
-    | expr '%' expr     {}
+    : T_char            { $$ = new Char($1);           }
+    | T_const           { $$ = new Const($1);          } 
+    | l_value           { $$ = $1;                     }
+    | '(' expr ')'      { $$ = $2;                     }
+    | func_call         { $$ = $1;                     }
+    | '+' expr          { $$ = new BinOp('+', $2);     }
+    | '-' expr          { $$ = new BinOp('-', $2);     }
+    | expr '+' expr     { $$ = new BinOp('+', $1, $3); }
+    | expr '-' expr     { $$ = new BinOp('-', $1, $3); }
+    | expr '*' expr     { $$ = new BinOp('*', $1, $3); }
+    | expr '/' expr     { $$ = new BinOp('/', $1, $3); }
+    | expr '%' expr     { $$ = new BinOp('%', $1, $3); }
     ;
 
 
 expr_list 
     : 
-    | expr_list ',' expr    {}
-    | expr                  {}
+    | expr_list ',' expr   { $1->append($3); $$ = $1; }
+    | expr                 { $$ = $1;                 }
     ;
 
 func_call
-    : T_id '(' expr_list ')' {}
+    : T_id '(' expr_list ')' { $$ = new Call($1, $3); }
     ;
 
 stmt
-    : ';'                   {}
-    | l_value '=' expr ';'  {}
-    | compound_stmt         {}
-    | func_call ';'         {}
-    | "if" '(' cond ')' stmt %prec NOELSE   {}
-    | "if" '(' cond ')' stmt "else" stmt    {}
-    | "while" '(' cond ')' stmt             {}
-    | "return" expr ';'                     {}
+    : ';'                                   { $$ = nullptr;            }
+    | l_value '=' expr ';'                  { $$ = new Assign($1, $3); }
+    | compound_stmt                         { $$ = $1;                 }
+    | func_call ';'                         { $$ = $1;                 }
+    | "if" '(' cond ')' stmt                { $$ = new If($3, $5);     }
+    | "if" '(' cond ')' stmt "else" stmt    { $$ = new If($3, $5, $7); }
+    | "while" '(' cond ')' stmt             { $$ = new While($3, $5);  }
+    | "return" expr ';'                     { $$ = new Return($2);     }
     ;
 
-stmt_list               
-    :                   {}
-    | stmt_list stmt    {}
+stmt_list
+    :                   { $$ = new Block();        }
+    | stmt_list stmt    { $1->append($2); $$ = $1; }
     ;
 
 compound_stmt
-    : '{' stmt_list '}' {}
+    : '{' stmt_list '}' { $$ = new Block($2); }
     ;
 
 
 var_def
-    : T_id ':' data_type';' {}
-    | T_id ':' data_type '[' T_const ']' ';' {}
+    : T_id ':' data_type';'                  { $$ = new Var($1, $3);     }
+    | T_id ':' data_type '[' T_const ']' ';' { $$ = new Var($1, $3, $5); }
     ;
 
 local_def
-    : func_def  {}
-    | var_def   {}
+    : func_def  { $$ = $1; }
+    | var_def   { $$ = $1; }
     ;
 
 local_def_list
     : 
-    | local_def_list local_def {}
+    | local_def_list local_def { $1->append($2); $$ = $1; }
     ;
 
 
 
 fpar_def
-    : T_id ':' "reference" type {}
-    | T_id ':' type             {}
+    : T_id ':' "reference" type { $$ = new Param($1, "reference", $4); }
+    | T_id ':' type             { $$ = new Param($1, "value" , $4);    }
     ;
 
 fpar_list
     : 
-    | fpar_list ',' fpar_def {}
-    | fpar_def               {}
+    | fpar_list ',' fpar_def { $1->append($3); $$ = $1; }
+    | fpar_def               { $$ = $1;                 }
     ;
 
 func_def
-    : T_id '(' fpar_list ')' ':' r_type local_def_list compound_stmt {}
+    : T_id '(' fpar_list ')' ':' r_type local_def_list compound_stmt 
+    { $$ = new Func($1, $3, $6, $7, $8); }
     ;
 
 program
-    : func_def {}
+    : func_def { $$ = $1; }
     ;
 
 %%
