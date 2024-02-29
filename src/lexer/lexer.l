@@ -7,7 +7,8 @@
 #include "../errors/errors.hpp"
 
 
-int line_number = 0;
+int line_number = 1;
+int nested_comments = 0;
 std::string file_name;
 
 %}
@@ -44,8 +45,15 @@ W [ \t\r]
 \"([^\"])*\"        { return T_string; }
 \'([^\'])\'         { return T_char; }
 
-\-\-.*\n            { /* ignore single line comment */ }
-\(\*([^\(\*])*\*\)  { /* ignore multi line comment */}
+\-\-.*\n            { line_number++; }
+"(*"                { BEGIN(COMMENT); }
+<COMMENT>"*)"       { if (nested_comments == 0) BEGIN(INITIAL); else nested_comments--; }
+<COMMENT>"(*"       { nested_comments++; }
+<COMMENT>\n         { line_number++; }
+<COMMENT>"*"+[^)\n] { /* ignore alone '*' */ }
+<COMMENT>"("+[^(*\n] { /* ignore alone '(' that are not followed by '*' */}
+<COMMENT>[^(*\n]+   { /* ignore any number of symbols that's not '\n' or '(*' */}
+
 {W}+                { /* ignore whitespace */ }
 \n                  { ++line_number; }
 .                   { RaiseTokenError(invalidTokenError_c, yytext[0], yytext[0]); }
@@ -55,4 +63,3 @@ W [ \t\r]
 void yyerror(const char *s) {
 
 }
-
