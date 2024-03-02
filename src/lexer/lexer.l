@@ -2,6 +2,7 @@
 
 #define T_eof 0
 
+#include "../ast/ast.hpp"
 #include "../parser/parser.hpp"
 #include "../lexer/lexer.h"
 #include "../errors/errors.hpp"

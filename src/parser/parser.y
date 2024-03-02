@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <string>
 #include "../lexer/lexer.h"
+#include "../ast/ast.hpp"
 
 #define YYDEBUG 1
 
@@ -11,15 +12,15 @@ extern int line_number;
 
 %}
 
-%token T_byte "byte"  
-%token T_false "false"
+%token<type> T_byte "byte"  
+%token<str> T_false "false"
 %token T_if "if"
-%token T_int "int"
-%token T_proc "proc" 
+%token<type> T_int "int"
+%token<type> T_proc "proc" 
 %token T_reference "reference"
 %token T_return "return"
 %token T_while "while"
-%token T_true "true" 
+%token<str> T_true "true" 
 %token T_else "else"
 %token T_equal "=="
 %token T_notequal "!="
@@ -31,12 +32,13 @@ extern int line_number;
 %token<ch> T_char
 %token<str> T_string
 
-%left<op> '&'
-%left<op> '|'
-%nonassoc<op> '<' '>' "==" "!=" "<=" ">="
+%left<str> '!'
+%left<str> '&'
+%left<str> '|'
+%nonassoc<str> '<' '>' "==" "!=" "<=" ">="
 
-%left<op> '+' '-'
-%left<op> '*' '/' '%'
+%left<str> '+' '-'
+%left<str> '*' '/' '%'
 
 %nonassoc NOELSE
 %nonassoc "else"
@@ -44,11 +46,13 @@ extern int line_number;
 
 %union {
     Block *block;
+    AST *ast;
     Var *var;
+    Type *type;
     Array *array;
     Char *chh;
     Const *conn;
-    String *string;
+    std::string *str;
     Cond *cond;
     BinOp *op;
     Assign *assign;
@@ -58,29 +62,31 @@ extern int line_number;
     Return *rr;
     Param *param;
     Func *func;
-    std::string str;
     int val;
     char ch;
 }
 
-%type<block> program stmt_list compound_stmt
+%type<block> program stmt_list compound_stmt expr_list
 %type<var> var_def
+%type<type> data_type type r_type
 %type<array> local_def
 %type<array> local_def_list
 %type<param> fpar_def
 %type<param> fpar_list
 %type<func> func_def
 %type<cond> cond
-%type<op> expr
+%type<ast> expr
 %type<assign> stmt
+%type<ast> l_value
+%type<call> func_call
 
 %start program
 
 %%
 
 data_type
-    : "int"     { $$ = new Int();  }
-    | "byte"    { $$ = new Byte(); }
+    : "int"     { $$ = new Type(*$1);  }
+    | "byte"    { $$ = new Type(*$1); }
     ;
 
 type
@@ -90,28 +96,28 @@ type
 
 r_type
     : data_type         { $$ = $1;                   }
-    | "proc"            { $$ = nullptr;              }
+    | "proc"            { $$ = new Type();           } 
     ;
 
 cond
     : "true"            { $$ = new Cond("true");     }
     | "false"           { $$ = new Cond("false");    }
     | '(' cond ')'      { $$ = $2;                   }
-    | '!' cond          { $$ = new Cond($1, $2);     }
-    | expr '<' expr     { $$ = new Cond($1, $2, $3); }
-    | expr '>' expr     { $$ = new Cond($1, $2, $3); }
-    | expr "==" expr    { $$ = new Cond($1, $2, $3); }
-    | expr "!=" expr    { $$ = new Cond($1, $2, $3); }
-    | expr "<=" expr    { $$ = new Cond($1, $2, $3); }
-    | expr ">=" expr    { $$ = new Cond($1, $2, $3); }
-    | cond '&' cond     { $$ = new Cond($1, $2, $3); }
-    | cond '|' cond     { $$ = new Cond($1, $2, $3); }
+    | '!' cond          { $$ = $2;                   }
+    | expr '<' expr     { $$ = new Cond($2, $1, $3); }
+    | expr '>' expr     { $$ = new Cond($2, $1, $3); }
+    | expr "==" expr    { $$ = new Cond($2, $1, $3); }
+    | expr "!=" expr    { $$ = new Cond($2, $1, $3); }
+    | expr "<=" expr    { $$ = new Cond($2, $1, $3); }
+    | expr ">=" expr    { $$ = new Cond($2, $1, $3); }
+    | cond '&' cond     { $$ = new Cond($2, $1, $3); }
+    | cond '|' cond     { $$ = new Cond($2, $1, $3); }
     ;
 
 l_value
-    : T_string          { $$ = new String($1);    }
-    | T_id '[' expr ']' { $$ = new Array($1, $3); }
-    | T_id              { $$ = new Var($1);       }
+    : T_string          { $$ = new String($1);       }
+    | T_id '[' expr ']' { $$ = new LValue($1, $3);   }
+    | T_id              { $$ = new LValue($1);       }
     ;
 
 expr
@@ -131,7 +137,7 @@ expr
 
 
 expr_list 
-    : 
+    :                      { $$ = new Block();        }
     | expr_list ',' expr   { $1->append($3); $$ = $1; }
     | expr                 { $$ = $1;                 }
     ;
@@ -172,7 +178,7 @@ local_def
     ;
 
 local_def_list
-    : 
+    :                          { $$ = new Block();        }
     | local_def_list local_def { $1->append($2); $$ = $1; }
     ;
 
@@ -180,11 +186,11 @@ local_def_list
 
 fpar_def
     : T_id ':' "reference" type { $$ = new Param($1, "reference", $4); }
-    | T_id ':' type             { $$ = new Param($1, "value" , $4);    }
+    | T_id ':' type             { $$ = new Param($1, "value" , $3);    }
     ;
 
 fpar_list
-    : 
+    :                        { $$ = new Block();        }
     | fpar_list ',' fpar_def { $1->append($3); $$ = $1; }
     | fpar_def               { $$ = $1;                 }
     ;
@@ -195,7 +201,7 @@ func_def
     ;
 
 program
-    : func_def { $$ = $1; }
+    : func_def { cout << *$1 << endl; }
     ;
 
 %%
