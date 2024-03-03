@@ -43,7 +43,7 @@ class Type : public AST {
 };
 
 
-class Array : public Type {
+class Array : public AST {
     public: 
         Array(ASTPtr t) : type(t) {}
         virtual void printOn(std::ostream &out) const override {
@@ -100,7 +100,7 @@ class Func : public AST {
     public:
         Func(std::string id,ASTList p,
                 ASTPtr ret, ASTList local_def,
-                ASTList compound) : id(id), param_list(p),
+                ASTPtr compound) : id(id), param_list(p),
                 retType(ret), def_list(local_def), compound(compound)  {}
         virtual void printOn(std::ostream &out) const override {
             out << "Func(" << id << ",";
@@ -115,9 +115,8 @@ class Func : public AST {
                 out << *p << ", ";
             };
 
-            for (auto p : compound) {
-                out << *p << ", ";
-            };
+            out << *compound << ")";
+
         }
 
     private:
@@ -125,7 +124,7 @@ class Func : public AST {
         ASTList param_list;
         ASTPtr retType;
         ASTList def_list;
-        ASTList compound;
+        ASTPtr compound;
 };
 
 
@@ -141,19 +140,19 @@ class Const: public Expr {
 
 class Var: public AST {
     public:
-        Var(std::string id, ASTPtr t, ASTPtr c = nullptr) : id(id), type(t), value(c) {}
+        Var(std::string id, ASTPtr t, int c = 0) : id(id), type(t), value(c) {}
         virtual void printOn(std::ostream &out) const override {
-            if (value == nullptr) { 
+            if (value == 0) { 
                 out << "Var(" << id << ", " << *type << ")";
             } else {
-                out << "Var(" << id << ", " << *type << ", " << *value << ")";
+                out << "Var(" << id << ", " << *type << ", " << value << ")";
             }
         }
 
     private: 
         std::string id;
         ASTPtr type;
-        ASTPtr value;
+        int value;
 };
 
 class Cond: public AST {
@@ -232,7 +231,7 @@ class Char: public Expr {
 
 class BinOp: public Expr {
     public: 
-        BinOp(ASTPtr e1=0, char o=0, ASTPtr e2=0): expr1(e1), expr2(e2), op(o) {}
+        BinOp(char o, ASTPtr e1 = nullptr, ASTPtr e2 = nullptr): expr1(e1), expr2(e2), op(o) {}
         virtual void printOn(std::ostream &out) const override {
             out << op << "(" << *expr1 << ", " << *expr2 << ")";
         }
@@ -274,14 +273,18 @@ class LValue : public AST {
 
 class Call : public AST {
     public:
-        Call(std::string id, ASTPtr block) : id(id), block(block) {}
+        Call(std::string id, ASTList block) : id(id), block(block) {}
         virtual void printOn(std::ostream &out) const override {
-            out << "Call(" << id << ", " << *block << ")";
+            out << "Call(" << id << ", ";
+
+            for (auto p : block) {
+                out << *p << ", ";
+            };
         }
 
     private:
         std::string id;
-        ASTPtr block;
+        ASTList block;
 
 };
 

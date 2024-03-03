@@ -1,7 +1,7 @@
 OBJS = ./errors/errors.cpp ./lexer/lexer.cpp ./library/library.cpp ./parser/parser.cpp
-CC = c++
+CC = g++
 CPP = c++11
-FLAGS = -Wall -g -std=$(CPP)
+FLAGS = -Wfatal-errors -std=$(CPP) -fsanitize=address -fno-omit-frame-pointer
 REMOVE = rm -r *.dSYM
 
 .PHONY: clean main
@@ -19,7 +19,7 @@ errors.cpp: ./errors/errors.hpp
 library.cpp: ./library/library.hpp
 
 alan: lexer.cpp parser.cpp errors.cpp library.cpp 
-	$(CC) $(FLAGS) $(OBJS) -o alan && $(REMOVE)
+	$(CC) $(FLAGS) $(OBJS) -o alan
 
 clean:
 	rm -f alan
