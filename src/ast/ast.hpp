@@ -7,14 +7,11 @@
 // #include <string.h>
 #include <string>
 #include <vector>
-
+#include <memory>
 class AST;
 
 typedef std::shared_ptr<AST> ASTPtr;
 typedef std::vector<ASTPtr> ASTList;
-
-
-
 
 
 class AST {

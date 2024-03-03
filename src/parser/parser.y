@@ -6,11 +6,21 @@
 #include "../lexer/lexer.h"
 #include "../ast/ast.hpp"
 
+
 #define YYDEBUG 1
-
+extern FILE* yyin;
 extern int line_number;
-
+//extern int yylex();
 %}
+
+%union {
+    ASTPtr *a;
+    ASTList *al;
+    int ival;
+    char cval;
+    char *sval;
+}
+
 
 %token T_byte "byte"  
 %token T_false "false"
@@ -42,15 +52,8 @@ extern int line_number;
 
 %nonassoc NOELSE
 %nonassoc "else"
+ 
 
-
-%union {
-    ASTPtr *a;
-    ASTList *al;
-    int ival;
-    char cval;
-    char *sval;
-}
 
 %type <a> data_type
 %type <a> type
@@ -190,25 +193,56 @@ fpar_list
 
 func_def
     : T_id '(' fpar_list ')' ':' r_type local_def_list compound_stmt 
-    { $$ = new ASTPtr(std::make_shared<Func>($1, *$3, *$6, *$7, *$8)); }
+    { std::cout << *$6 << std::endl;
+    $$ = new ASTPtr(std::make_shared<Func>($1, *$3, *$6, *$7, *$8)); }
     ;
 
 program
-    : func_def { std::cout << *$1 << std::endl; }
+: func_def { std::cout << "AST: " << *(*$1) << std::endl;
+                if($1 == nullptr) std::cout << "shit" << std::endl;
+                $$ = $1;}
     ;
 
 %%
 
 int main(int argc, char *argv[]) {
-    
-    // yydebug = 1;
-
-    int res = yyparse();
-    if (res == 0) {
-        std::cout << "Parsing successful" << std::endl;
-        exit(EXIT_SUCCESS);
+    if (argc != 2) {
+        std::cerr << "Usage: " << argv[0] << " <filename>" << std::endl;
+        return 1;
     }
 
-    std::cout << "Parsing failed at " << line_number << std::endl;
-    exit(EXIT_FAILURE);
+    const char *filename = argv[1];
+    FILE *inputFile = fopen(filename, "r");
+
+    if (!inputFile) {
+        std::cerr << "Error: Unable to open file " << filename << std::endl;
+        return 1;
+    }
+
+    yyin = inputFile;  // Set yyin to read from the provided file
+
+    int res = yyparse();  // Use the generated parser
+    fclose(inputFile);   // Close the file when done
+
+    if (res == 0) {
+        std::cout << "Parsing successful" << std::endl;
+        return 0;
+    }
+
+    std::cerr << "Parsing failed at line " << line_number << std::endl;
+    return 1;
 }
+
+//int main(int argc, char *argv[]) {
+//    
+//    yydebug = 1;
+//
+//    int res = yyparse();
+//    if (res == 0) {
+//        std::cout << "Parsing successful" << std::endl;
+//        exit(EXIT_SUCCESS);
+//    }
+//
+//    std::cout << "Parsing failed at " << line_number << std::endl;
+//    exit(EXIT_FAILURE);
+//}

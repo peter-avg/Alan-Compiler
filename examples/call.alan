@@ -1,6 +1,6 @@
 test() : proc
 
-    test2(n : reference byte[], m : reference int[]) : proc
+    aest2(n : reference byte[], m : reference int[]) : proc
     {
         m[2] = 10;
         m[2] = m[2] + 1;

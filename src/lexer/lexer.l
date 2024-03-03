@@ -1,12 +1,14 @@
 %{
 
 #define T_eof 0
-
+//#define YYSTYPE union yylval
 #include "../ast/ast.hpp"
-#include "../parser/parser.hpp"
+#include "../parser/parser.tab.h"
+//#include "../parser/parser.hpp"
 #include "../lexer/lexer.h"
 #include "../errors/errors.hpp"
-
+#include <cstdlib>
+#include <cstring>
 
 int line_number = 1;
 int nested_comments = 0;
@@ -22,11 +24,11 @@ W [ \t\r]
 %option noyywrap
 
 %%
-"byte"      { yylval.sval = strdup(yytext); return T_byte; }
+"byte"      { return T_byte; }
 "else"      { return T_else; }
 "false"     { return T_false; }
 "if"        { return T_if; }
-"int"       { yylval.sval = strdup(yytext); return T_int; }
+"int"       { return T_int; }
 "proc"      { return T_proc; }
 "reference" { return T_reference; }
 "return"    { return T_return; }
@@ -40,11 +42,11 @@ W [ \t\r]
 "<="                                    { return T_lessequal;}
 ">="                                    { return T_greaterequal;}
 
-{L}({L}|{D})*       { return T_id; }
-{D}+                { return T_const; }
+{L}({L}|{D})*       { yylval.sval = strdup(yytext); return T_id; }
+{D}+                { yylval.ival = atoi(yytext); return T_const; }
 
-\"([^\"])*\"        { return T_string; }
-\'([^\'])\'         { return T_char; }
+\"([^\"])*\"        { yylval.sval = strdup(yytext); return T_string; }
+\'([^\'])\'         { yylval.cval = yytext[1]; return T_char; }
 
 \-\-.*\n            { line_number++; }
 "(*"                { BEGIN(COMMENT); }

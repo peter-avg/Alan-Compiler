@@ -85,7 +85,6 @@ typedef int YYSTYPE;
 #endif
 
 
-extern YYSTYPE yylval;
 
 
 int yyparse (void);
