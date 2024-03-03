@@ -22,11 +22,11 @@ W [ \t\r]
 %option noyywrap
 
 %%
-"byte"      { return T_byte; }
+"byte"      { yylval.sval = strdup(yytext); return T_byte; }
 "else"      { return T_else; }
 "false"     { return T_false; }
 "if"        { return T_if; }
-"int"       { return T_int; }
+"int"       { yylval.sval = strdup(yytext); return T_int; }
 "proc"      { return T_proc; }
 "reference" { return T_reference; }
 "return"    { return T_return; }

@@ -12,164 +12,161 @@ extern int line_number;
 
 %}
 
-%token<type> T_byte "byte"  
-%token<str> T_false "false"
+%token T_byte "byte"  
+%token T_false "false"
 %token T_if "if"
-%token<type> T_int "int"
-%token<type> T_proc "proc" 
+%token T_int "int"
+%token T_proc "proc" 
 %token T_reference "reference"
 %token T_return "return"
 %token T_while "while"
-%token<str> T_true "true" 
+%token T_true "true" 
 %token T_else "else"
 %token T_equal "=="
 %token T_notequal "!="
 %token T_lessequal "<="
 %token T_greaterequal ">=" 
 
-%token<str> T_id
-%token<val> T_const
-%token<ch> T_char
-%token<str> T_string
+%token<sval> T_id
+%token<ival> T_const
+%token<cval> T_char
+%token<sval> T_string
 
-%left<str> '!'
-%left<str> '&'
-%left<str> '|'
-%nonassoc<str> '<' '>' "==" "!=" "<=" ">="
+%left '!'
+%left '&'
+%left '|'
+%nonassoc '<' '>' "==" "!=" "<=" ">="
 
-%left<str> '+' '-'
-%left<str> '*' '/' '%'
+%left '+' '-'
+%left '*' '/' '%'
 
 %nonassoc NOELSE
 %nonassoc "else"
 
 
 %union {
-    Block *block;
-    AST *ast;
-    Var *var;
-    Type *type;
-    Array *array;
-    Char *chh;
-    Const *conn;
-    std::string *str;
-    Cond *cond;
-    BinOp *op;
-    Assign *assign;
-    Call *call;
-    If *ff;
-    While *ww;
-    Return *rr;
-    Param *param;
-    Func *func;
-    int val;
-    char ch;
+    ASTPtr *a;
+    ASTList *al;
+    int ival;
+    char cval;
+    char *sval;
 }
 
-%type<block> program stmt_list compound_stmt expr_list
-%type<var> var_def
-%type<type> data_type type r_type
-%type<array> local_def
-%type<array> local_def_list
-%type<param> fpar_def
-%type<param> fpar_list
-%type<func> func_def
-%type<cond> cond
-%type<ast> expr
-%type<assign> stmt
-%type<ast> l_value
-%type<call> func_call
+%type <a> data_type
+%type <a> type
+%type <a> r_type
+%type <a> cond
+%type <a> l_value
+%type <a> expr
+%type <al> expr_list
+%type <a> func_call
+%type <a> stmt
+%type <al> stmt_list
+%type <al> compound_stmt
+%type <a> var_def
+%type <a> local_def
+%type <al> local_def_list
+%type <a> fpar_def
+%type <al> fpar_list
+%type <a> func_def
+%type <a> program
+
+
+
+
+
+
 
 %start program
 
 %%
 
 data_type
-    : "int"     { $$ = new Type(*$1);  }
-    | "byte"    { $$ = new Type(*$1); }
+    : T_int     { $$ = new ASTPtr(std::make_shared<Int>());  }
+    | T_byte    { $$ = new ASTPtr(std::make_shared<Byte>()); }
     ;
 
 type
-    : data_type '[' ']' { $$ = new Array($1); }
-    | data_type         { $$ = $1;            }
+    : data_type '[' ']' { $$ = new ASTPtr(std::make_shared<Array>($1)); }
+    | data_type         { $$ = $1;                                      }
     ;
 
 r_type
-    : data_type         { $$ = $1;                   }
-    | "proc"            { $$ = new Type();           } 
+    : data_type         { $$ = $1;                                   }
+    | "proc"            { $$ = new ASTPtr(std::make_shared<Type>()); } 
     ;
 
 cond
-    : "true"            { $$ = new Cond("true");     }
-    | "false"           { $$ = new Cond("false");    }
-    | '(' cond ')'      { $$ = $2;                   }
-    | '!' cond          { $$ = $2;                   }
-    | expr '<' expr     { $$ = new Cond($2, $1, $3); }
-    | expr '>' expr     { $$ = new Cond($2, $1, $3); }
-    | expr "==" expr    { $$ = new Cond($2, $1, $3); }
-    | expr "!=" expr    { $$ = new Cond($2, $1, $3); }
-    | expr "<=" expr    { $$ = new Cond($2, $1, $3); }
-    | expr ">=" expr    { $$ = new Cond($2, $1, $3); }
-    | cond '&' cond     { $$ = new Cond($2, $1, $3); }
-    | cond '|' cond     { $$ = new Cond($2, $1, $3); }
+    : "true"            { $$ = new ASTPtr(std::make_shared<Cond>("true"));       }
+    | "false"           { $$ = new ASTPtr(std::make_shared<Cond>("false"));      }
+    | '(' cond ')'      { $$ = $2;                                              }
+    | '!' cond          { $$ = $2;                                              }
+    | expr '<' expr     { $$ = new ASTPtr(std::make_shared<Cond>("<", $1, $3));  }
+    | expr '>' expr     { $$ = new ASTPtr(std::make_shared<Cond>(">", $1, $3));  }
+    | expr "==" expr    { $$ = new ASTPtr(std::make_shared<Cond>("==", $1, $3)); }
+    | expr "!=" expr    { $$ = new ASTPtr(std::make_shared<Cond>("!=", $1, $3)); }
+    | expr "<=" expr    { $$ = new ASTPtr(std::make_shared<Cond>("<=", $1, $3)); }
+    | expr ">=" expr    { $$ = new ASTPtr(std::make_shared<Cond>(">=", $1, $3)); }
+    | cond '&' cond     { $$ = new ASTPtr(std::make_shared<Cond>("&", $1, $3));  }
+    | cond '|' cond     { $$ = new ASTPtr(std::make_shared<Cond>("|", $1, $3));  }
     ;
 
 l_value
-    : T_string          { $$ = new String($1);       }
-    | T_id '[' expr ']' { $$ = new LValue($1, $3);   }
-    | T_id              { $$ = new LValue($1);       }
+    : T_string          { $$ = new ASTPtr(std::make_shared<String>($1));       }
+    | T_id '[' expr ']' { $$ = new ASTPtr(std::make_shared<LValue>($1, $3));   }
+    | T_id              { $$ = new ASTPtr(std::make_shared<LValue>($1));       }
     ;
 
 expr
-    : T_char            { $$ = new Char($1);           }
-    | T_const           { $$ = new Const($1);          } 
-    | l_value           { $$ = $1;                     }
-    | '(' expr ')'      { $$ = $2;                     }
-    | func_call         { $$ = $1;                     }
-    | '+' expr          { $$ = new BinOp('+', $2);     }
-    | '-' expr          { $$ = new BinOp('-', $2);     }
-    | expr '+' expr     { $$ = new BinOp('+', $1, $3); }
-    | expr '-' expr     { $$ = new BinOp('-', $1, $3); }
-    | expr '*' expr     { $$ = new BinOp('*', $1, $3); }
-    | expr '/' expr     { $$ = new BinOp('/', $1, $3); }
-    | expr '%' expr     { $$ = new BinOp('%', $1, $3); }
+    : T_char            { $$ = new ASTPtr(std::make_shared<Char>($1));           }
+    | T_const           { $$ = new ASTPtr(std::make_shared<Const>($1));          } 
+    | l_value           { $$ = $1;                                               }
+    | '(' expr ')'      { $$ = $2;                                               }
+    | func_call         { $$ = $1;                                               }
+    | '+' expr          { $$ = new ASTPtr(std::make_shared<BinOp>('+', $2));     }
+    | '-' expr          { $$ = new ASTPtr(std::make_shared<BinOp>('-', $2));     }
+    | expr '+' expr     { $$ = new ASTPtr(std::make_shared<BinOp>('+', $1, $3)); }
+    | expr '-' expr     { $$ = new ASTPtr(std::make_shared<BinOp>('-', $1, $3)); }
+    | expr '*' expr     { $$ = new ASTPtr(std::make_shared<BinOp>('*', $1, $3)); }
+    | expr '/' expr     { $$ = new ASTPtr(std::make_shared<BinOp>('/', $1, $3)); }
+    | expr '%' expr     { $$ = new ASTPtr(std::make_shared<BinOp>('%', $1, $3)); }
     ;
 
 
 expr_list 
-    :                      { $$ = new Block();        }
-    | expr_list ',' expr   { $1->append($3); $$ = $1; }
-    | expr                 { $$ = $1;                 }
+    :                      { $$ = new ASTList();                 }
+    | expr_list ',' expr   { $1->append($3); $$ = $1;            }
+    | expr                 { $$ = new ASTList(); $$->append($1); }
     ;
 
 func_call
-    : T_id '(' expr_list ')' { $$ = new Call($1, $3); }
+    : T_id '(' expr_list ')' { $$ = new ASTPtr(std::make_shared<Call>($1, $3)); }
     ;
 
 stmt
     : ';'                                   { $$ = nullptr;            }
-    | l_value '=' expr ';'                  { $$ = new Assign($1, $3); }
+    | l_value '=' expr ';'                  { $$ = new ASTPtr(std::make_shared<Assign>($1, $3)); }
     | compound_stmt                         { $$ = $1;                 }
     | func_call ';'                         { $$ = $1;                 }
-    | "if" '(' cond ')' stmt                { $$ = new If($3, $5);     }
-    | "if" '(' cond ')' stmt "else" stmt    { $$ = new If($3, $5, $7); }
-    | "while" '(' cond ')' stmt             { $$ = new While($3, $5);  }
-    | "return" expr ';'                     { $$ = new Return($2);     }
+    | "if" '(' cond ')' stmt                { $$ = new ASTPtr(std::make_shared<If>($3, $5));     }
+    | "if" '(' cond ')' stmt "else" stmt    { $$ = new ASTPtr(std::make_shared<If>($3, $5, $7)); }
+    | "while" '(' cond ')' stmt             { $$ = new ASTPtr(std::make_shared<While>($3, $5));  }
+    | "return" expr ';'                     { $$ = new ASTPtr(std::make_shared<Return>($2));     }
     ;
 
 stmt_list
-    :                   { $$ = new Block();        }
+    :                   { $$ = new ASTList();      }
     | stmt_list stmt    { $1->append($2); $$ = $1; }
     ;
 
 compound_stmt
-    : '{' stmt_list '}' { $$ = new Block($2); }
+    : '{' stmt_list '}' { $$ = new ASTPtr(std::make_shared<Block>()); }
     ;
 
 
 var_def
-    : T_id ':' data_type';'                  { $$ = new Var($1, $3);     }
-    | T_id ':' data_type '[' T_const ']' ';' { $$ = new Var($1, $3, $5); }
+    : T_id ':' data_type';'                  { $$ = new ASTPtr(std::make_shared<Var>($1, $3));     }
+    | T_id ':' data_type '[' T_const ']' ';' { $$ = new ASTPtr(std::make_shared<Var>($1, $3, $5)); }
     ;
 
 local_def
@@ -178,26 +175,26 @@ local_def
     ;
 
 local_def_list
-    :                          { $$ = new Block();        }
-    | local_def_list local_def { $1->append($2); $$ = $1; }
+    :                          { $$ = new ASTList(); }
+    | local_def_list local_def { $1->append($2); $$ = $1;                     }
     ;
 
 
 
 fpar_def
-    : T_id ':' "reference" type { $$ = new Param($1, "reference", $4); }
-    | T_id ':' type             { $$ = new Param($1, "value" , $3);    }
+    : T_id ':' "reference" type { $$ = new ASTPtr(std::make_shared<Param>($1, "reference", $4)); }
+    | T_id ':' type             { $$ = new ASTPtr(std::make_shared<Param>($1, "value" , $3));    }
     ;
 
 fpar_list
-    :                        { $$ = new Block();        }
-    | fpar_list ',' fpar_def { $1->append($3); $$ = $1; }
-    | fpar_def               { $$ = $1;                 }
+    :                        { $$ = new ASTList(std::make_shared<Block>()); }
+    | fpar_list ',' fpar_def { $1->append($3); $$ = $1;                     }
+    | fpar_def               { $$ = new ASTList(); $$->append($1); }
     ;
 
 func_def
     : T_id '(' fpar_list ')' ':' r_type local_def_list compound_stmt 
-    { $$ = new Func($1, $3, $6, $7, $8); }
+    { $$ = new ASTPtr(std::make_shared<Func>($1, $3, $6, $7, $8)); }
     ;
 
 program
