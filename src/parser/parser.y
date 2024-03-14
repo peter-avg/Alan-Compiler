@@ -5,10 +5,7 @@
 #include "../lexer/lexer.h"
 #include "../types/types.hpp"
 #include "../ast/ast.hpp"
-<<<<<<< HEAD
 #include "../lexer/correcting.hpp"
-=======
->>>>>>> 284d4ed1140de7d3980610015d22229adb975fdd
 
 #define YYDEBUG 1
 extern FILE* yyin;
@@ -115,15 +112,9 @@ cond
     ;
 
 l_value
-<<<<<<< HEAD
-    : T_string          { $$ = new ASTPtr(std::make_shared<String>(*$1));       }
-    | T_id '[' expr ']' { $$ = new ASTPtr(std::make_shared<LValue>($1, *$3));   }
-    | T_id              { $$ = new ASTPtr(std::make_shared<LValue>($1));       }
-=======
     : T_string          { $$ = new ast::ASTPtr(std::make_shared<ast::String>($1));       }
     | T_id '[' expr ']' { $$ = new ast::ASTPtr(std::make_shared<ast::LValue>($1, *$3));   }
     | T_id              { $$ = new ast::ASTPtr(std::make_shared<ast::LValue>($1));       }
->>>>>>> 284d4ed1140de7d3980610015d22229adb975fdd
     ;
 
 expr
@@ -169,11 +160,7 @@ stmt_list
     ;
 
 compound_stmt
-<<<<<<< HEAD
-    : '{' stmt_list '}' { $$ = new ASTPtr(std::make_shared<Block>(*$2)); }
-=======
     : '{' stmt_list '}' { $$ = new ast::ASTPtr(std::make_shared<ast::Block>(*$2)); }
->>>>>>> 284d4ed1140de7d3980610015d22229adb975fdd
     ;
 
 

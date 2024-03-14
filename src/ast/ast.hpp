@@ -30,72 +30,6 @@ namespace ast {
         return out;
     }
 
-<<<<<<< HEAD
-class Type : public AST {
-    public:
-        Type (std::string *type = nullptr) : type(type) {}
-        virtual void printOn(std::ostream &out) const override {
-            if (type == nullptr)
-                out << "Type()";
-            else
-                out << "Type(" << *type << ")";
-        }
-
-    private:
-        std::string *type;
-};
-
-
-class Array : public AST {
-    public: 
-        Array(ASTPtr t) : type(t) {}
-        virtual void printOn(std::ostream &out) const override {
-            out << "Array(" << *type << ")";
-        }
-
-    private:
-        ASTPtr type;
-};
-
-class Stmt: public AST {
-    public:
-};
-
-class Expr: public AST {
-    public:
-};
-
-class Param : public AST {
-    public:
-        Param(std::string id, std::string pass, ASTPtr t) : id(id), pass(pass), type(t) {}
-        virtual void printOn(std::ostream &out) const override {
-            out << "Param(" << id << ", " << pass << ", " << *type << ")" ;
-        }
-
-    private:
-        std::string id;
-        std::string pass;
-        ASTPtr type;
-};
-
-
-class Block: public AST {
-    public:
-        Block(ASTList ast = ASTList()) : list(ast) {}
-        //Block() {}
-        void append(ASTPtr s) { list.push_back(s); }
-        virtual void printOn(std::ostream &out) const override {
-            out << "Block(";
-            bool first = true;
-            for (auto something : list){
-                if (!first)
-                    out << " ,";
-                first = false;
-                if (something)
-                    out << *something; 
-                else 
-                    out << "nullptr oh shit!";
-=======
     class Type : public AST {
         public:
             Type (std::string *type = nullptr) : type(type) {}
@@ -104,7 +38,6 @@ class Block: public AST {
                     out << "Type()";
                 else
                     out << "Type(" << *type << ")";
->>>>>>> 284d4ed1140de7d3980610015d22229adb975fdd
             }
 
         private:
@@ -233,97 +166,11 @@ class Block: public AST {
             ASTPtr second;
     };
 
-<<<<<<< HEAD
-class While: public Stmt {
-    public: 
-        While(ASTPtr c, ASTPtr s): cond(c), stmt(s) {}
-        virtual void printOn(std::ostream &out) const override {
-            out << "While(" << *cond << ", " << *stmt << ")";
-        }
-    private: 
-        ASTPtr cond;
-        ASTPtr stmt;
-};
-
-
-
-class If: public Stmt {
-    public:
-        If(ASTPtr c, ASTPtr s1, ASTPtr s2 = 0): cond(c), stmt1(s1), stmt2(s2) {}
-        virtual void printOn(std::ostream &out) const override {
-            out << "If(" << *cond << ", " << *stmt1;
-            if (stmt2 != nullptr ) out << ", " << *stmt2;
-            out << ")"; 
-        }
-
-    private:
-        ASTPtr cond;
-        ASTPtr stmt1;
-        ASTPtr stmt2;
-};
-
-class Return: public Stmt {
-    public: 
-        Return(ASTPtr e): expr(e) {}
-        virtual void printOn(std::ostream &out) const override {
-            out << "Return(" << *expr  << ")"; 
-        }
-    private:
-        ASTPtr expr;
-};
-
-
-class Char: public Expr {
-    public:
-        Char(char v): var(v) {}
-        virtual void printOn(std::ostream &out) const override {
-            out << "Char(" << var << ")";
-        }
-    private:
-        char var;
-};
-
-
-class BinOp: public Expr {
-    public: 
-        BinOp(char o, ASTPtr e1 = nullptr, ASTPtr e2 = nullptr): expr1(e1), expr2(e2), op(o) {}
-        virtual void printOn(std::ostream &out) const override {
-            out << op << "(" << *expr1 << ", " << *expr2 << ")";
-        }
-    private:
-        ASTPtr expr1;
-        ASTPtr expr2;
-        char op;
-};
-
-
-class String : public AST {
-    public:
-        String(char *s) : str(s) {}
-        virtual void printOn(std::ostream &out) const override {
-            out << "String(" << str << ")";
-        }
-
-    private:
-        char *str;
-};
-
-
-class LValue : public AST {
-    public:
-        LValue(std::string id, ASTPtr e = nullptr) : id(id), expr(e) {}
-        virtual void printOn(std::ostream &out) const override {
-            if (expr == nullptr) {
-                out << "LValue(" << id << ")";
-            } else {
-                out << "LValue(" << id << ", " << *expr << ")";
-=======
     class While: public Stmt {
         public: 
             While(ASTPtr c, ASTPtr s): cond(c), stmt(s) {}
             virtual void printOn(std::ostream &out) const override {
                 out << "While(" << *cond << ", " << *stmt << ")";
->>>>>>> 284d4ed1140de7d3980610015d22229adb975fdd
             }
         private: 
             ASTPtr cond;
