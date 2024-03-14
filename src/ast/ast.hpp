@@ -5,6 +5,7 @@
 #include <iostream>
 // #include <iterator>
 // #include <string.h>
+#include <iterator>
 #include <string>
 #include <vector>
 #include <memory>
@@ -75,17 +76,20 @@ class Param : public AST {
 
 class Block: public AST {
     public:
-        Block() {}
-        Block(ASTList ast) : list(ast) {}
+        Block(ASTList ast = ASTList()) : list(ast) {}
+        //Block() {}
         void append(ASTPtr s) { list.push_back(s); }
         virtual void printOn(std::ostream &out) const override {
             out << "Block(";
             bool first = true;
-            for (auto s : list){
+            for (auto something : list){
                 if (!first)
                     out << " ,";
                 first = false;
-                out << *s; 
+                if (something)
+                    out << *something; 
+                else 
+                    out << "nullptr oh shit!";
             }
             out << ")";
         }
@@ -241,13 +245,13 @@ class BinOp: public Expr {
 
 class String : public AST {
     public:
-        String(std::string s) : str(s) {}
+        String(char *s) : str(s) {}
         virtual void printOn(std::ostream &out) const override {
             out << "String(" << str << ")";
         }
 
     private:
-        std::string str;
+        char *str;
 };
 
 

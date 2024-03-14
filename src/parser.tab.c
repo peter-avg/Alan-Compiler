@@ -68,7 +68,7 @@
 /* Copy the first part of user declarations.  */
 
 /* Line 189 of yacc.c  */
-#line 1 "parser.y"
+#line 1 "parser/parser.y"
 
 
 #include <iostream>
@@ -81,7 +81,7 @@
 #define YYDEBUG 1
 extern FILE* yyin;
 extern int line_number;
-//extern int yylex();
+extern int yylex();
 
 
 /* Line 189 of yacc.c  */
@@ -141,13 +141,13 @@ typedef union YYSTYPE
 {
 
 /* Line 214 of yacc.c  */
-#line 16 "parser.y"
+#line 16 "parser/parser.y"
 
     ASTPtr *a;
     ASTList *al;
     int ival;
     char cval;
-    char *sval;
+    std::string sval;
 
 
 
@@ -1473,420 +1473,420 @@ yyreduce:
         case 2:
 
 /* Line 1455 of yacc.c  */
-#line 84 "parser.y"
+#line 84 "parser/parser.y"
     { (yyval.a) = new ASTPtr(std::make_shared<Int>());  ;}
     break;
 
   case 3:
 
 /* Line 1455 of yacc.c  */
-#line 85 "parser.y"
+#line 85 "parser/parser.y"
     { (yyval.a) = new ASTPtr(std::make_shared<Byte>()); ;}
     break;
 
   case 4:
 
 /* Line 1455 of yacc.c  */
-#line 89 "parser.y"
+#line 89 "parser/parser.y"
     { (yyval.a) = new ASTPtr(std::make_shared<Array>(*(yyvsp[(1) - (3)].a))); ;}
     break;
 
   case 5:
 
 /* Line 1455 of yacc.c  */
-#line 90 "parser.y"
+#line 90 "parser/parser.y"
     { (yyval.a) = (yyvsp[(1) - (1)].a);                                      ;}
     break;
 
   case 6:
 
 /* Line 1455 of yacc.c  */
-#line 94 "parser.y"
+#line 94 "parser/parser.y"
     { (yyval.a) = (yyvsp[(1) - (1)].a);                                   ;}
     break;
 
   case 7:
 
 /* Line 1455 of yacc.c  */
-#line 95 "parser.y"
+#line 95 "parser/parser.y"
     { (yyval.a) = new ASTPtr(std::make_shared<Type>()); ;}
     break;
 
   case 8:
 
 /* Line 1455 of yacc.c  */
-#line 99 "parser.y"
+#line 99 "parser/parser.y"
     { (yyval.a) = new ASTPtr(std::make_shared<Cond>("true"));       ;}
     break;
 
   case 9:
 
 /* Line 1455 of yacc.c  */
-#line 100 "parser.y"
+#line 100 "parser/parser.y"
     { (yyval.a) = new ASTPtr(std::make_shared<Cond>("false"));      ;}
     break;
 
   case 10:
 
 /* Line 1455 of yacc.c  */
-#line 101 "parser.y"
+#line 101 "parser/parser.y"
     { (yyval.a) = (yyvsp[(2) - (3)].a);                                              ;}
     break;
 
   case 11:
 
 /* Line 1455 of yacc.c  */
-#line 102 "parser.y"
+#line 102 "parser/parser.y"
     { (yyval.a) = (yyvsp[(2) - (2)].a);                                              ;}
     break;
 
   case 12:
 
 /* Line 1455 of yacc.c  */
-#line 103 "parser.y"
+#line 103 "parser/parser.y"
     { (yyval.a) = new ASTPtr(std::make_shared<Cond>("<", *(yyvsp[(1) - (3)].a), *(yyvsp[(3) - (3)].a)));  ;}
     break;
 
   case 13:
 
 /* Line 1455 of yacc.c  */
-#line 104 "parser.y"
+#line 104 "parser/parser.y"
     { (yyval.a) = new ASTPtr(std::make_shared<Cond>(">", *(yyvsp[(1) - (3)].a), *(yyvsp[(3) - (3)].a)));  ;}
     break;
 
   case 14:
 
 /* Line 1455 of yacc.c  */
-#line 105 "parser.y"
+#line 105 "parser/parser.y"
     { (yyval.a) = new ASTPtr(std::make_shared<Cond>("==", *(yyvsp[(1) - (3)].a), *(yyvsp[(3) - (3)].a))); ;}
     break;
 
   case 15:
 
 /* Line 1455 of yacc.c  */
-#line 106 "parser.y"
+#line 106 "parser/parser.y"
     { (yyval.a) = new ASTPtr(std::make_shared<Cond>("!=", *(yyvsp[(1) - (3)].a), *(yyvsp[(3) - (3)].a))); ;}
     break;
 
   case 16:
 
 /* Line 1455 of yacc.c  */
-#line 107 "parser.y"
+#line 107 "parser/parser.y"
     { (yyval.a) = new ASTPtr(std::make_shared<Cond>("<=", *(yyvsp[(1) - (3)].a), *(yyvsp[(3) - (3)].a))); ;}
     break;
 
   case 17:
 
 /* Line 1455 of yacc.c  */
-#line 108 "parser.y"
+#line 108 "parser/parser.y"
     { (yyval.a) = new ASTPtr(std::make_shared<Cond>(">=", *(yyvsp[(1) - (3)].a), *(yyvsp[(3) - (3)].a))); ;}
     break;
 
   case 18:
 
 /* Line 1455 of yacc.c  */
-#line 109 "parser.y"
+#line 109 "parser/parser.y"
     { (yyval.a) = new ASTPtr(std::make_shared<Cond>("&", *(yyvsp[(1) - (3)].a), *(yyvsp[(3) - (3)].a)));  ;}
     break;
 
   case 19:
 
 /* Line 1455 of yacc.c  */
-#line 110 "parser.y"
+#line 110 "parser/parser.y"
     { (yyval.a) = new ASTPtr(std::make_shared<Cond>("|", *(yyvsp[(1) - (3)].a), *(yyvsp[(3) - (3)].a)));  ;}
     break;
 
   case 20:
 
 /* Line 1455 of yacc.c  */
-#line 114 "parser.y"
-    { (yyval.a) = new ASTPtr(std::make_shared<String>((yyvsp[(1) - (1)].sval)));       ;}
+#line 114 "parser/parser.y"
+    { (yyval.a) = new ASTPtr(std::make_shared<String>(*(yyvsp[(1) - (1)].sval)));       ;}
     break;
 
   case 21:
 
 /* Line 1455 of yacc.c  */
-#line 115 "parser.y"
+#line 115 "parser/parser.y"
     { (yyval.a) = new ASTPtr(std::make_shared<LValue>((yyvsp[(1) - (4)].sval), *(yyvsp[(3) - (4)].a)));   ;}
     break;
 
   case 22:
 
 /* Line 1455 of yacc.c  */
-#line 116 "parser.y"
+#line 116 "parser/parser.y"
     { (yyval.a) = new ASTPtr(std::make_shared<LValue>((yyvsp[(1) - (1)].sval)));       ;}
     break;
 
   case 23:
 
 /* Line 1455 of yacc.c  */
-#line 120 "parser.y"
+#line 120 "parser/parser.y"
     { (yyval.a) = new ASTPtr(std::make_shared<Char>((yyvsp[(1) - (1)].cval)));           ;}
     break;
 
   case 24:
 
 /* Line 1455 of yacc.c  */
-#line 121 "parser.y"
+#line 121 "parser/parser.y"
     { (yyval.a) = new ASTPtr(std::make_shared<Const>((yyvsp[(1) - (1)].ival)));          ;}
     break;
 
   case 25:
 
 /* Line 1455 of yacc.c  */
-#line 122 "parser.y"
+#line 122 "parser/parser.y"
     { (yyval.a) = (yyvsp[(1) - (1)].a);                                               ;}
     break;
 
   case 26:
 
 /* Line 1455 of yacc.c  */
-#line 123 "parser.y"
+#line 123 "parser/parser.y"
     { (yyval.a) = (yyvsp[(2) - (3)].a);                                               ;}
     break;
 
   case 27:
 
 /* Line 1455 of yacc.c  */
-#line 124 "parser.y"
+#line 124 "parser/parser.y"
     { (yyval.a) = (yyvsp[(1) - (1)].a);                                               ;}
     break;
 
   case 28:
 
 /* Line 1455 of yacc.c  */
-#line 125 "parser.y"
+#line 125 "parser/parser.y"
     { (yyval.a) = new ASTPtr(std::make_shared<BinOp>('+', *(yyvsp[(2) - (2)].a)));     ;}
     break;
 
   case 29:
 
 /* Line 1455 of yacc.c  */
-#line 126 "parser.y"
+#line 126 "parser/parser.y"
     { (yyval.a) = new ASTPtr(std::make_shared<BinOp>('-', *(yyvsp[(2) - (2)].a)));     ;}
     break;
 
   case 30:
 
 /* Line 1455 of yacc.c  */
-#line 127 "parser.y"
+#line 127 "parser/parser.y"
     { (yyval.a) = new ASTPtr(std::make_shared<BinOp>('+', *(yyvsp[(1) - (3)].a), *(yyvsp[(3) - (3)].a))); ;}
     break;
 
   case 31:
 
 /* Line 1455 of yacc.c  */
-#line 128 "parser.y"
+#line 128 "parser/parser.y"
     { (yyval.a) = new ASTPtr(std::make_shared<BinOp>('-', *(yyvsp[(1) - (3)].a), *(yyvsp[(3) - (3)].a))); ;}
     break;
 
   case 32:
 
 /* Line 1455 of yacc.c  */
-#line 129 "parser.y"
+#line 129 "parser/parser.y"
     { (yyval.a) = new ASTPtr(std::make_shared<BinOp>('*', *(yyvsp[(1) - (3)].a), *(yyvsp[(3) - (3)].a))); ;}
     break;
 
   case 33:
 
 /* Line 1455 of yacc.c  */
-#line 130 "parser.y"
+#line 130 "parser/parser.y"
     { (yyval.a) = new ASTPtr(std::make_shared<BinOp>('/', *(yyvsp[(1) - (3)].a), *(yyvsp[(3) - (3)].a))); ;}
     break;
 
   case 34:
 
 /* Line 1455 of yacc.c  */
-#line 131 "parser.y"
+#line 131 "parser/parser.y"
     { (yyval.a) = new ASTPtr(std::make_shared<BinOp>('%', *(yyvsp[(1) - (3)].a), *(yyvsp[(3) - (3)].a))); ;}
     break;
 
   case 35:
 
 /* Line 1455 of yacc.c  */
-#line 136 "parser.y"
+#line 136 "parser/parser.y"
     { (yyval.al) = new ASTList();                    ;}
     break;
 
   case 36:
 
 /* Line 1455 of yacc.c  */
-#line 137 "parser.y"
+#line 137 "parser/parser.y"
     { (yyvsp[(1) - (3)].al)->push_back(*(yyvsp[(3) - (3)].a)); (yyval.al) = (yyvsp[(1) - (3)].al);            ;}
     break;
 
   case 37:
 
 /* Line 1455 of yacc.c  */
-#line 138 "parser.y"
+#line 138 "parser/parser.y"
     { (yyval.al) = new ASTList(); (yyval.al)->push_back(*(yyvsp[(1) - (1)].a)); ;}
     break;
 
   case 38:
 
 /* Line 1455 of yacc.c  */
-#line 142 "parser.y"
+#line 142 "parser/parser.y"
     { (yyval.a) = new ASTPtr(std::make_shared<Call>((yyvsp[(1) - (4)].sval), *(yyvsp[(3) - (4)].al))); ;}
     break;
 
   case 39:
 
 /* Line 1455 of yacc.c  */
-#line 146 "parser.y"
+#line 146 "parser/parser.y"
     { (yyval.a) = nullptr;            ;}
     break;
 
   case 40:
 
 /* Line 1455 of yacc.c  */
-#line 147 "parser.y"
+#line 147 "parser/parser.y"
     { (yyval.a) = new ASTPtr(std::make_shared<Assign>(*(yyvsp[(1) - (4)].a), *(yyvsp[(3) - (4)].a))); ;}
     break;
 
   case 41:
 
 /* Line 1455 of yacc.c  */
-#line 148 "parser.y"
+#line 148 "parser/parser.y"
     { (yyval.a) = (yyvsp[(1) - (1)].a);                 ;}
     break;
 
   case 42:
 
 /* Line 1455 of yacc.c  */
-#line 149 "parser.y"
+#line 149 "parser/parser.y"
     { (yyval.a) = (yyvsp[(1) - (2)].a);                 ;}
     break;
 
   case 43:
 
 /* Line 1455 of yacc.c  */
-#line 150 "parser.y"
+#line 150 "parser/parser.y"
     { (yyval.a) = new ASTPtr(std::make_shared<If>(*(yyvsp[(3) - (5)].a), *(yyvsp[(5) - (5)].a)));     ;}
     break;
 
   case 44:
 
 /* Line 1455 of yacc.c  */
-#line 151 "parser.y"
+#line 151 "parser/parser.y"
     { (yyval.a) = new ASTPtr(std::make_shared<If>(*(yyvsp[(3) - (7)].a), *(yyvsp[(5) - (7)].a), *(yyvsp[(7) - (7)].a))); ;}
     break;
 
   case 45:
 
 /* Line 1455 of yacc.c  */
-#line 152 "parser.y"
+#line 152 "parser/parser.y"
     { (yyval.a) = new ASTPtr(std::make_shared<While>(*(yyvsp[(3) - (5)].a), *(yyvsp[(5) - (5)].a)));  ;}
     break;
 
   case 46:
 
 /* Line 1455 of yacc.c  */
-#line 153 "parser.y"
+#line 153 "parser/parser.y"
     { (yyval.a) = new ASTPtr(std::make_shared<Return>(*(yyvsp[(2) - (3)].a)));     ;}
     break;
 
   case 47:
 
 /* Line 1455 of yacc.c  */
-#line 157 "parser.y"
+#line 157 "parser/parser.y"
     { (yyval.al) = new ASTList();      ;}
     break;
 
   case 48:
 
 /* Line 1455 of yacc.c  */
-#line 158 "parser.y"
+#line 158 "parser/parser.y"
     { (yyvsp[(1) - (2)].al)->push_back(*(yyvsp[(2) - (2)].a)); (yyval.al) = (yyvsp[(1) - (2)].al); ;}
     break;
 
   case 49:
 
 /* Line 1455 of yacc.c  */
-#line 162 "parser.y"
+#line 162 "parser/parser.y"
     { (yyval.a) = new ASTPtr(std::make_shared<Block>(*(yyvsp[(2) - (3)].al))); ;}
     break;
 
   case 50:
 
 /* Line 1455 of yacc.c  */
-#line 167 "parser.y"
+#line 167 "parser/parser.y"
     { (yyval.a) = new ASTPtr(std::make_shared<Var>((yyvsp[(1) - (4)].sval), *(yyvsp[(3) - (4)].a)));     ;}
     break;
 
   case 51:
 
 /* Line 1455 of yacc.c  */
-#line 168 "parser.y"
+#line 168 "parser/parser.y"
     { (yyval.a) = new ASTPtr(std::make_shared<Var>((yyvsp[(1) - (7)].sval), *(yyvsp[(3) - (7)].a), (yyvsp[(5) - (7)].ival))); ;}
     break;
 
   case 52:
 
 /* Line 1455 of yacc.c  */
-#line 172 "parser.y"
+#line 172 "parser/parser.y"
     { (yyval.a) = (yyvsp[(1) - (1)].a); ;}
     break;
 
   case 53:
 
 /* Line 1455 of yacc.c  */
-#line 173 "parser.y"
+#line 173 "parser/parser.y"
     { (yyval.a) = (yyvsp[(1) - (1)].a); ;}
     break;
 
   case 54:
 
 /* Line 1455 of yacc.c  */
-#line 177 "parser.y"
+#line 177 "parser/parser.y"
     { (yyval.al) = new ASTList(); ;}
     break;
 
   case 55:
 
 /* Line 1455 of yacc.c  */
-#line 178 "parser.y"
+#line 178 "parser/parser.y"
     { (yyvsp[(1) - (2)].al)->push_back(*(yyvsp[(2) - (2)].a)); (yyval.al) = (yyvsp[(1) - (2)].al);                     ;}
     break;
 
   case 56:
 
 /* Line 1455 of yacc.c  */
-#line 184 "parser.y"
+#line 184 "parser/parser.y"
     { (yyval.a) = new ASTPtr(std::make_shared<Param>((yyvsp[(1) - (4)].sval), "reference", *(yyvsp[(4) - (4)].a))); ;}
     break;
 
   case 57:
 
 /* Line 1455 of yacc.c  */
-#line 185 "parser.y"
+#line 185 "parser/parser.y"
     { (yyval.a) = new ASTPtr(std::make_shared<Param>((yyvsp[(1) - (3)].sval), "value" , *(yyvsp[(3) - (3)].a)));    ;}
     break;
 
   case 58:
 
 /* Line 1455 of yacc.c  */
-#line 189 "parser.y"
+#line 189 "parser/parser.y"
     { (yyval.al) = new ASTList(); ;}
     break;
 
   case 59:
 
 /* Line 1455 of yacc.c  */
-#line 190 "parser.y"
+#line 190 "parser/parser.y"
     { (yyvsp[(1) - (3)].al)->push_back(*(yyvsp[(3) - (3)].a)); (yyval.al) = (yyvsp[(1) - (3)].al);                     ;}
     break;
 
   case 60:
 
 /* Line 1455 of yacc.c  */
-#line 191 "parser.y"
+#line 191 "parser/parser.y"
     { (yyval.al) = new ASTList(); (yyval.al)->push_back(*(yyvsp[(1) - (1)].a)); ;}
     break;
 
   case 61:
 
 /* Line 1455 of yacc.c  */
-#line 196 "parser.y"
+#line 196 "parser/parser.y"
     { std::cout << *(yyvsp[(6) - (8)].a) << std::endl;
     (yyval.a) = new ASTPtr(std::make_shared<Func>((yyvsp[(1) - (8)].sval), *(yyvsp[(3) - (8)].al), *(yyvsp[(6) - (8)].a), *(yyvsp[(7) - (8)].al), *(yyvsp[(8) - (8)].a))); ;}
     break;
@@ -1894,7 +1894,7 @@ yyreduce:
   case 62:
 
 /* Line 1455 of yacc.c  */
-#line 201 "parser.y"
+#line 201 "parser/parser.y"
     { std::cout << "AST: " << *(*(yyvsp[(1) - (1)].a)) << std::endl;
                 if((yyvsp[(1) - (1)].a) == nullptr) std::cout << "shit" << std::endl;
                 (yyval.a) = (yyvsp[(1) - (1)].a);;}
@@ -2115,7 +2115,7 @@ yyreturn:
 
 
 /* Line 1675 of yacc.c  */
-#line 206 "parser.y"
+#line 206 "parser/parser.y"
 
 
 int main(int argc, char *argv[]) {

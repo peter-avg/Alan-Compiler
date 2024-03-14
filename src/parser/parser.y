@@ -5,12 +5,12 @@
 #include <string>
 #include "../lexer/lexer.h"
 #include "../ast/ast.hpp"
-
+#include "../lexer/correcting.hpp"
 
 #define YYDEBUG 1
 extern FILE* yyin;
 extern int line_number;
-//extern int yylex();
+extern int yylex();
 %}
 
 %union {
@@ -18,7 +18,7 @@ extern int line_number;
     ASTList *al;
     int ival;
     char cval;
-    char *sval;
+    std::string sval;
 }
 
 
@@ -111,7 +111,7 @@ cond
     ;
 
 l_value
-    : T_string          { $$ = new ASTPtr(std::make_shared<String>($1));       }
+    : T_string          { $$ = new ASTPtr(std::make_shared<String>(*$1));       }
     | T_id '[' expr ']' { $$ = new ASTPtr(std::make_shared<LValue>($1, *$3));   }
     | T_id              { $$ = new ASTPtr(std::make_shared<LValue>($1));       }
     ;
@@ -159,7 +159,7 @@ stmt_list
     ;
 
 compound_stmt
-    : '{' stmt_list '}' { $$ = new ASTPtr(std::make_shared<Block>()); }
+    : '{' stmt_list '}' { $$ = new ASTPtr(std::make_shared<Block>(*$2)); }
     ;
 
 
