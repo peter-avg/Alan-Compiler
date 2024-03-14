@@ -1,11 +1,14 @@
 %{
-
 #include <iostream>
 #include <cstdlib>
 #include <string>
 #include "../lexer/lexer.h"
+#include "../types/types.hpp"
 #include "../ast/ast.hpp"
+<<<<<<< HEAD
 #include "../lexer/correcting.hpp"
+=======
+>>>>>>> 284d4ed1140de7d3980610015d22229adb975fdd
 
 #define YYDEBUG 1
 extern FILE* yyin;
@@ -14,8 +17,9 @@ extern int yylex();
 %}
 
 %union {
-    ASTPtr *a;
-    ASTList *al;
+    ast::ASTPtr *a;
+    ast::ASTList *al;
+    types::TypePtr *tp;
     int ival;
     char cval;
     std::string sval;
@@ -55,9 +59,9 @@ extern int yylex();
  
 
 
-%type <a> data_type
-%type <a> type
-%type <a> r_type
+%type <tp> data_type
+%type <tp> type
+%type <tp> r_type
 %type <a> cond
 %type <a> l_value
 %type <a> expr
@@ -81,91 +85,103 @@ extern int yylex();
 %%
 
 data_type
-    : T_int     { $$ = new ASTPtr(std::make_shared<Int>());  }
-    | T_byte    { $$ = new ASTPtr(std::make_shared<Byte>()); }
+    : T_int     { $$ = &types::intType;  }
+    | T_byte    { $$ = &types::byteType; }
     ;
 
 type
-    : data_type '[' ']' { $$ = new ASTPtr(std::make_shared<Array>(*$1)); }
-    | data_type         { $$ = $1;                                      }
+    : data_type '[' ']' { $$ = new types::TypePtr(std::make_shared<types::ArrayType>(*$1)); }
+    | data_type         { $$ = $1;                                               }
     ;
 
 r_type
     : data_type         { $$ = $1;                                   }
-    | "proc"            { $$ = new ASTPtr(std::make_shared<Type>()); } 
+    | "proc"            { $$ = new types::TypePtr(std::make_shared<types::VoidType>()); } 
     ;
 
 cond
-    : "true"            { $$ = new ASTPtr(std::make_shared<Cond>("true"));       }
-    | "false"           { $$ = new ASTPtr(std::make_shared<Cond>("false"));      }
+    : "true"            { $$ = new ast::ASTPtr(std::make_shared<ast::Cond>("true"));       }
+    | "false"           { $$ = new ast::ASTPtr(std::make_shared<ast::Cond>("false"));      }
     | '(' cond ')'      { $$ = $2;                                              }
     | '!' cond          { $$ = $2;                                              }
-    | expr '<' expr     { $$ = new ASTPtr(std::make_shared<Cond>("<", *$1, *$3));  }
-    | expr '>' expr     { $$ = new ASTPtr(std::make_shared<Cond>(">", *$1, *$3));  }
-    | expr "==" expr    { $$ = new ASTPtr(std::make_shared<Cond>("==", *$1, *$3)); }
-    | expr "!=" expr    { $$ = new ASTPtr(std::make_shared<Cond>("!=", *$1, *$3)); }
-    | expr "<=" expr    { $$ = new ASTPtr(std::make_shared<Cond>("<=", *$1, *$3)); }
-    | expr ">=" expr    { $$ = new ASTPtr(std::make_shared<Cond>(">=", *$1, *$3)); }
-    | cond '&' cond     { $$ = new ASTPtr(std::make_shared<Cond>("&", *$1, *$3));  }
-    | cond '|' cond     { $$ = new ASTPtr(std::make_shared<Cond>("|", *$1, *$3));  }
+    | expr '<' expr     { $$ = new ast::ASTPtr(std::make_shared<ast::Cond>("<", *$1, *$3));  }
+    | expr '>' expr     { $$ = new ast::ASTPtr(std::make_shared<ast::Cond>(">", *$1, *$3));  }
+    | expr "==" expr    { $$ = new ast::ASTPtr(std::make_shared<ast::Cond>("==", *$1, *$3)); }
+    | expr "!=" expr    { $$ = new ast::ASTPtr(std::make_shared<ast::Cond>("!=", *$1, *$3)); }
+    | expr "<=" expr    { $$ = new ast::ASTPtr(std::make_shared<ast::Cond>("<=", *$1, *$3)); }
+    | expr ">=" expr    { $$ = new ast::ASTPtr(std::make_shared<ast::Cond>(">=", *$1, *$3)); }
+    | cond '&' cond     { $$ = new ast::ASTPtr(std::make_shared<ast::Cond>("&", *$1, *$3));  }
+    | cond '|' cond     { $$ = new ast::ASTPtr(std::make_shared<ast::Cond>("|", *$1, *$3));  }
     ;
 
 l_value
+<<<<<<< HEAD
     : T_string          { $$ = new ASTPtr(std::make_shared<String>(*$1));       }
     | T_id '[' expr ']' { $$ = new ASTPtr(std::make_shared<LValue>($1, *$3));   }
     | T_id              { $$ = new ASTPtr(std::make_shared<LValue>($1));       }
+=======
+    : T_string          { $$ = new ast::ASTPtr(std::make_shared<ast::String>($1));       }
+    | T_id '[' expr ']' { $$ = new ast::ASTPtr(std::make_shared<ast::LValue>($1, *$3));   }
+    | T_id              { $$ = new ast::ASTPtr(std::make_shared<ast::LValue>($1));       }
+>>>>>>> 284d4ed1140de7d3980610015d22229adb975fdd
     ;
 
 expr
-    : T_char            { $$ = new ASTPtr(std::make_shared<Char>($1));           }
-    | T_const           { $$ = new ASTPtr(std::make_shared<Const>($1));          } 
+    : T_char            { $$ = new ast::ASTPtr(std::make_shared<ast::Char>($1));           }
+    | T_const           { $$ = new ast::ASTPtr(std::make_shared<ast::Const>($1));          } 
     | l_value           { $$ = $1;                                               }
     | '(' expr ')'      { $$ = $2;                                               }
     | func_call         { $$ = $1;                                               }
-    | '+' expr          { $$ = new ASTPtr(std::make_shared<BinOp>('+', *$2));     }
-    | '-' expr          { $$ = new ASTPtr(std::make_shared<BinOp>('-', *$2));     }
-    | expr '+' expr     { $$ = new ASTPtr(std::make_shared<BinOp>('+', *$1, *$3)); }
-    | expr '-' expr     { $$ = new ASTPtr(std::make_shared<BinOp>('-', *$1, *$3)); }
-    | expr '*' expr     { $$ = new ASTPtr(std::make_shared<BinOp>('*', *$1, *$3)); }
-    | expr '/' expr     { $$ = new ASTPtr(std::make_shared<BinOp>('/', *$1, *$3)); }
-    | expr '%' expr     { $$ = new ASTPtr(std::make_shared<BinOp>('%', *$1, *$3)); }
+    | '+' expr          { $$ = new ast::ASTPtr(std::make_shared<ast::BinOp>('+', *$2));     }
+    | '-' expr          { $$ = new ast::ASTPtr(std::make_shared<ast::BinOp>('-', *$2));     }
+    | expr '+' expr     { $$ = new ast::ASTPtr(std::make_shared<ast::BinOp>('+', *$1, *$3)); }
+    | expr '-' expr     { $$ = new ast::ASTPtr(std::make_shared<ast::BinOp>('-', *$1, *$3)); }
+    | expr '*' expr     { $$ = new ast::ASTPtr(std::make_shared<ast::BinOp>('*', *$1, *$3)); }
+    | expr '/' expr     { $$ = new ast::ASTPtr(std::make_shared<ast::BinOp>('/', *$1, *$3)); }
+    | expr '%' expr     { $$ = new ast::ASTPtr(std::make_shared<ast::BinOp>('%', *$1, *$3)); }
     ;
 
 
 expr_list 
-    :                      { $$ = new ASTList();                    }
-    | expr_list ',' expr   { $1->push_back(*$3); $$ = $1;            }
-    | expr                 { $$ = new ASTList(); $$->push_back(*$1); }
+    :                      { $$ = new ast::ASTList();                     }
+    | expr_list ',' expr   { $1->push_back(*$3); $$ = $1;                 }
+    | expr                 { $$ = new ast::ASTList(); $$->push_back(*$1); }
     ;
 
 func_call
-    : T_id '(' expr_list ')' { $$ = new ASTPtr(std::make_shared<Call>($1, *$3)); }
+    : T_id '(' expr_list ')' { $$ = new ast::ASTPtr(std::make_shared<ast::Call>($1, *$3)); }
     ;
 
 stmt
     : ';'                                   { $$ = nullptr;            }
-    | l_value '=' expr ';'                  { $$ = new ASTPtr(std::make_shared<Assign>(*$1, *$3)); }
+    | l_value '=' expr ';'                  { $$ = new ast::ASTPtr(std::make_shared<ast::Assign>(*$1, *$3)); }
     | compound_stmt                         { $$ = $1;                 }
     | func_call ';'                         { $$ = $1;                 }
-    | "if" '(' cond ')' stmt                { $$ = new ASTPtr(std::make_shared<If>(*$3, *$5));     }
-    | "if" '(' cond ')' stmt "else" stmt    { $$ = new ASTPtr(std::make_shared<If>(*$3, *$5, *$7)); }
-    | "while" '(' cond ')' stmt             { $$ = new ASTPtr(std::make_shared<While>(*$3, *$5));  }
-    | "return" expr ';'                     { $$ = new ASTPtr(std::make_shared<Return>(*$2));     }
+    | "if" '(' cond ')' stmt                { $$ = new ast::ASTPtr(std::make_shared<ast::If>(*$3, *$5));     }
+    | "if" '(' cond ')' stmt "else" stmt    { $$ = new ast::ASTPtr(std::make_shared<ast::If>(*$3, *$5, *$7)); }
+    | "while" '(' cond ')' stmt             { $$ = new ast::ASTPtr(std::make_shared<ast::While>(*$3, *$5));  }
+    | "return" expr ';'                     { $$ = new ast::ASTPtr(std::make_shared<ast::Return>(*$2));     }
     ;
-
+;
 stmt_list
-    :                   { $$ = new ASTList();      }
+    :                   { $$ = new ast::ASTList();      }
     | stmt_list stmt    { $1->push_back(*$2); $$ = $1; }
     ;
 
 compound_stmt
+<<<<<<< HEAD
     : '{' stmt_list '}' { $$ = new ASTPtr(std::make_shared<Block>(*$2)); }
+=======
+    : '{' stmt_list '}' { $$ = new ast::ASTPtr(std::make_shared<ast::Block>(*$2)); }
+>>>>>>> 284d4ed1140de7d3980610015d22229adb975fdd
     ;
 
 
 var_def
-    : T_id ':' data_type';'                  { $$ = new ASTPtr(std::make_shared<Var>($1, *$3));     }
-    | T_id ':' data_type '[' T_const ']' ';' { $$ = new ASTPtr(std::make_shared<Var>($1, *$3, $5)); }
+    : T_id ':' data_type';'                  
+    { $$ = new ast::ASTPtr(std::make_shared<ast::Var>($1, *$3));     }
+    | T_id ':' data_type '[' T_const ']' ';' 
+    { $$ = new ast::ASTPtr(std::make_shared<ast::Var>($1, *$3, $5)); }
     ;
 
 local_def
@@ -174,31 +190,30 @@ local_def
     ;
 
 local_def_list
-    :                          { $$ = new ASTList(); }
+    :                          { $$ = new ast::ASTList(); }
     | local_def_list local_def { $1->push_back(*$2); $$ = $1;                     }
     ;
 
 
 
 fpar_def
-    : T_id ':' "reference" type { $$ = new ASTPtr(std::make_shared<Param>($1, "reference", *$4)); }
-    | T_id ':' type             { $$ = new ASTPtr(std::make_shared<Param>($1, "value" , *$3));    }
+    : T_id ':' "reference" type { $$ = new ast::ASTPtr(std::make_shared<ast::Param>($1, "reference", *$4)); }
+    | T_id ':' type             { $$ = new ast::ASTPtr(std::make_shared<ast::Param>($1, "value" , *$3));    }
     ;
 
 fpar_list
-    :                        { $$ = new ASTList(); }
+    :                        { $$ = new ast::ASTList(); }
     | fpar_list ',' fpar_def { $1->push_back(*$3); $$ = $1;                     }
-    | fpar_def               { $$ = new ASTList(); $$->push_back(*$1); }
+    | fpar_def               { $$ = new ast::ASTList(); $$->push_back(*$1); }
     ;
 
 func_def
     : T_id '(' fpar_list ')' ':' r_type local_def_list compound_stmt 
-    { std::cout << *$6 << std::endl;
-    $$ = new ASTPtr(std::make_shared<Func>($1, *$3, *$6, *$7, *$8)); }
+    { $$ = new ast::ASTPtr(std::make_shared<ast::Func>($1, *$3, *$6, *$7, *$8)); }
     ;
 
 program
-: func_def { std::cout << "AST: " << *(*$1) << std::endl;
+    : func_def { std::cout << "AST: " << *(*$1) << std::endl;
                 if($1 == nullptr) std::cout << "shit" << std::endl;
                 $$ = $1;}
     ;
