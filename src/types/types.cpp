@@ -1,4 +1,5 @@
 #include "types.hpp"
+#include <memory>
 
 namespace types {
 

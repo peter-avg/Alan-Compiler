@@ -444,10 +444,11 @@ char *yytext;
 #line 2 "lexer.l"
 #define T_eof 0
 //#define YYSTYPE union yylval
+#include "../types/types.hpp"
 #include "../ast/ast.hpp"
 #include "../parser/parser.tab.h"
 //#include "../parser/parser.hpp"
-#include "correcting.hpp"
+#include "../correcting/correcting.hpp"
 #include "../lexer/lexer.h"
 #include "../errors/errors.hpp"
 #include <cstdlib>
@@ -459,7 +460,7 @@ std::string file_name;
 
 #define COMMENT 1
 
-#line 463 "lex.yy.c"
+#line 464 "lex.yy.c"
 
 /* Macros after this point can all be overridden by user definitions in
  * section 1.
@@ -610,9 +611,9 @@ YY_DECL
 	register char *yy_cp, *yy_bp;
 	register int yy_act;
 
-#line 28 "lexer.l"
+#line 29 "lexer.l"
 
-#line 616 "lex.yy.c"
+#line 617 "lex.yy.c"
 
 	if ( yy_init )
 		{
@@ -697,160 +698,167 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 29 "lexer.l"
+#line 30 "lexer.l"
 { return T_byte; }
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 30 "lexer.l"
+#line 31 "lexer.l"
 { return T_else; }
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 31 "lexer.l"
+#line 32 "lexer.l"
 { return T_false; }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 32 "lexer.l"
+#line 33 "lexer.l"
 { return T_if; }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 33 "lexer.l"
+#line 34 "lexer.l"
 { return T_int; }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 34 "lexer.l"
+#line 35 "lexer.l"
 { return T_proc; }
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 35 "lexer.l"
+#line 36 "lexer.l"
 { return T_reference; }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 36 "lexer.l"
+#line 37 "lexer.l"
 { return T_return; }
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 37 "lexer.l"
+#line 38 "lexer.l"
 { return T_while; }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 38 "lexer.l"
+#line 39 "lexer.l"
 { return T_true; }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 41 "lexer.l"
+#line 42 "lexer.l"
 { return yytext[0];}
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 42 "lexer.l"
+#line 43 "lexer.l"
 { return T_equal;}
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 43 "lexer.l"
+#line 44 "lexer.l"
 { return T_notequal;}
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 44 "lexer.l"
+#line 45 "lexer.l"
 { return T_lessequal;}
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 45 "lexer.l"
+#line 46 "lexer.l"
 { return T_greaterequal;}
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 47 "lexer.l"
-{ yylval.sval = strdup(yytext); return T_id; }
+#line 48 "lexer.l"
+{   yylval.sval = strdup(yytext);
+                        return T_id; }
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 48 "lexer.l"
-{ yylval.ival = atoi(yytext); return T_const; }
+#line 50 "lexer.l"
+{   yylval.ival = atoi(yytext); 
+                        return T_const; }
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 50 "lexer.l"
-{ yylval.sval = correctString(yytext+1); std::cout << correctString(yytext+1)<<std::endl; return T_string; }
+#line 53 "lexer.l"
+{   std::string current = correctString(yytext+1);
+                                    yylval.sval = current.c_str();
+                                    std::cout << correctString(yytext+1)<<std::endl; 
+                                    return T_string; }
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 51 "lexer.l"
-{ int next = 0; yylval.cval =  correctChars(yytext+1, next); std::cout << correctChars(yytext+1, next) << std::endl; return T_char; }
+#line 57 "lexer.l"
+{    int next = 0;
+                                    yylval.cval =  correctChars(yytext+1, next); 
+                                    std::cout << correctChars(yytext+1, next) << std::endl; return T_char; }
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 53 "lexer.l"
+#line 61 "lexer.l"
 { line_number++; }
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 54 "lexer.l"
+#line 62 "lexer.l"
 { BEGIN(COMMENT); }
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 55 "lexer.l"
+#line 63 "lexer.l"
 { if (nested_comments == 0) BEGIN(INITIAL); else nested_comments--; }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 56 "lexer.l"
+#line 64 "lexer.l"
 { nested_comments++; }
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 57 "lexer.l"
+#line 65 "lexer.l"
 { line_number++; }
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 58 "lexer.l"
+#line 66 "lexer.l"
 { /* ignore alone '*' */ }
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 59 "lexer.l"
+#line 67 "lexer.l"
 { /* ignore alone '(' that are not followed by '*' */}
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 60 "lexer.l"
+#line 68 "lexer.l"
 { /* ignore any number of symbols that's not '\n' or '(*' */}
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 62 "lexer.l"
+#line 70 "lexer.l"
 { /* ignore whitespace */ }
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 63 "lexer.l"
+#line 71 "lexer.l"
 { ++line_number; }
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 64 "lexer.l"
+#line 72 "lexer.l"
 { RaiseTokenError(invalidTokenError_c, yytext[0], yytext[0]); }
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 66 "lexer.l"
+#line 74 "lexer.l"
 ECHO;
 	YY_BREAK
-#line 854 "lex.yy.c"
+#line 862 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(COMMENT):
 	yyterminate();
@@ -1737,12 +1745,13 @@ int main()
 	return 0;
 	}
 #endif
-#line 66 "lexer.l"
+#line 74 "lexer.l"
 
 
 void yyerror(const char *s) {
 
 }
+
 /*
 int main() {
     int token;
@@ -1750,5 +1759,4 @@ int main() {
         token = yylex();
         printf("token=%d, lexeme=\"%s\"\n", token, yytext);
     } while (token != T_eof);
-}
-*/ 
+}*/

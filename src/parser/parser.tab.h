@@ -68,18 +68,19 @@ typedef union YYSTYPE
 {
 
 /* Line 1676 of yacc.c  */
-#line 16 "parser.y"
+#line 17 "parser.y"
 
-    ASTPtr *a;
-    ASTList *al;
+    ast::ASTPtr *a;
+    ast::ASTList *al;
+    types::TypePtr *tp;
     int ival;
     char cval;
-    char *sval;
+    const char *sval;
 
 
 
 /* Line 1676 of yacc.c  */
-#line 83 "parser.tab.h"
+#line 84 "parser.tab.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */

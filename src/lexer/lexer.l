@@ -1,10 +1,11 @@
 %{
 #define T_eof 0
 //#define YYSTYPE union yylval
+#include "../types/types.hpp"
 #include "../ast/ast.hpp"
 #include "../parser/parser.tab.h"
 //#include "../parser/parser.hpp"
-#include "correcting.hpp"
+#include "../correcting/correcting.hpp"
 #include "../lexer/lexer.h"
 #include "../errors/errors.hpp"
 #include <cstdlib>
@@ -44,11 +45,18 @@ N [a-fA-F0-9]
 "<="                                    { return T_lessequal;}
 ">="                                    { return T_greaterequal;}
 
-{L}({L}|{D})*       { yylval.sval = strdup(yytext); return T_id; }
-{D}+                { yylval.ival = atoi(yytext); return T_const; }
+{L}({L}|{D})*       {   yylval.sval = strdup(yytext);
+                        return T_id; }
+{D}+                {   yylval.ival = atoi(yytext); 
+                        return T_const; }
 
-\"([^\"])*\"                    { yylval.sval = correctString(yytext+1); std::cout << correctString(yytext+1)<<std::endl; return T_string; }
-\'({L}|\\(x{N}{N}|{E}))\'      { int next = 0; yylval.cval =  correctChars(yytext+1, next); std::cout << correctChars(yytext+1, next) << std::endl; return T_char; }
+\"([^\"])*\"                    {   std::string current = correctString(yytext+1);
+                                    yylval.sval = current.c_str();
+                                    std::cout << correctString(yytext+1)<<std::endl; 
+                                    return T_string; }
+\'({L}|\\(x{N}{N}|{E}))\'      {    int next = 0;
+                                    yylval.cval =  correctChars(yytext+1, next); 
+                                    std::cout << correctChars(yytext+1, next) << std::endl; return T_char; }
 
 \-\-.*\n            { line_number++; }
 "(*"                { BEGIN(COMMENT); }
@@ -68,6 +76,7 @@ N [a-fA-F0-9]
 void yyerror(const char *s) {
 
 }
+
 /*
 int main() {
     int token;
@@ -75,5 +84,4 @@ int main() {
         token = yylex();
         printf("token=%d, lexeme=\"%s\"\n", token, yytext);
     } while (token != T_eof);
-}
-*/ 
+}*/

@@ -73,9 +73,13 @@ namespace ast {
             Block(ASTList ast) : list(ast) {}
             void append(ASTPtr s) { list.push_back(s); }
             virtual void printOn(std::ostream &out) const override {
+                bool flag = true;
                 out << "Block(";
                 for (ASTPtr s : list){
-                    out << *s << ", ";
+                    if (!flag)
+                        out << ", ";
+                    out << *s;
+                    flag = false;
                 }
                 out << ")";
             }

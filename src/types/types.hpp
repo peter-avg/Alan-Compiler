@@ -2,7 +2,7 @@
 #define __TYPES_HPP__
 
 #include <iostream>
-
+#include <memory>
 namespace types {
 
 #define INT_SIZE 4

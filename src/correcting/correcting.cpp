@@ -41,8 +41,8 @@ char correctChars(char *c, int& next) {
         }
     }
 }
-
-/*char * correctString(char *s) {
+/*
+char * correctString(char *s) {
     int next;
     int i = 0;
     int size = strlen(s);
@@ -58,6 +58,7 @@ char correctChars(char *c, int& next) {
     *current = '\0';
     return result;
 }
+
 */   
 
 std::string correctString(char *s) {

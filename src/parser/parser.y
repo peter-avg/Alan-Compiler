@@ -5,9 +5,10 @@
 #include "../lexer/lexer.h"
 #include "../types/types.hpp"
 #include "../ast/ast.hpp"
-#include "../lexer/correcting.hpp"
+#include "../correcting/correcting.hpp"
 
 #define YYDEBUG 1
+//%option noyywrap nodefault;
 extern FILE* yyin;
 extern int line_number;
 extern int yylex();
@@ -19,7 +20,7 @@ extern int yylex();
     types::TypePtr *tp;
     int ival;
     char cval;
-    std::string sval;
+    const char *sval;
 }
 
 
