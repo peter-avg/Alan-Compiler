@@ -1,4 +1,4 @@
-#include "table.hpp"
+#include "symbol.hpp"
 
 namespace sym {
 

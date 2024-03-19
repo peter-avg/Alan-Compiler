@@ -1,10 +1,11 @@
-#ifndef __TABLE_HPP__
-#define __TABLE_HPP__
+#ifndef __SYMBOL_HPP__
+#define __SYMBOL_HPP__
 
 #include <map>
 #include <vector>
 #include <memory>
 #include <string>
+#include "../types/types.hpp"
 
 namespace sym {
 
@@ -29,6 +30,17 @@ namespace sym {
             std::string id;
             int level;
     };
+
+    class ParamEntry : public Entry {
+        public:
+            ParamEntry(const std::string &id, int level, types::TypePtr type) : id(id), level(level), type(type) {};
+
+        private:
+            std::string id;
+            int level;
+            types::TypePtr type;
+    };
+
 
     /**************************************************************************/
     /*                                                                        */
@@ -75,4 +87,4 @@ namespace sym {
 
 }
 
-#endif // __TABLE_HPP__
+#endif // __SYMBOL_HPP__

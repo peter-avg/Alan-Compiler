@@ -22,10 +22,17 @@ typedef enum {
     charTypeError_c,
 } TypeErrorCodes;
 
+typedef enum {
+    entryExistsError_c,
+
+} SemanticErrorCodes;
+
 std::string newTokenError(int code);
 std::string newTypeError(int code);
+std::string newSemanticError(int code);
 
 void RaiseTypeError(int code);
 void RaiseTokenError(int code, char token, int ascii);
+void RaiseSemanticError(int code);
 
 #endif // __ERRORS_HPP__
