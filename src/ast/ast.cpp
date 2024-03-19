@@ -3,6 +3,14 @@
 #include "../symbol/symbol.hpp"
 
 namespace ast {
+    
+    int ntabs = 0;
+
+    void printTabs(std::ostream &out) {
+        for (int i = 0; i < ntabs; i++) {
+            out << "\t";
+        }
+    }
 
     /**********************************************************************************
      *                                                                                *
@@ -15,19 +23,36 @@ namespace ast {
     }
 
     void Block::printOn(std::ostream &out) const {
+        ntabs++;
         bool flag = true;
-        out << "Block{";
+        printTabs(out);
+        out << "Block{\n";
         for (ASTPtr s : list){
             if (!flag)
                 out << ", ";
             out << *s;
+
+            ntabs++;
+            printTabs(out);
+            ntabs--;
+
+            out << "\n";
+
             flag = false;
         }
-        out << "}";
+        out << "\n}";
+        ntabs--;
     }
 
     void Func::printOn(std::ostream &out) const {
-        out << "Func[Name:" << id << ",Params: ";
+
+        printTabs(out);
+        out << "Func[\n";
+        ntabs++;
+        printTabs(out);
+        out << "Name:" << id << ",\n";
+        printTabs(out);
+        out << "Params: ";
 
         for (auto p : param_list) {
             out << *p << ", ";
@@ -37,15 +62,26 @@ namespace ast {
             out << "None, ";
         }
 
-        out << "Return Type: " << *retType << ", Defs: ";
+        out << "\n";
+
+        printTabs(out);
+
+        out << "Return Type: " << *retType << ",\n";
+        printTabs(out);
+        out <<  "Defs: ";
 
         for (auto p : def_list) {
             out << *p << ", ";
         }
 
+        out << ",\n";
+        printTabs(out);
         out << "Body: ";
 
-        out << *compound << "]";
+        ntabs--;
+        printTabs(out);
+        out << *compound << "\n]";
+        ntabs--;
     }
 
     void Const::printOn(std::ostream &out) const {
@@ -117,14 +153,6 @@ namespace ast {
 
     void Assign::printOn(std::ostream &out) const {
         out << "Assign(" << *lvalue << ", " << *expr << ")";
-    }
-
-    void Int::printOn(std::ostream &out) const {
-        out << "Int()";
-    }
-
-    void Byte::printOn(std::ostream &out) const {
-        out << "Byte()";
     }
 
     /**********************************************************************************

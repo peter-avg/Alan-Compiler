@@ -1,6 +1,6 @@
 OBJS = ./errors/errors.cpp ./lexer/lexer.cpp ./library/library.cpp \
 	   ./parser/parser.cpp ./correcting/correcting.cpp ./types/types.cpp \
-	   ./symbol/symbol.cpp ./ast/ast.cpp
+	   ./symbol/symbol.cpp ./ast/ast.cpp ./ast/interpret.cpp
 CC = g++
 CPP = c++14
 FLAGS = -Wfatal-errors -std=$(CPP)
