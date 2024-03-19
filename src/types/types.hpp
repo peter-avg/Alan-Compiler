@@ -19,9 +19,7 @@ namespace types {
         public:
             Type() {}
             virtual ~Type() = default;
-            
             virtual void printOn(std::ostream &out) const = 0;
-
     };
 
     inline std::ostream &operator<<(std::ostream &out, const Type &type) {
@@ -34,7 +32,7 @@ namespace types {
             VoidType() {}
             virtual ~VoidType() = default;
             virtual void printOn(std::ostream &out) const {
-                out << "Type(Void)";
+                out << "Void";
             };
     };
 
@@ -42,15 +40,12 @@ namespace types {
         public:
             IntType() {}
             virtual ~IntType() = default;
-
             virtual void printOn(std::ostream &out) const {
-                out << "Type(Int)";
+                out << "Int";
             };
-
             int getSize() const {
                 return size;
             };
-
         private:
             int size = INT_SIZE;
     };
@@ -59,15 +54,12 @@ namespace types {
         public:
             ByteType() {}
             virtual ~ByteType() = default;
-
             virtual void printOn(std::ostream &out) const {
-                out << "Type(Byte)";
+                out << "Byte";
             };
-
             int getSize() const {
                 return size;
             };
-
         private:
             int size = BYTE_SIZE;
     };
@@ -77,13 +69,11 @@ namespace types {
         public:
             ArrayType(TypePtr type = nullptr, int size = 0) : type(type), size(size) {}
             virtual ~ArrayType() = default;
-
             virtual void printOn(std::ostream &out) const {
                 out << "Type(Array(";
                 out << *type;
-                out << ", " << size << "))";
+                out << ":Size( " << size << ")))";
             };
-
             TypePtr getType() const { 
                 return type;
             };

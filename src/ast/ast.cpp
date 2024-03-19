@@ -11,35 +11,41 @@ namespace ast {
      * ********************************************************************************/
 
     void Param::printOn(std::ostream &out) const {
-        out << "Param(" << id << ", " << pass << ", " << *type << ")" ;
+        out << "Param(Id:" << id << ",Passed as: " << pass << ", " << *type << ")" ;
     }
 
     void Block::printOn(std::ostream &out) const {
         bool flag = true;
-        out << "Block(";
+        out << "Block{";
         for (ASTPtr s : list){
             if (!flag)
                 out << ", ";
             out << *s;
             flag = false;
         }
-        out << ")";
+        out << "}";
     }
 
     void Func::printOn(std::ostream &out) const {
-        out << "Func(" << id << ",";
+        out << "Func[Name:" << id << ",Params: ";
 
         for (auto p : param_list) {
             out << *p << ", ";
         }
 
-        out << *retType << ",";
+        if (param_list.size() == 0) {
+            out << "None, ";
+        }
+
+        out << "Return Type: " << *retType << ", Defs: ";
 
         for (auto p : def_list) {
             out << *p << ", ";
         }
 
-        out << *compound << ")";
+        out << "Body: ";
+
+        out << *compound << "]";
     }
 
     void Const::printOn(std::ostream &out) const {
@@ -48,9 +54,9 @@ namespace ast {
 
     void Var::printOn(std::ostream &out) const {
         if (value == 0) { 
-            out << "Var(" << id << ", " << *type << ")";
+            out << "Var(" << id << ": " << *type << ")";
         } else {
-            out << "Var(" << id << ", " << *type << ", " << value << ")";
+            out << "Var(" << id << ": " << *type << "= " << value << ")";
         }
     }
 
