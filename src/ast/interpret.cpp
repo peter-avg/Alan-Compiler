@@ -27,6 +27,7 @@ namespace ast {
     }
 
     int BinOp::eval() const {
+
         if (expr2 != nullptr) {
             switch(op) {
                 case '+': return expr1->eval() + expr2->eval();
@@ -43,7 +44,19 @@ namespace ast {
         return 0;
     }
 
+    int Const::eval() const {
+        return num;
+    }
+
+    int Var::eval() const {
+        return value;
+    }
+
     int LValue::eval() const {
+        return expr->eval();
+    }
+
+    int Return::eval() const {
         return expr->eval();
     }
 
@@ -55,6 +68,8 @@ namespace ast {
 
 
     void Block::run() const {
+
+
         for (auto &stmt : list) {
             stmt->run();
         }
@@ -66,7 +81,9 @@ namespace ast {
 
 
     void While::run() const {
-
+        while (cond->eval()) {
+            stmt->run();
+        }
     }
 
     void If::run() const {
@@ -83,11 +100,6 @@ namespace ast {
         }
     }
 
-    void Return::run() const {
-        expr->eval();
-    }
-
-
 
     void Call::run() const {
         for (auto &item : block) {
@@ -96,8 +108,8 @@ namespace ast {
     }
 
     void Assign::run() const {
-        lvalue->eval();
-        expr->eval();
+
+
     }
 
 }

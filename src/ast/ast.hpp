@@ -1,4 +1,5 @@
-#ifndef __AST_HPP__ #define __AST_HPP__
+#ifndef __AST_HPP__
+#define __AST_HPP__
 
 // #include <cmath>
 #include <iostream>
@@ -92,7 +93,7 @@ namespace ast {
         public:
             Const(int n): num(n) {}
             virtual void printOn(std::ostream &out) const override;
-            virtual int eval() const override { return 0; };
+            virtual int eval() const override;
             // virtual void sem(sym::Table table) override;
 
         private:
@@ -101,9 +102,9 @@ namespace ast {
 
     class Var: public Expr {
         public:
-            Var(std::string id, types::TypePtr t, int c = 0) : id(id), type(t), value(c) {}
+            Var(std::string id, types::TypePtr t, int c = INT_MAX) : id(id), type(t), value(c) {}
             virtual void printOn(std::ostream &out) const override;
-            virtual int eval() const override { return 0; }
+            virtual int eval() const override;
             // virtual void sem(sym::Table table) override;
 
         private: 
@@ -150,11 +151,11 @@ namespace ast {
             ASTPtr stmt2;
     };
 
-    class Return: public Stmt {
+    class Return: public Expr {
         public: 
             Return(ASTPtr e): expr(e) {}
             virtual void printOn(std::ostream &out) const override;
-            virtual void run() const override;
+            virtual int eval() const override;
             // virtual void sem(sym::Table table) override;
 
         private:
