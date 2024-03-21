@@ -3,8 +3,8 @@
 //#define YYSTYPE union yylval
 #include "../types/types.hpp"
 #include "../ast/ast.hpp"
-#include "../parser/parser.tab.h"
-//#include "../parser/parser.hpp"
+//#include "../parser/parser.tab.h"
+#include "../parser/parser.hpp"
 #include "../correcting/correcting.hpp"
 #include "../lexer/lexer.h"
 #include "../errors/errors.hpp"
@@ -27,6 +27,7 @@ N [a-fA-F0-9]
 %option noyywrap
 
 %%
+"Print"     { return T_print; }
 "byte"      { return T_byte; }
 "else"      { return T_else; }
 "false"     { return T_false; }
@@ -50,13 +51,11 @@ N [a-fA-F0-9]
 {D}+                {   yylval.ival = atoi(yytext); 
                         return T_const; }
 
-\"([^\"])*\"                    {   std::string current = correctString(yytext+1);
-                                    yylval.sval = current.c_str();
-                                    std::cout << correctString(yytext+1)<<std::endl; 
+\"(\\.|[^\\"])*\"                    {   std::string current = correctString(yytext+1);
+                                    yylval.sval = strdup(current.c_str());
                                     return T_string; }
 \'({L}|\\(x{N}{N}|{E}))\'      {    int next = 0;
-                                    yylval.cval =  correctChars(yytext+1, next); 
-                                    std::cout << correctChars(yytext+1, next) << std::endl; return T_char; }
+                                    yylval.cval =  correctChars(yytext+1, next); return T_char; }
 
 \-\-.*\n            { line_number++; }
 "(*"                { BEGIN(COMMENT); }

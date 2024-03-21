@@ -93,6 +93,13 @@ namespace sym {
                 return level;
             }
 
+            int getValue() const override {
+                return result;
+            }
+
+            void setValue(int value) override {
+                result = value;
+            }
         private:
             std::string id;
             types::TypePtr type;

@@ -6,6 +6,7 @@
 #include "../types/types.hpp"
 #include "../ast/ast.hpp"
 #include "../correcting/correcting.hpp"
+#include "../symbol/symbol.hpp"
 
 #define YYDEBUG 1
 //%option noyywrap nodefault;
@@ -38,6 +39,7 @@ extern int yylex();
 %token T_notequal "!="
 %token T_lessequal "<="
 %token T_greaterequal ">=" 
+%token T_print "Print"
 
 %token<sval> T_id
 %token<ival> T_const
@@ -119,7 +121,7 @@ l_value
     ;
 
 expr
-    : T_char            { $$ = new ast::ASTPtr(std::make_shared<ast::Char>($1));           }
+    : T_char            { $$ = new ast::ASTPtr(std::make_shared<ast::Char>($1));          }
     | T_const           { $$ = new ast::ASTPtr(std::make_shared<ast::Const>($1));          } 
     | l_value           { $$ = $1;                                               }
     | '(' expr ')'      { $$ = $2;                                               }
@@ -146,6 +148,7 @@ func_call
 
 stmt
     : ';'                                   { $$ = nullptr;            }
+    | "Print" expr ';'                        { $$ = new ast::ASTPtr(std::make_shared<ast::Print>(*$2)); }
     | l_value '=' expr ';'                  { $$ = new ast::ASTPtr(std::make_shared<ast::Assign>(*$1, *$3)); }
     | compound_stmt                         { $$ = $1;                 }
     | func_call ';'                         { $$ = $1;                 }
@@ -154,7 +157,7 @@ stmt
     | "while" '(' cond ')' stmt             { $$ = new ast::ASTPtr(std::make_shared<ast::While>(*$3, *$5));  }
     | "return" expr ';'                     { $$ = new ast::ASTPtr(std::make_shared<ast::Return>(*$2));     }
     ;
-;
+
 stmt_list
     :                   { $$ = new ast::ASTList();      }
     | stmt_list stmt    { $1->push_back(*$2); $$ = $1; }
@@ -167,9 +170,9 @@ compound_stmt
 
 var_def
     : T_id ':' data_type';'                  
-    { $$ = new ast::ASTPtr(std::make_shared<ast::Var>($1, *$3));     }
+    { $$ = new ast::ASTPtr(std::make_shared<ast::VarDef>($1, *$3));     }
     | T_id ':' data_type '[' T_const ']' ';' 
-    { $$ = new ast::ASTPtr(std::make_shared<ast::Var>($1, *$3, $5)); }
+    { $$ = new ast::ASTPtr(std::make_shared<ast::VarDef>($1, *$3, $5)); }
     ;
 
 local_def
@@ -178,8 +181,8 @@ local_def
     ;
 
 local_def_list
-    :                          { $$ = new ast::ASTList(); }
-    | local_def_list local_def { $1->push_back(*$2); $$ = $1;                     }
+    :                          { $$ = new ast::ASTList();     }
+    | local_def_list local_def { $1->push_back(*$2); $$ = $1; }
     ;
 
 
@@ -190,8 +193,8 @@ fpar_def
     ;
 
 fpar_list
-    :                        { $$ = new ast::ASTList(); }
-    | fpar_list ',' fpar_def { $1->push_back(*$3); $$ = $1;                     }
+    :                        { $$ = new ast::ASTList();                     }
+    | fpar_list ',' fpar_def { $1->push_back(*$3); $$ = $1;                 }
     | fpar_def               { $$ = new ast::ASTList(); $$->push_back(*$1); }
     ;
 
@@ -201,8 +204,8 @@ func_def
     ;
 
 program
-    : func_def { std::cout << "AST: " << *(*$1) << std::endl;
-                if($1 == nullptr) std::cout << "shit" << std::endl;
+    : func_def {std::cout << *(*$1) << std::endl;
+                std::static_pointer_cast<ast::Func>(*$1)->run();
                 $$ = $1;}
     ;
 
