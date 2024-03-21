@@ -84,7 +84,7 @@ namespace ast {
         out << "Const(" << num << ")";
     }
 
-    void Var::printOn(std::ostream &out) const {
+    void VarDef::printOn(std::ostream &out) const {
         if (value == INT_MAX) { 
             out << "Var(" << id << ": " << *type << ")";
         } else {
@@ -150,6 +150,10 @@ namespace ast {
 
     void Assign::printOn(std::ostream &out) const {
         out << "Assign(" << *lvalue << ", " << *expr << ")";
+    }
+
+    void Print::printOn(std::ostream &out) const {
+        out << "Print(" << *expr << ")";
     }
 
     

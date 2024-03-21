@@ -23,8 +23,10 @@ namespace sym {
         public:
             Entry() {};
             Entry(const std::string &id, int level) : id(id), level(level) {};
-            std::string getId() const;
-            int getLevel() const;
+            virtual std::string getId() const;
+            virtual int getLevel() const;
+            virtual int getValue() const = 0;
+            virtual void setValue(int value) {};
 
         private:
             std::string id;
@@ -33,12 +35,69 @@ namespace sym {
 
     class ParamEntry : public Entry {
         public:
-            ParamEntry(const std::string &id, int level, types::TypePtr type) : id(id), level(level), type(type) {};
+            ParamEntry(const std::string &id, int level, types::TypePtr type) :
+                id(id), level(level), type(type) {};
+
+            virtual std::string getId() const override {
+                return id;
+            }
+
+            virtual int getLevel() const override {
+                return level;
+            }
 
         private:
             std::string id;
             int level;
             types::TypePtr type;
+    };
+
+    class VarEntry : public Entry {
+        public:
+            VarEntry(const std::string &id, int level, types::TypePtr type) :
+                id(id), level(level), type(type) {};
+
+            virtual std::string getId() const override {
+                return id;
+            }
+
+            virtual int getLevel() const override {
+                return level;
+            }
+
+            int getValue() const override {
+                return value;
+            }
+
+            void setValue(int value) override {
+                this->value = value;
+            }
+
+        private:
+            int value;
+            std::string id;
+            int level;
+            types::TypePtr type;
+    };
+
+    class FuncEntry : public Entry {
+        public:
+            FuncEntry(const std::string &id, int level, types::TypePtr type) :
+                id(id), level(level), type(type) {};
+
+            virtual std::string getId() const override {
+                return id;
+            }
+
+            virtual int getLevel() const override {
+                return level;
+            }
+
+        private:
+            std::string id;
+            types::TypePtr type;
+            int level;
+            int result;
     };
 
 
@@ -54,7 +113,7 @@ namespace sym {
 
     class Scope {
         public:
-            Scope(int level, EntryPtr root);
+            Scope(EntryPtr root, int level);
             int getLevel() const;
 
         private:
@@ -79,6 +138,7 @@ namespace sym {
             void insertEntry(EntryPtr entry);
             EntryPtr lookupEntry(EntryPtr entry);
             void removeEntry(EntryPtr entry);
+            int getCurrentScope() const;
 
         private:
             HashTable table;

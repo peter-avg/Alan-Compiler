@@ -10,6 +10,12 @@ extern int line_number;
 extern std::string file_name;
 
 typedef enum {
+    FATAL,
+    WARNING,
+    INFO,
+} Fatality;
+
+typedef enum {
     invalidTokenError_c,
 } TokenErrorCodes;
 
@@ -24,7 +30,8 @@ typedef enum {
 
 typedef enum {
     entryExistsError_c,
-
+    variableExistsError_c,
+    variableNotFoundError_c,
 } SemanticErrorCodes;
 
 std::string newTokenError(int code);
@@ -33,6 +40,6 @@ std::string newSemanticError(int code);
 
 void RaiseTypeError(int code);
 void RaiseTokenError(int code, char token, int ascii);
-void RaiseSemanticError(int code);
+void RaiseSemanticError(int code, Fatality fatality);
 
 #endif // __ERRORS_HPP__

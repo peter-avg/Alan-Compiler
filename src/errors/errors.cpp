@@ -4,6 +4,7 @@
 #include "errors.hpp"
 #include "../colors/colors.hpp"
 
+
 std::string newTokenError(int code) {
     
     std::string message;
@@ -53,6 +54,12 @@ std::string newSemanticError(int code) {
         case entryExistsError_c:
             message = "Entry already exists error";
             break;
+        case variableExistsError_c:
+            message = "Variable already exists error";
+            break;
+        case variableNotFoundError_c:
+            message = "Variable not found error";
+            break;
     }
 
     return message;
@@ -83,7 +90,7 @@ void RaiseTypeError(int code) {
     exit(EXIT_FAILURE);
 }
 
-void RaiseSemanticError(int code) {
+void RaiseSemanticError(int code, Fatality type) {
     std::string message = newSemanticError(code);
     colors::Font green_bold = {colors::Color::GREEN,colors::Style::BOLD};
     colors::Font red_normal = {colors::Color::RED,colors::Style::NORMAL};
@@ -92,4 +99,8 @@ void RaiseSemanticError(int code) {
               << file_name << "}::" << "{Line: " << line_number 
               << "}" << red_normal << "\n SemanticError: " 
               << white_normal << message << std::endl;
+
+    if (type == FATAL) {
+        exit(EXIT_FAILURE);
+    }
 }

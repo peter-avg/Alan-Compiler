@@ -1,12 +1,27 @@
 #include "ast.hpp"
+#include "../errors/errors.hpp"
+#include "../symbol/symbol.hpp"
 
 namespace ast {
+
+    sym::Table vars;
 
     /********************************************************
     *                                                       *
     *                      Evaluation                       *
     *                                                       *
     ********************************************************/
+
+    int LValue::eval() const {
+        sym::EntryPtr entry = std::make_shared<sym::VarEntry>(id, vars.getCurrentScope(), nullptr);
+        entry = vars.lookupEntry(entry);
+
+        if (entry == nullptr) {
+            RaiseSemanticError(variableNotFoundError_c, FATAL);
+        }
+
+        return entry->getValue();
+    }
 
     int Cond::eval() const {
         if (first == nullptr && second == nullptr) {
@@ -48,14 +63,6 @@ namespace ast {
         return num;
     }
 
-    int Var::eval() const {
-        return value;
-    }
-
-    int LValue::eval() const {
-        return expr->eval();
-    }
-
     int Return::eval() const {
         return expr->eval();
     }
@@ -66,15 +73,33 @@ namespace ast {
     *                                                       *
     ********************************************************/
 
+    void VarDef::run() const {
+        sym::EntryPtr entry = std::make_shared<sym::VarEntry>(id, vars.getCurrentScope(), nullptr);
+
+        if (vars.lookupEntry(entry) != nullptr) {
+            RaiseSemanticError(variableExistsError_c, FATAL);
+        }
+
+        vars.insertEntry(entry);
+    }
+
 
     void Block::run() const {
-        for (auto &stmt : list) {
+        for (auto stmt : list) {
             stmt->run();
         }
     }
 
     void Func::run() const {
+
+        sym::EntryPtr entry = std::make_shared<sym::FuncEntry>(id, vars.getCurrentScope(), nullptr);
+
+        vars.openScope(entry);
+        for (auto stmt : def_list) {
+            stmt->run();
+        }
         compound->run();
+        vars.closeScope();
     }
 
 
@@ -98,6 +123,9 @@ namespace ast {
         }
     }
 
+    void Print::run() const {
+        std::cout << expr->eval() << std::endl;
+    }
 
     void Call::run() const {
         for (auto &item : block) {
@@ -106,7 +134,17 @@ namespace ast {
     }
 
     void Assign::run() const {
+        std::string var_id = std::static_pointer_cast<LValue>(lvalue)->getId();
+        sym::EntryPtr entry = std::make_shared<sym::VarEntry>(var_id, vars.getCurrentScope(), nullptr);
+        
+        entry = vars.lookupEntry(entry);
 
+        if (entry == nullptr) {
+            RaiseSemanticError(variableNotFoundError_c, FATAL);
+        }
+
+        entry->setValue(expr->eval());
     }
+
 
 }

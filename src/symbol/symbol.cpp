@@ -17,18 +17,21 @@ namespace sym {
     /*                                                                        */
     /**************************************************************************/
 
-    Scope::Scope(int level, EntryPtr root) : level(level), root(root) {};
+    Scope::Scope(EntryPtr root, int level) : root(root), level(level) {};
 
-    int Scope::getLevel() const { return level; }
+    int Scope::getLevel() const { 
+        return level; 
+
+    }
 
     /**************************************************************************/
     /*                                                                        */
     /*                          Table Class                                   */
     /*                                                                        */
     /**************************************************************************/
-    
+
     void Table::openScope(EntryPtr root) {
-        scopeStack.push_back(std::make_shared<Scope>(0, root));
+        scopeStack.push_back(std::make_shared<Scope>(root, 0));
     };
 
     void Table::closeScope() {
@@ -43,7 +46,7 @@ namespace sym {
         auto it = table.find(entry->getId());
         if (it != table.end()) {
             for (auto e : it->second) {
-                if (e->getLevel() != scopeStack.back()->getLevel()) {
+                if (e->getLevel() == this->getCurrentScope()) {
                     return e;
                 }
             }
@@ -52,16 +55,25 @@ namespace sym {
         return nullptr;
     };
 
+
     void Table::removeEntry(EntryPtr entry) {
         auto it = table.find(entry->getId());
         if (it != table.end()) {
             for (auto e : it->second) {
-                if (e->getLevel() <= scopeStack.back()->getLevel()) {
+                if (e->getLevel() <= this->getCurrentScope()) {
                     it->second.erase(std::find(it->second.begin(), it->second.end(), e));
                     return;
                 }
             }
         }
     };
+
+    int Table::getCurrentScope() const {
+        if (scopeStack.empty())
+            return 0;
+        else
+            return scopeStack.back()->getLevel();
+    }
+
 
 };

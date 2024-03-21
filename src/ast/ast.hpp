@@ -100,11 +100,11 @@ namespace ast {
             int num;
     };
 
-    class Var: public Expr {
+    class VarDef: public Stmt {
         public:
-            Var(std::string id, types::TypePtr t, int c = INT_MAX) : id(id), type(t), value(c) {}
+            VarDef(std::string id, types::TypePtr t, int c = INT_MAX) : id(id), type(t), value(c) {}
             virtual void printOn(std::ostream &out) const override;
-            virtual int eval() const override;
+            virtual void run() const override;
             // virtual void sem(sym::Table table) override;
 
         private: 
@@ -205,6 +205,7 @@ namespace ast {
             LValue(std::string id, ASTPtr e = nullptr) : id(id), expr(e) {}
             virtual void printOn(std::ostream &out) const override;
             virtual int eval() const override;
+            std::string getId() const { return id; }
             // virtual void sem(sym::Table table) override;
 
         private:
@@ -234,6 +235,17 @@ namespace ast {
 
         private: 
             ASTPtr lvalue;
+            ASTPtr expr;
+    };
+
+    class Print : public Stmt {
+        public:
+            Print(ASTPtr e) : expr(e) {}
+            virtual void printOn(std::ostream &out) const override;
+            virtual void run() const override;
+            // virtual void sem(sym::Table table) override;
+
+        private:
             ASTPtr expr;
     };
 

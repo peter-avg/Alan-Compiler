@@ -1,0 +1,22 @@
+chars () : proc
+
+    c : int;
+    a : int;
+    (* To add1 θα πρέπει να μπει στο symbol table *)
+    add1 (c : int) : int 
+    {
+        c = c + 1;
+        (* Κάτι πρέπει να γίνει με το return, λογικά eval() *)
+        return c;
+    }
+
+{
+    a = 1;
+    c = 1;
+    (* θα πρέπει να γίνει Call(add1) -> eval() για να τρέξει *)
+    a = c + add1(c);
+    Print a;
+}
+
+
+
