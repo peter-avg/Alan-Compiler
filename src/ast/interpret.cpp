@@ -63,9 +63,19 @@ namespace ast {
         return num;
     }
 
+    /* TODO: Implement this function */
     int Return::eval() const {
         return expr->eval();
     }
+
+
+    /* TODO: Implement this function */
+    // int Call::eval() const {
+    //     for (auto &item : block) {
+    //         item->run();
+    //     }
+    //     return 0;
+    // }
 
     /********************************************************
     *                                                       *
@@ -90,6 +100,7 @@ namespace ast {
         }
     }
 
+    /* TODO: Implement this function */
     void Func::run() const {
 
         sym::EntryPtr entry = std::make_shared<sym::FuncEntry>(id, vars.getCurrentScope(), nullptr);
@@ -127,6 +138,7 @@ namespace ast {
         std::cout << expr->eval() << std::endl;
     }
 
+    /* TODO: Possibly remove this function and implement eval() for Call */
     void Call::run() const {
         for (auto &item : block) {
             item->run();
