@@ -1,6 +1,5 @@
 #include "ast.hpp"
 
-#include "../symbol/symbol.hpp"
 
 namespace ast {
     
@@ -23,29 +22,26 @@ namespace ast {
     }
 
     void Block::printOn(std::ostream &out) const {
-        ntabs++;
         bool flag = true;
-        printTabs(out);
         out << "Block{\n";
+        ntabs++;
         for (ASTPtr s : list){
             if (!flag)
                 out << ", ";
+            printTabs(out);
             out << *s;
 
-            ntabs++;
-            printTabs(out);
-            ntabs--;
 
             out << "\n";
 
             flag = false;
         }
-        out << "\n}";
         ntabs--;
+        printTabs(out);
+        out << "}";
     }
 
     void Func::printOn(std::ostream &out) const {
-
         printTabs(out);
         out << "Func[\n";
         ntabs++;
@@ -89,10 +85,10 @@ namespace ast {
     }
 
     void Var::printOn(std::ostream &out) const {
-        if (value == 0) { 
+        if (value == INT_MAX) { 
             out << "Var(" << id << ": " << *type << ")";
         } else {
-            out << "Var(" << id << ": " << *type << "= " << value << ")";
+            out << "Var(" << id << ": " << *type << " = " << value << ")";
         }
     }
 
@@ -149,34 +145,12 @@ namespace ast {
         for (auto p : block) {
             out << *p << ", ";
         };
+        out << ")";
     }
 
     void Assign::printOn(std::ostream &out) const {
         out << "Assign(" << *lvalue << ", " << *expr << ")";
     }
-
-    /**********************************************************************************
-     *                                                                                *
-     *                                  Semantic                                      *
-     *                                                                                *
-     * ********************************************************************************/
-
-
-    // void Param::sem(sym::Table table) {
-    //     sym::EntryPtr entry = std::make_shared<sym::ParamEntry>(id, 1 /* level */, type);
-    //     sym::EntryPtr exists = table.lookupEntry(entry);
-    //     if (exists != nullptr) {
-    //         std::cerr << "Error: " << id << " already exists in the current scope" << std::endl;
-    //         return;
-    //     }
-    //     table.insertEntry(entry);
-    // };
-    //
-    // void Block::sem(sym::Table table) {
-    //     for (auto item : list) {
-    //         item->sem(table);
-    //     }
-    // };
 
     
     typedef std::shared_ptr<AST> ASTPtr;

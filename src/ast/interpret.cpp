@@ -68,8 +68,6 @@ namespace ast {
 
 
     void Block::run() const {
-
-
         for (auto &stmt : list) {
             stmt->run();
         }
@@ -108,7 +106,6 @@ namespace ast {
     }
 
     void Assign::run() const {
-
 
     }
 
