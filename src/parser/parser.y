@@ -7,8 +7,9 @@
 #include "../ast/ast.hpp"
 #include "../correcting/correcting.hpp"
 #include "../symbol/symbol.hpp"
-
+#include <memory>
 #define YYDEBUG 1
+
 //%option noyywrap nodefault;
 extern FILE* yyin;
 extern int line_number;

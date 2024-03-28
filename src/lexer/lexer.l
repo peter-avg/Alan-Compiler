@@ -3,8 +3,8 @@
 //#define YYSTYPE union yylval
 #include "../types/types.hpp"
 #include "../ast/ast.hpp"
-//#include "../parser/parser.tab.h"
-#include "../parser/parser.hpp"
+#include "../parser/parser.tab.h"
+//#include "../parser/parser.hpp"
 #include "../correcting/correcting.hpp"
 #include "../lexer/lexer.h"
 #include "../errors/errors.hpp"

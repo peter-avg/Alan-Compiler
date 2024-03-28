@@ -4,6 +4,8 @@
 #include "errors.hpp"
 #include "../colors/colors.hpp"
 
+extern std::string file_namen;
+extern int line_number;
 
 std::string newTokenError(int code) {
     

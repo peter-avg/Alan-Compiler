@@ -1,16 +1,13 @@
 #ifndef __AST_HPP__
 #define __AST_HPP__
 
-// #include <cmath>
 #include <iostream>
-// #include <iterator>
-// #include <string.h>
 #include <string>
 #include "../symbol/symbol.hpp"
 #include "../types/types.hpp"
 #include <vector>
 #include <memory>
-
+#include <limits.h>
 namespace ast {
 
     class AST;
@@ -22,7 +19,7 @@ namespace ast {
         public:
             virtual void printOn(std::ostream &out) const = 0;
             virtual void sem(sym::Table table) {};
-            virtual void run() const {};
+            virtual int run() const { return 0; };
             virtual int eval() const { return 0; }
 
         private:
@@ -34,10 +31,10 @@ namespace ast {
         ast.printOn(out);
         return out;
     }
-
+    
     class Stmt: public AST {
         public:
-            virtual void run() const = 0;
+            virtual int run() const = 0;
     };
 
     class Expr: public AST {
@@ -50,6 +47,7 @@ namespace ast {
             Param(std::string id, std::string pass, types::TypePtr t) : id(id), pass(pass), type(t) {}
             virtual void printOn(std::ostream &out) const override;
             virtual int eval() const override { return 0; }
+            std::string getId() const { return id; }
             // virtual void sem(sym::Table table) override ;
 
         private:
@@ -64,7 +62,7 @@ namespace ast {
             Block(ASTList ast) : list(ast) {}
             void append(ASTPtr s) { list.push_back(s); }
             virtual void printOn(std::ostream &out) const override;
-            virtual void run() const override;
+            virtual int run() const override;
             // virtual void sem(sym::Table table) override;
 
         private:
@@ -78,7 +76,7 @@ namespace ast {
                     ASTPtr compound) : id(id), param_list(p),
             retType(ret), def_list(local_def), compound(compound)  {}
             virtual void printOn(std::ostream &out) const override;
-            virtual void run() const override;
+            virtual int run() const override;
             // virtual void sem(sym::Table table) override;
 
         private:
@@ -94,7 +92,7 @@ namespace ast {
             Const(int n): num(n) {}
             virtual void printOn(std::ostream &out) const override;
             virtual int eval() const override;
-            // virtual void sem(sym::Table table) override;
+            //virtual void sem(sym::Table table) override;
 
         private:
             int num;
@@ -104,7 +102,7 @@ namespace ast {
         public:
             VarDef(std::string id, types::TypePtr t, int c = INT_MAX) : id(id), type(t), value(c) {}
             virtual void printOn(std::ostream &out) const override;
-            virtual void run() const override;
+            virtual int run() const override;
             // virtual void sem(sym::Table table) override;
 
         private: 
@@ -130,7 +128,7 @@ namespace ast {
         public: 
             While(ASTPtr c, ASTPtr s): cond(c), stmt(s) {}
             virtual void printOn(std::ostream &out) const override;
-            virtual void run() const override;
+            virtual int run() const override;
             // virtual void sem(sym::Table table) override;
 
         private: 
@@ -142,7 +140,7 @@ namespace ast {
         public:
             If(ASTPtr c, ASTPtr s1, ASTPtr s2 = 0): cond(c), stmt1(s1), stmt2(s2) {}
             virtual void printOn(std::ostream &out) const override;
-            virtual void run() const override;
+            virtual int run() const override;
             // virtual void sem(sym::Table table) override;
 
         private:
@@ -151,11 +149,11 @@ namespace ast {
             ASTPtr stmt2;
     };
 
-    class Return: public Expr {
+    class Return: public Stmt {
         public: 
             Return(ASTPtr e): expr(e) {}
             virtual void printOn(std::ostream &out) const override;
-            virtual int eval() const override;
+            virtual int run() const override;
             // virtual void sem(sym::Table table) override;
 
         private:
@@ -214,11 +212,11 @@ namespace ast {
     };
 
 
-    class Call : public Stmt {
+    class Call : public Expr{
         public:
             Call(std::string id, ASTList block) : id(id), block(block) {}
             virtual void printOn(std::ostream &out) const override;
-            virtual void run() const override;
+            virtual int eval() const override;
             // virtual void sem(sym::Table table) override;
 
         private:
@@ -230,7 +228,7 @@ namespace ast {
         public:
             Assign(ASTPtr l, ASTPtr e) : lvalue(l), expr(e) {}
             virtual void printOn(std::ostream &out) const override;
-            virtual void run() const override;
+            virtual int run() const override;
             // virtual void sem(sym::Table table) override;
 
         private: 
@@ -242,7 +240,7 @@ namespace ast {
         public:
             Print(ASTPtr e) : expr(e) {}
             virtual void printOn(std::ostream &out) const override;
-            virtual void run() const override;
+            virtual int run() const override;
             // virtual void sem(sym::Table table) override;
 
         private:

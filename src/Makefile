@@ -1,23 +1,23 @@
-OBJS = ./errors/errors.cpp ./lexer/lexer.cpp ./library/library.cpp \
-	   ./parser/parser.cpp ./correcting/correcting.cpp ./types/types.cpp \
-	   ./symbol/symbol.cpp ./ast/ast.cpp ./ast/interpret.cpp
+OBJS =  parser/parser.tab.c  ast/interpret.cpp ast/printOn.cpp \
+		symbol/symbol.cpp errors/errors.cpp lexer/lex.yy.c \
+		correcting/correcting.cpp types/types.cpp library/library.cpp 
 CC = g++
 CPP = c++14
-FLAGS = -Wfatal-errors -std=$(CPP)
 REMOVE = rm -r *.dSYM
 
 .PHONY: clean main
 
 default: alan
 
-lexer.cpp: ./lexer/lexer.l ./lexer/lexer.h
-	flex -o ./lexer/lexer.cpp ./lexer/lexer.l
+lex.yy.c: ./lexer/lexer.l ./lexer/lexer.h
+	flex ./lexer/lexer.l
 
-parser.cpp: ./parser/parser.y
-	bison -d -Wcounterexamples -o ./parser/parser.cpp ./parser/parser.y
+parser.tab.c: ./parser/parser.y
+	bison -d ./parser/parser.y
 
-alan: $(OBJS) lexer.cpp parser.cpp
-	$(CC) $(FLAGS) $(OBJS) -o alan
+alan:  lex.yy.c parser.tab.c $(OBJS)
+	$(CC) $(OBJS) -o alan
 
-clean:
-	rm -f alan
+clean: 
+	Remove-Item -Force alan
+

@@ -1,12 +1,16 @@
 #ifndef __SYMBOL_HPP__
 #define __SYMBOL_HPP__
-
+#include <algorithm>
 #include <map>
 #include <vector>
 #include <memory>
 #include <string>
 #include "../types/types.hpp"
-
+namespace ast {
+    class AST; 
+    using ASTPtr = std::shared_ptr<AST>;
+    using ASTList = std::vector<ASTPtr>;
+}
 namespace sym {
 
     /**************************************************************************/
@@ -14,10 +18,12 @@ namespace sym {
     /*                          Entry Class                                   */
     /*                                                                        */
     /**************************************************************************/
+    
 
     class Entry;
 
     typedef std::shared_ptr<Entry> EntryPtr;
+    typedef std::vector<EntryPtr> EntriesVector;
 
     class Entry {
         public:
@@ -27,6 +33,20 @@ namespace sym {
             virtual int getLevel() const;
             virtual int getValue() const = 0;
             virtual void setValue(int value) {};
+            virtual void addParameters(EntryPtr parameter) {}; 
+            virtual void addLocaldefs(ast::ASTList local_defs) {}; 
+            virtual void addCompound(ast::ASTPtr compound) {};
+            virtual ast::ASTPtr getCompound() {
+                return compound;
+            }
+            
+            virtual ast::ASTList getLocaldefs() {
+                return local_defs;
+            }
+
+            ast::ASTPtr compound;
+            ast::ASTList local_defs;
+            EntriesVector parameters;
 
         private:
             std::string id;
@@ -46,7 +66,17 @@ namespace sym {
                 return level;
             }
 
+            
+            int getValue() const override {
+                return value;
+            }
+
+            void setValue(int value) override {
+                this->value = value;
+            }
+
         private:
+            int value;
             std::string id;
             int level;
             types::TypePtr type;
@@ -83,7 +113,7 @@ namespace sym {
     class FuncEntry : public Entry {
         public:
             FuncEntry(const std::string &id, int level, types::TypePtr type) :
-                id(id), level(level), type(type) {};
+                id(id), level(level), type(type) {} 
 
             virtual std::string getId() const override {
                 return id;
@@ -93,13 +123,37 @@ namespace sym {
                 return level;
             }
 
-            int getValue() const override {
+            virtual int getValue() const override {
                 return result;
             }
 
-            void setValue(int value) override {
+            virtual void setValue(int value) override {
                 result = value;
             }
+
+
+            virtual void addParameters(EntryPtr parameter) override{
+                parameters.push_back(parameter);
+            }
+            
+            virtual void addLocaldefs(ast::ASTList local_defs) override{
+                this->local_defs = local_defs; 
+            } 
+            virtual void addCompound(ast::ASTPtr comp) override{
+                compound = comp;
+            }
+
+            virtual ast::ASTList getLocaldefs() override {
+                return local_defs;
+            }
+            virtual ast::ASTPtr getCompound() override {
+                return compound;
+            }
+
+            ast::ASTList local_defs;
+            ast::ASTPtr compound;
+
+
         private:
             std::string id;
             types::TypePtr type;

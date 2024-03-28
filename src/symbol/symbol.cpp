@@ -1,5 +1,4 @@
 #include "symbol.hpp"
-
 namespace sym {
 
     /**************************************************************************/
@@ -31,7 +30,7 @@ namespace sym {
     /**************************************************************************/
 
     void Table::openScope(EntryPtr root) {
-        scopeStack.push_back(std::make_shared<Scope>(root, 0));
+        scopeStack.push_back(std::make_shared<Scope>(root, this->getCurrentScope()+1));
     };
 
     void Table::closeScope() {
