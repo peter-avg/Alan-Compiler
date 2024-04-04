@@ -12,7 +12,10 @@ namespace ast {
     using ASTList = std::vector<ASTPtr>;
 }
 namespace sym {
-
+    typedef enum {
+        GLOBAL, 
+        LOCAL
+    }SearchType;
     /**************************************************************************/
     /*                                                                        */
     /*                          Entry Class                                   */
@@ -197,9 +200,10 @@ namespace sym {
             void openScope(EntryPtr root);
             void closeScope();
             void insertEntry(EntryPtr entry);
-            EntryPtr lookupEntry(EntryPtr entry);
+            EntryPtr lookupEntry(EntryPtr entry, SearchType searchtype);
             void removeEntry(EntryPtr entry);
             int getCurrentScope() const;
+            bool isEmpty() const;
 
         private:
             HashTable table;

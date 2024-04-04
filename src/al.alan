@@ -1,6 +1,6 @@
 chars () : int 
 
-    (* To add1 should be added in the symbol table *)
+    (* The add1 should be added in the symbol table *)
     add1 (c : int) : int 
     
         a : int;

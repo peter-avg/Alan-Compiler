@@ -1,6 +1,6 @@
 #include "symbol.hpp"
 namespace sym {
-
+    bool main_func = false;
     /**************************************************************************/
     /*                                                                        */
     /*                          Entry Class                                   */
@@ -41,15 +41,21 @@ namespace sym {
         table[entry->getId()].push_back(entry);
     };
 
-    EntryPtr Table::lookupEntry(EntryPtr entry) {
+    EntryPtr Table::lookupEntry(EntryPtr entry, SearchType searchtype) {
         auto it = table.find(entry->getId());
+        EntryPtr result;
         if (it != table.end()) {
             for (auto e : it->second) {
-                if (e->getLevel() == this->getCurrentScope()) {
-                    return e;
+                if (searchtype == GLOBAL && e->getLevel() <= this->getCurrentScope()) {
+                    result = e;
+                }
+                else if (searchtype == LOCAL && e->getLevel() == this->getCurrentScope()){
+                    result = e;
                 }
             }
+            return result;
         }
+    
 
         return nullptr;
     };
@@ -73,6 +79,9 @@ namespace sym {
         else
             return scopeStack.back()->getLevel();
     }
-
+    
+    bool Table::isEmpty() const {
+        return table.empty();
+    }
 
 };
