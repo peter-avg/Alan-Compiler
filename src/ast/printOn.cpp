@@ -125,7 +125,9 @@ namespace ast {
     }
 
     void BinOp::printOn(std::ostream &out) const {
-        out << op << "(" << *expr1 << ", " << *expr2 << ")";
+        out << op << "(" << *expr1 ;
+        if (expr2 != nullptr)
+            std::cout << ", " << *expr2 << ")";
     }
 
     void String::printOn(std::ostream &out) const {

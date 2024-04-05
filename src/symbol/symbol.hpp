@@ -15,7 +15,13 @@ namespace sym {
     typedef enum {
         GLOBAL, 
         LOCAL
-    }SearchType;
+    } SearchType;
+
+    typedef enum {
+        VAR, 
+        PARAM, 
+        FUNC
+    } EntryType;
     /**************************************************************************/
     /*                                                                        */
     /*                          Entry Class                                   */
@@ -31,7 +37,7 @@ namespace sym {
     class Entry {
         public:
             Entry() {};
-            Entry(const std::string &id, int level) : id(id), level(level) {};
+            Entry(const std::string &id, int level, types::TypePtr type) : id(id), level(level), type(type) {};
             virtual std::string getId() const;
             virtual int getLevel() const;
             virtual int getValue() const = 0;
@@ -46,7 +52,13 @@ namespace sym {
             virtual ast::ASTList getLocaldefs() {
                 return local_defs;
             }
+            virtual types::TypePtr getType() {
+                return type;
+            }
 
+            virtual EntryType getEType() {
+                return etype;
+            }
             ast::ASTPtr compound;
             ast::ASTList local_defs;
             EntriesVector parameters;
@@ -54,6 +66,8 @@ namespace sym {
         private:
             std::string id;
             int level;
+            types::TypePtr type;
+            EntryType etype;
     };
 
     class ParamEntry : public Entry {
@@ -78,11 +92,18 @@ namespace sym {
                 this->value = value;
             }
 
+            types::TypePtr getType() override {
+                return type;
+            }
+            EntryType getEType() override {
+                return etype;
+            }
         private:
             int value;
             std::string id;
             int level;
             types::TypePtr type;
+            EntryType etype = PARAM;
     };
 
     class VarEntry : public Entry {
@@ -106,11 +127,18 @@ namespace sym {
                 this->value = value;
             }
 
+            types::TypePtr getType() override {
+                return type;
+            }
+            EntryType getEType() override {
+                return etype;
+            }
         private:
             int value;
             std::string id;
             int level;
             types::TypePtr type;
+            EntryType etype = VAR;
     };
 
     class FuncEntry : public Entry {
@@ -153,6 +181,13 @@ namespace sym {
                 return compound;
             }
 
+            types::TypePtr getType() override {
+                return type;
+            }
+            
+            EntryType getEType() override {
+                return etype;
+            }
             ast::ASTList local_defs;
             ast::ASTPtr compound;
 
@@ -162,6 +197,7 @@ namespace sym {
             types::TypePtr type;
             int level;
             int result;
+            EntryType etype = FUNC;
     };
 
 
@@ -177,11 +213,12 @@ namespace sym {
 
     class Scope {
         public:
-            Scope(EntryPtr root, int level);
+            Scope(EntryPtr root, int level, types::TypePtr type);
             int getLevel() const;
 
         private:
             int level;
+            types::TypePtr type;
             EntryPtr root;
     };
 
@@ -200,7 +237,7 @@ namespace sym {
             void openScope(EntryPtr root);
             void closeScope();
             void insertEntry(EntryPtr entry);
-            EntryPtr lookupEntry(EntryPtr entry, SearchType searchtype);
+            EntryPtr lookupEntry(std::string entry_id, SearchType searchtype);
             void removeEntry(EntryPtr entry);
             int getCurrentScope() const;
             bool isEmpty() const;

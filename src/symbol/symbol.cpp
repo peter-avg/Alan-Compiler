@@ -16,7 +16,7 @@ namespace sym {
     /*                                                                        */
     /**************************************************************************/
 
-    Scope::Scope(EntryPtr root, int level) : root(root), level(level) {};
+    Scope::Scope(EntryPtr root, int level, types::TypePtr type) : root(root), level(level), type(type) {};
 
     int Scope::getLevel() const { 
         return level; 
@@ -30,7 +30,7 @@ namespace sym {
     /**************************************************************************/
 
     void Table::openScope(EntryPtr root) {
-        scopeStack.push_back(std::make_shared<Scope>(root, this->getCurrentScope()+1));
+        scopeStack.push_back(std::make_shared<Scope>(root, this->getCurrentScope()+1, root->getType()));
     };
 
     void Table::closeScope() {
@@ -41,8 +41,8 @@ namespace sym {
         table[entry->getId()].push_back(entry);
     };
 
-    EntryPtr Table::lookupEntry(EntryPtr entry, SearchType searchtype) {
-        auto it = table.find(entry->getId());
+    EntryPtr Table::lookupEntry(std::string entry_id, SearchType searchtype) {
+        auto it = table.find(entry_id);
         EntryPtr result;
         if (it != table.end()) {
             for (auto e : it->second) {
