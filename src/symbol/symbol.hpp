@@ -22,6 +22,11 @@ namespace sym {
         PARAM, 
         FUNC
     } EntryType;
+
+    typedef enum {
+        value, 
+        reference
+    } PassType;
     /**************************************************************************/
     /*                                                                        */
     /*                          Entry Class                                   */
@@ -59,21 +64,24 @@ namespace sym {
             virtual EntryType getEType() {
                 return etype;
             }
+
+            types::TypePtr getScopeType();
+
             ast::ASTPtr compound;
             ast::ASTList local_defs;
             EntriesVector parameters;
+            types::TypePtr type;
 
         private:
             std::string id;
             int level;
-            types::TypePtr type;
             EntryType etype;
     };
 
     class ParamEntry : public Entry {
         public:
-            ParamEntry(const std::string &id, int level, types::TypePtr type) :
-                id(id), level(level), type(type) {};
+            ParamEntry(const std::string &id, int level, types::TypePtr type, PassType mode) :
+                id(id), level(level), type(type), mode(mode) {};
 
             virtual std::string getId() const override {
                 return id;
@@ -98,11 +106,12 @@ namespace sym {
             EntryType getEType() override {
                 return etype;
             }
+            types::TypePtr type;
         private:
             int value;
             std::string id;
             int level;
-            types::TypePtr type;
+            PassType mode;
             EntryType etype = PARAM;
     };
 
@@ -133,11 +142,11 @@ namespace sym {
             EntryType getEType() override {
                 return etype;
             }
+            types::TypePtr type;
         private:
             int value;
             std::string id;
             int level;
-            types::TypePtr type;
             EntryType etype = VAR;
     };
 
@@ -191,10 +200,10 @@ namespace sym {
             ast::ASTList local_defs;
             ast::ASTPtr compound;
 
+            types::TypePtr type;
 
         private:
             std::string id;
-            types::TypePtr type;
             int level;
             int result;
             EntryType etype = FUNC;
@@ -215,11 +224,13 @@ namespace sym {
         public:
             Scope(EntryPtr root, int level, types::TypePtr type);
             int getLevel() const;
-
-        private:
-            int level;
-            types::TypePtr type;
             EntryPtr root;
+            void addReturn();
+            int getReturns();
+        private:
+            types::TypePtr type;
+            int returns = 0;
+            int level;
     };
 
     /**************************************************************************/
@@ -241,6 +252,9 @@ namespace sym {
             void removeEntry(EntryPtr entry);
             int getCurrentScope() const;
             bool isEmpty() const;
+            void addReturn();
+            int getReturns();
+            types::TypePtr getScopeType();
 
         private:
             HashTable table;

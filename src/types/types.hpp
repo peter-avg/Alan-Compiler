@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <memory>
+#include <type_traits>
 namespace types {
 
 #define INT_SIZE 4
@@ -14,12 +15,15 @@ namespace types {
     class VoidType;
 
     typedef std::shared_ptr<Type> TypePtr;
-
     class Type {
         public:
             Type() {}
             virtual ~Type() = default;
             virtual void printOn(std::ostream &out) const = 0;
+            std::string typeName;
+            virtual std::string getTypeName() const {
+                return typeName;
+            }
     };
 
     inline std::ostream &operator<<(std::ostream &out, const Type &type) {
@@ -29,16 +33,24 @@ namespace types {
 
     class VoidType : public Type { 
         public:
-            VoidType() {}
+            VoidType() {
+                typeName = "VoidType";
+            }
             virtual ~VoidType() = default;
-            virtual void printOn(std::ostream &out) const {
+            virtual void printOn(std::ostream &out) const override {
                 out << "Void";
             };
+            virtual std::string getTypeName() const override {
+                return typeName;
+            }
+            std::string typeName; 
     };
 
     class IntType : public Type { 
         public:
-            IntType() {}
+            IntType() {
+                typeName = "IntType";
+            }
             virtual ~IntType() = default;
             virtual void printOn(std::ostream &out) const {
                 out << "Int";
@@ -46,20 +58,30 @@ namespace types {
             int getSize() const {
                 return size;
             };
+            std::string getTypeName() const override {
+                return typeName;
+            }
+            std::string typeName ;
         private:
             int size = INT_SIZE;
     };
 
     class ByteType : public Type { 
         public:
-            ByteType() {}
+            ByteType() {
+                typeName = "ByteType";
+            }
             virtual ~ByteType() = default;
-            virtual void printOn(std::ostream &out) const {
+            virtual void printOn(std::ostream &out) const override {
                 out << "Byte";
             };
             int getSize() const {
                 return size;
             };
+            std::string getTypeName() const override {
+                return typeName;
+            }
+            std::string typeName;
         private:
             int size = BYTE_SIZE;
     };
@@ -108,6 +130,9 @@ namespace types {
     
     extern TypePtr intType;
     extern TypePtr byteType;
+
+
+    bool sameType(std::string a, std::string b); 
 }
 
 

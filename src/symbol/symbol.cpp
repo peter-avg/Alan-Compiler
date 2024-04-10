@@ -23,6 +23,14 @@ namespace sym {
 
     }
 
+    void Scope::addReturn() {
+        returns++;
+    }
+
+    int Scope::getReturns() {
+        return returns;
+    }
+
     /**************************************************************************/
     /*                                                                        */
     /*                          Table Class                                   */
@@ -39,6 +47,13 @@ namespace sym {
 
     void Table::insertEntry(EntryPtr entry) {
         table[entry->getId()].push_back(entry);
+        /*std::cout << "insertEntry: id of Entry -> \"" << entry->getId() << "\" of EType -> ";
+        switch(entry->getEType()){
+            case VAR: std::cout << "VAR"; break;
+            case FUNC: std::cout << "FUNC"; break;
+            case PARAM: std::cout << "PARAM"; break;
+        }
+        std::cout << " in scope -> " << entry->getLevel() << std::endl; */
     };
 
     EntryPtr Table::lookupEntry(std::string entry_id, SearchType searchtype) {
@@ -55,8 +70,6 @@ namespace sym {
             }
             return result;
         }
-    
-
         return nullptr;
     };
 
@@ -83,5 +96,15 @@ namespace sym {
     bool Table::isEmpty() const {
         return table.empty();
     }
+    
+    void Table::addReturn() {
+       this->scopeStack.back()->addReturn(); 
+    }
 
+    int Table::getReturns() {
+       return this->scopeStack.back()->getReturns();
+    }
+    types::TypePtr Table::getScopeType() {
+        return this->scopeStack.back()->root->getType();
+    }
 };
