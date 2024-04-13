@@ -62,6 +62,30 @@ std::string newSemanticError(int code) {
         case variableNotFoundError_c:
             message = "Variable not found error";
             break;
+        case parameterExistsError_c:
+            message = "Parameter already exists error";
+            break;
+        case functionExistsError_c:
+            message = "Function already exists error";
+            break;
+        case voidFunctionWrongReturnError_c:
+            message = "Void function wrong return error";
+            break;
+        case conditionTypeError_c:
+            message = "Condition not byte type";
+            break;
+        case expressionsDiffTypeError_c:
+            message = "Expressions have different types";
+            break;
+        case returnTypeMismatchError_c:
+            message = "Function Return type mismatch";
+            break;
+        case BinOpTypeMismatchError_c:
+            message = "Binary operation expressions don't have the same type";
+            break;
+        case arrayindexTypeError_c:
+            message = "Index of array must be of type int";
+            break;
     }
 
     return message;
