@@ -28,6 +28,7 @@ namespace ast {
     };
 
     void Block::sem(sym::Table &table) {
+        std::cout << "Block" << std::endl;
         for (auto item : list) {
             item->sem(table);
         }
@@ -35,6 +36,7 @@ namespace ast {
 
     void Func::sem(sym::Table &table) {
         /* Check if the function already exists */
+        std::cout << "Func: " << std::endl;
         sym::EntryPtr funcentry =  std::make_shared<sym::FuncEntry>(id, table.getCurrentScope(), type);
         funcentry = table.lookupEntry(id, sym::GLOBAL);
         if (funcentry != nullptr) {
@@ -83,6 +85,7 @@ namespace ast {
     };
 
     void VarDef::sem(sym::Table &table) {
+        std::cout << "VarDef" << std::endl;
         sym::EntryPtr varentry = table.lookupEntry(id, sym::LOCAL);
         if (varentry != nullptr) {
             RaiseSemanticError(variableExistsError_c, FATAL);
@@ -118,13 +121,13 @@ namespace ast {
             second->sem(table);
             if (!types::sameType(first->type->getTypeName(), second->type->getTypeName()))
                 std::cerr << "Error: Expressions don't have the same type" << std::endl;
+            type = types::byteType;
         }
-        type = types::byteType;
     };
 
     void While::sem(sym::Table &table) {
           cond->sem(table);
-          if (!types::sameType(cond->type->getTypeName(), "byteType")){
+          if (!types::sameType(cond->type->getTypeName(), "ByteType")){
               std::cerr << "Error: Condition in While Statement is not of Boolean type" << std::endl;
           }
     };
@@ -132,7 +135,7 @@ namespace ast {
     void If::sem(sym::Table &table) {
        cond->sem(table);
 
-      if (!types::sameType(cond->type->getTypeName(), "byteType")){
+      if (!types::sameType(cond->type->getTypeName(), "ByteType")){
           std::cerr << "Error: Condition in If Statement is not of Boolean type" << std::endl;
       }
 
@@ -154,7 +157,7 @@ namespace ast {
     };
 
     void Char::sem(sym::Table &table) {
-        
+        type = types::byteType; 
     };
 
     void BinOp::sem(sym::Table &table) {
@@ -168,13 +171,15 @@ namespace ast {
 
 
     void String::sem(sym::Table &table) {
-            
+        std::cout << "String" << std::endl;
+        type = types::BarrayType;
     };
 
     void LValue::sem(sym::Table &table) {
+        std::cout << "LValue" << std::endl;
         if (expr != nullptr) {
             expr->sem(table);
-            if (!types::sameType(expr->type->getTypeName(), "intType")){
+            if (!types::sameType(expr->type->getTypeName(), "IntType")){
                 std::cerr << "Error: Index of array must be of type int" << std::endl;
             }
         }

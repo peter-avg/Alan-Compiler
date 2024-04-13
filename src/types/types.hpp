@@ -130,11 +130,9 @@ namespace types {
     
     extern TypePtr intType;
     extern TypePtr byteType;
-
+    extern TypePtr BarrayType;
+    extern TypePtr IarrayType;
 
     bool sameType(std::string a, std::string b); 
 }
-
-
-
-#endif // __TYPES_HPP__
+#endif 
