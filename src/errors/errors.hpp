@@ -1,6 +1,3 @@
-// Errors for Alan Programming Language
-// Author: Elisavet Papadopoulou, Avgerinos Petros
-
 #ifndef __ERRORS_HPP__
 #define __ERRORS_HPP__
 
@@ -32,6 +29,14 @@ typedef enum {
     entryExistsError_c,
     variableExistsError_c,
     variableNotFoundError_c,
+    parameterExistsError_c,
+    functionExistsError_c,
+    voidFunctionWrongReturnError_c,
+    conditionTypeError_c,
+    expressionsDiffTypeError_c,
+    returnTypeMismatchError_c,
+    BinOpTypeMismatchError_c,
+    arrayindexTypeError_c,
 } SemanticErrorCodes;
 
 std::string newTokenError(int code);

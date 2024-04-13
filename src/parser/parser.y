@@ -206,7 +206,8 @@ func_def
 
 program
     : func_def {std::cout << *(*$1) << std::endl;
-                std::static_pointer_cast<ast::Func>(*$1)->run();
+                sym::Table vars;
+                std::static_pointer_cast<ast::Func>(*$1)->sem(vars);
                 $$ = $1;}
     ;
 
