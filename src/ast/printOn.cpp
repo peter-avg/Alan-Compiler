@@ -62,7 +62,7 @@ namespace ast {
 
         printTabs(out);
 
-        out << "Return Type: " << *retType << ",\n";
+        out << "Return Type: " << *type << ",\n";
         printTabs(out);
         out <<  "Defs: ";
 
