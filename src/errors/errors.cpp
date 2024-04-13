@@ -4,7 +4,7 @@
 #include "errors.hpp"
 #include "../colors/colors.hpp"
 
-extern std::string file_namen;
+extern const char *filename;
 extern int line_number;
 
 std::string newTokenError(int code) {
@@ -71,6 +71,9 @@ std::string newSemanticError(int code) {
         case voidFunctionWrongReturnError_c:
             message = "Void function wrong return error";
             break;
+        case functionRequiresMoreParamsError_c:
+            message = "Int function wrong return error";
+            break;
         case conditionTypeError_c:
             message = "Condition not byte type";
             break;
@@ -86,6 +89,33 @@ std::string newSemanticError(int code) {
         case arrayindexTypeError_c:
             message = "Index of array must be of type int";
             break;
+        case nosuchfunctionError_c:
+            message = "No such function with id";
+            break;
+        case idnotfunctionError_c:
+            message = "This id is not a function";
+            break;
+        case notenoughparamsError_c:
+            message = "Not enough parameters";
+            break;
+        case toomanyparamsError_c:
+            message = "Too many parameters";
+            break;
+        case argumentTypeMismatchError_c:
+            message = "Argument type mismatch";
+            break;
+    }
+
+    return message;
+}
+
+std::string newFileError(int code) {
+    std::string message;
+
+    switch (code) {
+        case nofileError_c:
+            message = "File not found error";
+            break;
     }
 
     return message;
@@ -97,7 +127,7 @@ void RaiseTokenError(int code, char token, int ascii) {
     colors::Font red_normal = {colors::Color::RED,colors::Style::NORMAL};
     colors::Font white_normal = {colors::Color::WHITE,colors::Style::NORMAL};
     std::cout << green_bold << "{File: " 
-              << file_name << "}::" << "{Line: " << line_number 
+              << filename << "}::" << "{Line: " << line_number 
               << "}" << red_normal << "\nTokenError: " 
               << white_normal << message << ": '" << token << "' (ASCII: " << ascii << ")" << std::endl;
 
@@ -110,23 +140,45 @@ void RaiseTypeError(int code) {
     colors::Font red_normal = {colors::Color::RED,colors::Style::NORMAL};
     colors::Font white_normal = {colors::Color::WHITE,colors::Style::NORMAL};
     std::cout << green_bold << "{File: " 
-              << file_name << "}::" << "{Line: " << line_number 
+              << filename << "}::" << "{Line: " << line_number 
               << "}" << red_normal << "\nTypeError: " 
               << white_normal << message << std::endl;
     exit(EXIT_FAILURE);
 }
 
-void RaiseSemanticError(int code, Fatality type) {
-    std::string message = newSemanticError(code);
-    colors::Font green_bold = {colors::Color::GREEN,colors::Style::BOLD};
-    colors::Font red_normal = {colors::Color::RED,colors::Style::NORMAL};
-    colors::Font white_normal = {colors::Color::WHITE,colors::Style::NORMAL};
-    std::cout << green_bold << "{File: " 
-              << file_name << "}::" << "{Line: " << line_number 
-              << "}" << red_normal << "\n SemanticError: " 
-              << white_normal << message << std::endl;
+void RaiseSemanticError(int code, Fatality type, std::string id) {
+    if (id == "") {
+        std::string message = newSemanticError(code);
+        colors::Font green_bold = {colors::Color::GREEN,colors::Style::BOLD};
+        colors::Font red_normal = {colors::Color::RED,colors::Style::NORMAL};
+        colors::Font white_normal = {colors::Color::WHITE,colors::Style::NORMAL};
+        std::cout << green_bold << "{File: " 
+                  << filename << "}::" << "{Line: " << line_number 
+                  << "}" << red_normal << "\n SemanticError: " 
+                  << white_normal << message << std::endl;
+
+    } else {
+        std::string message = newSemanticError(code);
+        colors::Font green_bold = {colors::Color::GREEN,colors::Style::BOLD};
+        colors::Font red_normal = {colors::Color::RED,colors::Style::NORMAL};
+        colors::Font white_normal = {colors::Color::WHITE,colors::Style::NORMAL};
+        std::cout << green_bold << "{File: " 
+                  << filename << "}::" << "{Line: " << line_number 
+                  << "}" << red_normal << "\n SemanticError: " 
+                  << white_normal << message << ": " << id << std::endl;
+
+    }
 
     if (type == FATAL) {
         exit(EXIT_FAILURE);
     }
+}
+
+void RaiseFileError(int code) {
+    std::string message = newFileError(code);
+    colors::Font green_bold = {colors::Color::GREEN,colors::Style::BOLD};
+    colors::Font red_normal = {colors::Color::RED,colors::Style::NORMAL};
+    colors::Font white_normal = {colors::Color::WHITE,colors::Style::NORMAL};
+    std::cout << white_normal << message << std::endl;
+    exit(EXIT_FAILURE);
 }

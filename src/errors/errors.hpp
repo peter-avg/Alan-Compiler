@@ -13,6 +13,10 @@ typedef enum {
 } Fatality;
 
 typedef enum {
+    nofileError_c,
+} ErrorCodes;
+
+typedef enum {
     invalidTokenError_c,
 } TokenErrorCodes;
 
@@ -32,19 +36,27 @@ typedef enum {
     parameterExistsError_c,
     functionExistsError_c,
     voidFunctionWrongReturnError_c,
+    functionRequiresMoreParamsError_c,
     conditionTypeError_c,
     expressionsDiffTypeError_c,
     returnTypeMismatchError_c,
     BinOpTypeMismatchError_c,
     arrayindexTypeError_c,
+    nosuchfunctionError_c,
+    idnotfunctionError_c,
+    notenoughparamsError_c,
+    toomanyparamsError_c,
+    argumentTypeMismatchError_c,
 } SemanticErrorCodes;
 
 std::string newTokenError(int code);
 std::string newTypeError(int code);
 std::string newSemanticError(int code);
+std::string newFileError(int code);
 
 void RaiseTypeError(int code);
 void RaiseTokenError(int code, char token, int ascii);
-void RaiseSemanticError(int code, Fatality fatality);
+void RaiseSemanticError(int code, Fatality fatality, std::string id = "");
+void RaiseFileError(int code);
 
 #endif // __ERRORS_HPP__

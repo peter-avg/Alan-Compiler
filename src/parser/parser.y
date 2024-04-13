@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <string>
 #include "../lexer/lexer.h"
+#include "../errors/errors.hpp"
 #include "../types/types.hpp"
 #include "../ast/ast.hpp"
 #include "../correcting/correcting.hpp"
@@ -12,6 +13,8 @@
 
 //%option noyywrap nodefault;
 extern FILE* yyin;
+Fatality fatality = WARNING;
+const char * filename = "\0";
 extern int line_number;
 extern int yylex();
 %}
@@ -205,8 +208,7 @@ func_def
     ;
 
 program
-    : func_def {std::cout << *(*$1) << std::endl;
-                sym::Table vars;
+    : func_def {sym::Table vars;
                 std::static_pointer_cast<ast::Func>(*$1)->sem(vars);
                 $$ = $1;}
     ;
@@ -214,12 +216,25 @@ program
 %%
 
 int main(int argc, char *argv[]) {
-    if (argc != 2) {
-        std::cerr << "Usage: " << argv[0] << " <filename>" << std::endl;
-        return 1;
+    
+
+    for (int i = 0; i < argc; i++) {
+        std::string arg = argv[i];
+        if (arg == "-Wonce")
+            fatality = FATAL;
+
+        size_t pos = arg.find_last_of('.');
+        if (pos != std::string::npos && arg.substr(pos + 1) == "alan") {
+            filename = argv[i];
+        }
     }
 
-    const char *filename = argv[1];
+    // if filename is not provided
+    if (filename == "\0") {
+        RaiseFileError(nofileError_c);
+    }
+
+
     FILE *inputFile = fopen(filename, "r");
 
     if (!inputFile) {
@@ -232,25 +247,6 @@ int main(int argc, char *argv[]) {
     int res = yyparse();  // Use the generated parser
     fclose(inputFile);   // Close the file when done
 
-    if (res == 0) {
-        std::cout << "Parsing successful" << std::endl;
-        return 0;
-    }
-
-    std::cerr << "Parsing failed at line " << line_number << std::endl;
-    return 1;
+    return 0;
 }
 
-//int main(int argc, char *argv[]) {
-//    
-//    yydebug = 1;
-//
-//    int res = yyparse();
-//    if (res == 0) {
-//        std::cout << "Parsing successful" << std::endl;
-//        exit(EXIT_SUCCESS);
-//    }
-//
-//    std::cout << "Parsing failed at " << line_number << std::endl;
-//    exit(EXIT_FAILURE);
-//}

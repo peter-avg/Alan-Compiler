@@ -3,18 +3,16 @@
 //#define YYSTYPE union yylval
 #include "../types/types.hpp"
 #include "../ast/ast.hpp"
-#include "../parser/parser.tab.h"
-//#include "../parser/parser.hpp"
+//#include "../parser/parser.tab.h"
+#include "../parser/parser.hpp"
 #include "../correcting/correcting.hpp"
 #include "../lexer/lexer.h"
 #include "../errors/errors.hpp"
 #include <cstdlib>
 #include <cstring>
 
-int line_number = 1;
+int line_number = 0;
 int nested_comments = 0;
-std::string file_name;
-
 %}
 
 L [a-zA-Z]

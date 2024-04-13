@@ -6,6 +6,10 @@
 #include <ostream>
 #include <typeinfo>
 
+extern int line_number;
+extern const char *filename;
+extern Fatality fatality;
+
 namespace ast {
 
     /**********************************************************************************
@@ -20,15 +24,13 @@ namespace ast {
     void Param::sem(sym::Table &table) {
         sym::EntryPtr exists = table.lookupEntry(id, sym::LOCAL);
         if (exists != nullptr) {
-            std::cerr << "Error: " << id << " already exists in the current scope" << std::endl;
-            return;
+            RaiseSemanticError(parameterExistsError_c, fatality);
         }
         sym::EntryPtr entry = std::make_shared<sym::ParamEntry>(id, table.getCurrentScope(), type, pass);
         table.insertEntry(entry);
     };
 
     void Block::sem(sym::Table &table) {
-        std::cout << "Block" << std::endl;
         for (auto item : list) {
             item->sem(table);
         }
@@ -36,11 +38,10 @@ namespace ast {
 
     void Func::sem(sym::Table &table) {
         /* Check if the function already exists */
-        std::cout << "Func: " << std::endl;
         sym::EntryPtr funcentry =  std::make_shared<sym::FuncEntry>(id, table.getCurrentScope(), type);
         funcentry = table.lookupEntry(id, sym::GLOBAL);
         if (funcentry != nullptr) {
-            std::cerr << "Error: " << id << "already exists in the current scope" << std::endl;
+            RaiseSemanticError(entryExistsError_c, fatality);
         }
         /* Check if this function is the main */               
         funcentry =  std::make_shared<sym::FuncEntry>(id, table.getCurrentScope(), type);
@@ -69,12 +70,13 @@ namespace ast {
 
         if (funcentry->getType()->getTypeName() == "VoidType") {
             if (table.getReturns() != 0) 
-                std::cerr << "Error: Void function can't have a return statement" << std::endl;
+                RaiseSemanticError(voidFunctionWrongReturnError_c, fatality);
         }
 
         else if (funcentry->getType()->getTypeName() == "IntType" || funcentry->getType()->getTypeName() == "ByteType"){
             if (table.getReturns() == 0 )
-                std::cerr << "Error: " << *(funcentry->getType()) << " function requires one or more return statements" << std::endl;
+                RaiseSemanticError(functionRequiresMoreParamsError_c, fatality);
+                // std::cerr << "Error: " << *(funcentry->getType()) << " function requires one or more return statements" << std::endl;
         }
         table.closeScope();
 
@@ -85,10 +87,9 @@ namespace ast {
     };
 
     void VarDef::sem(sym::Table &table) {
-        std::cout << "VarDef" << std::endl;
         sym::EntryPtr varentry = table.lookupEntry(id, sym::LOCAL);
         if (varentry != nullptr) {
-            RaiseSemanticError(variableExistsError_c, FATAL);
+            RaiseSemanticError(variableExistsError_c, fatality);
         }
         varentry = std::make_shared<sym::VarEntry>(id, table.getCurrentScope(), type);
         table.insertEntry(varentry);
@@ -102,7 +103,7 @@ namespace ast {
         else if (operation == "!") {
             first->sem(table);
             if (!types::sameType(first->type->getTypeName(), "byteType")) 
-                std::cerr << "Error: Condition is not of byte type" << std::endl;
+                RaiseSemanticError(conditionTypeError_c, fatality);
             type = types::byteType;
         }
 
@@ -111,7 +112,7 @@ namespace ast {
             second->sem(table);
             if (!types::sameType(first->type->getTypeName(), "byteType")) {
                 if (!types::sameType(second->type->getTypeName(), "byteType")) {
-                    std::cerr << "Error: Condition is not of byte type" << std::endl;
+                    RaiseSemanticError(conditionTypeError_c, fatality);
                 }
             }
             type = types::byteType;
@@ -120,7 +121,8 @@ namespace ast {
             first->sem(table);
             second->sem(table);
             if (!types::sameType(first->type->getTypeName(), second->type->getTypeName()))
-                std::cerr << "Error: Expressions don't have the same type" << std::endl;
+                RaiseSemanticError(conditionTypeError_c, fatality);
+                // std::cerr << "Error: Expressions don't have the same type" << std::endl;
             type = types::byteType;
         }
     };
@@ -128,7 +130,8 @@ namespace ast {
     void While::sem(sym::Table &table) {
           cond->sem(table);
           if (!types::sameType(cond->type->getTypeName(), "ByteType")){
-              std::cerr << "Error: Condition in While Statement is not of Boolean type" << std::endl;
+              RaiseSemanticError(conditionTypeError_c, fatality);
+              // std::cerr << "Error: Condition in While Statement is not of Boolean type" << std::endl;
           }
     };
     
@@ -136,7 +139,8 @@ namespace ast {
        cond->sem(table);
 
       if (!types::sameType(cond->type->getTypeName(), "ByteType")){
-          std::cerr << "Error: Condition in If Statement is not of Boolean type" << std::endl;
+          RaiseSemanticError(conditionTypeError_c, fatality);
+          // std::cerr << "Error: Condition in If Statement is not of Boolean type" << std::endl;
       }
 
       stmt1->sem(table);
@@ -149,7 +153,7 @@ namespace ast {
         type  = expr->type;
         
         if (!types::sameType(this->type->getTypeName(), table.getScopeType()->getTypeName())){
-            std::cerr << "Error: Type of function does not match type of Return statement" << std::endl;
+            RaiseSemanticError(returnTypeMismatchError_c, fatality);
         }
         
         table.addReturn();
@@ -165,28 +169,29 @@ namespace ast {
         expr2->sem(table);
 
         if (!types::sameType(expr1->type->getTypeName(), expr2->type->getTypeName()))
-            std::cerr << "Error: Binary operation expressions don't have the same type" << std::endl;
+            RaiseSemanticError(BinOpTypeMismatchError_c, fatality);
         type = expr1->type;
     };
 
 
     void String::sem(sym::Table &table) {
-        std::cout << "String" << std::endl;
         type = types::BarrayType;
     };
 
     void LValue::sem(sym::Table &table) {
-        std::cout << "LValue" << std::endl;
         if (expr != nullptr) {
             expr->sem(table);
             if (!types::sameType(expr->type->getTypeName(), "IntType")){
-                std::cerr << "Error: Index of array must be of type int" << std::endl;
+                RaiseSemanticError(arrayindexTypeError_c, fatality);
+                // std::cerr << "Error: Index of array must be of type int" << std::endl;
             }
         }
         sym::EntryPtr varentry = table.lookupEntry(id, sym::LOCAL);
 
-        if (varentry == nullptr) 
-            std::cerr << "Error: Variable \"" << id << "\" not found in scope -> " << table.getCurrentScope() << std::endl;
+        if (varentry == nullptr) {
+            // std::cerr << "Error: Variable \"" << id << "\" not found in scope -> " << table.getCurrentScope() << std::endl;
+            RaiseSemanticError(variableNotFoundError_c, fatality);
+        }
         type = varentry->getType();
     };
 
@@ -195,22 +200,26 @@ namespace ast {
        sym::EntryPtr funcentry = std::make_shared<sym::FuncEntry>(id, table.getCurrentScope(), nullptr);
        funcentry = table.lookupEntry(id, sym::GLOBAL);
        if (funcentry == nullptr) 
-           std::cerr << "Error: No function " << id << " found in this scope" <<  std::endl;
+           RaiseSemanticError(nosuchfunctionError_c, fatality, id);
+           // std::cerr << "Error: No function " << id << " found in this scope" <<  std::endl;
        if (funcentry->getEType() != sym::FUNC) {
-           std::cerr << "Error: " << id << " is not a function" <<  std::endl;
+           RaiseSemanticError(idnotfunctionError_c, fatality, id);
+           // std::cerr << "Error: " << id << " is not a function" <<  std::endl;
        }
        if (block.size() < funcentry->parameters.size()) 
-           std::cerr << "Error: Not enough arguments" << std::endl;
+           RaiseSemanticError(parameterExistsError_c, fatality);
+           // std::cerr << "Error: Not enough arguments" << std::endl;
        else if (block.size() > funcentry->parameters.size())
-           std::cerr << "Error: Too many arguments" << std::endl;
-
+            RaiseSemanticError(parameterExistsError_c, fatality);
+           // std::cerr << "Error: Too many arguments" << std::endl;
        for(auto &item: block) {
            item->sem(table);
        }
        int i = 0;
        for (auto &item: block) {
             if (!types::sameType(item->getType()->getTypeName(), funcentry->parameters[i++]->getType()->getTypeName())){
-                std::cerr << "Error: type of argument does not match type of parameter" << std::endl;
+                RaiseSemanticError(argumentTypeMismatchError_c, fatality);
+                // std::cerr << "Error: type of argument does not match type of parameter" << std::endl;
             }
        }
        this->type = funcentry->getType(); 
@@ -221,7 +230,8 @@ namespace ast {
         lvalue->sem(table); 
         expr->sem(table);
         if (!types::sameType(lvalue->type->getTypeName(), expr->type->getTypeName()))
-            std::cerr << "Error: type of expression does not match type of LValue" << std::endl;
+            RaiseSemanticError(expressionsDiffTypeError_c, fatality);
+            // std::cerr << "Error: type of expression does not match type of LValue" << std::endl;
 
         type = lvalue->type;
     };
