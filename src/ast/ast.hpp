@@ -25,7 +25,7 @@ namespace ast {
             virtual int run() const { return 0; };
             virtual int eval() const { return 0; }
             types::TypePtr type;
-            virtual types::TypePtr getType() {
+            virtual types::TypePtr getType() const {
                 return type; 
             }
             sym::PassType pass;
@@ -61,7 +61,7 @@ namespace ast {
             virtual int eval() const override { return 0; }
             std::string getId() const { return id; }
             virtual void sem(sym::Table &table) override ;
-            virtual types::TypePtr getType() override {
+            virtual types::TypePtr getType() const override {
                 return type; 
             }
 
@@ -95,7 +95,7 @@ namespace ast {
             virtual llvm::Value* llvm() const override; 
             virtual int run() const override;
             virtual void sem(sym::Table &table) override;
-            virtual types::TypePtr getType() override {
+            virtual types::TypePtr getType() const override {
                 return type; 
             }
 
@@ -116,7 +116,7 @@ namespace ast {
             virtual int eval() const override;
             virtual void sem(sym::Table &table) override;
             types::TypePtr type = types::intType;
-            virtual types::TypePtr getType() override {
+            virtual types::TypePtr getType() const override {
                 return type; 
             }
 
@@ -126,18 +126,26 @@ namespace ast {
 
     class VarDef: public Stmt {
         public:
-            VarDef(std::string id, types::TypePtr t, int c = INT_MAX) : id(id), type(t), value(c) {}
+            VarDef(std::string id, types::TypePtr t, int c = INT_MAX) : id(id), type(t), indeces(c) {
+                if (c != INT_MAX) {
+                    if (type == types::intType) {
+                        type = types::IarrayType;
+                    } else {
+                        type = types::BarrayType;
+                    }
+                }
+            }
             virtual void printOn(std::ostream &out) const override;
             virtual llvm::Value* llvm() const override; 
             virtual int run() const override;
             virtual void sem(sym::Table &table) override;
-            virtual types::TypePtr getType() override {
+            virtual types::TypePtr getType() const override {
                 return type; 
             }
         private: 
             types::TypePtr type;
             std::string id;
-            int value;
+            int indeces;
     };
 
     class Cond: public Expr {
@@ -190,6 +198,7 @@ namespace ast {
             virtual int run() const override;
             virtual void sem(sym::Table &table) override;
             types::TypePtr type;
+
 
             void setType (types::TypePtr t) {
                 type = t;

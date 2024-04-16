@@ -128,6 +128,9 @@ std::string newLLVMError(int code) {
         case EmptyScopeError_c:
             message = "The scope you are trying to close is empty";
             break;
+        case VariableNotFoundError_c:
+            message = "Variable not found";
+            break;
     }
 
     return message;

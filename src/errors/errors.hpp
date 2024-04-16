@@ -51,8 +51,7 @@ typedef enum {
 
 typedef enum {
     EmptyScopeError_c,
-
-
+    VariableNotFoundError_c,
 } LLVMErrorCodes;
 
 std::string newTokenError(int code);

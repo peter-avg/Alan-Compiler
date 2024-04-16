@@ -29,9 +29,22 @@ static llvm::Constant * c8(unsigned char c) {
     return llvm::ConstantInt::get(i8, c);
 }
 
-IR::BlockList blocks;
+std::vector<IR::BlockPtr> blocks;
+
+llvm::Type *getLLVMType(types::TypePtr type, sym::PassType pass) {
+    llvm::Type *ret = nullptr;
+    if (type == types::voidType) ret = llvm::Type::getVoidTy(context);
+    if (type == types::intType) ret = llvm::Type::getInt32Ty(context);
+    if (type == types::byteType) ret = llvm::Type::getInt8Ty(context);
+
+    if (pass == sym::PassType::reference) {
+        return ret->getPointerTo();
+    }
+    return ret;
+}
 
 namespace IR {
+
 
     void libgen() {
         
@@ -134,17 +147,6 @@ namespace IR {
         module.print(llvm::outs(), nullptr);
     }
 
-    llvm::Type *translateType(std::string type, sym::PassType pass) {
-        llvm::Type *ret = nullptr;
-        if (type == "VoidType") ret = llvm::Type::getVoidTy(context);
-        if (type == "IntType") ret = llvm::Type::getInt32Ty(context);
-        if (type == "ByteType") ret = llvm::Type::getInt8Ty(context);
-
-        if (pass == sym::PassType::reference) {
-            return ret->getPointerTo();
-        }
-        return ret;
-    }
 }
 
 
@@ -180,9 +182,10 @@ namespace ast {
     }
 
     llvm::Value* VarDef::llvm() const {
-        std::string type_name = type->getTypeName();
-        llvm::Type *type = IR::translateType(type_name, sym::PassType::value);
-        llvm::Value *var = builder.CreateAlloca(type, nullptr, id);
+        types::TypePtr type = this->getType();
+        llvm::Type *llvm_type = getLLVMType(type, sym::PassType::value);
+        llvm::Value *var = builder.CreateAlloca(llvm_type, nullptr, id);
+        blocks.back()->addVar(id, llvm_type, sym::PassType::value);
 
         return var;
     }

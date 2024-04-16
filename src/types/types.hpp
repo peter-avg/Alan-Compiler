@@ -6,8 +6,19 @@
 #include <type_traits>
 namespace types {
 
-#define INT_SIZE 4
-#define BYTE_SIZE 1
+    #define INT_SIZE 4
+    #define BYTE_SIZE 1
+
+    enum class TypeEnum {
+        INT,
+        BYTE,
+        VOID,
+        ARRAY,
+        ARRAYI
+    };
+
+
+
 
     class Type;
     class IntType;
@@ -15,6 +26,7 @@ namespace types {
     class VoidType;
 
     typedef std::shared_ptr<Type> TypePtr;
+
     class Type {
         public:
             Type() {}
@@ -130,6 +142,7 @@ namespace types {
     
     extern TypePtr intType;
     extern TypePtr byteType;
+    extern TypePtr voidType;
     extern TypePtr BarrayType;
     extern TypePtr IarrayType;
 
