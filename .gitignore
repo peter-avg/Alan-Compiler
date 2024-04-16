@@ -4,4 +4,3 @@
 *.tab.h
 *.tab.c
 *.yy.c
-Makefile
