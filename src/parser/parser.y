@@ -17,6 +17,7 @@ Fatality fatality = WARNING;
 const char * filename = "\0";
 extern int line_number;
 extern int yylex();
+sym::Table vars;
 %}
 
 %union {
@@ -104,10 +105,10 @@ r_type
     ;
 
 cond
-    : "true"            { $$ = new ast::ASTPtr(std::make_shared<ast::Cond>("true"));       }
-    | "false"           { $$ = new ast::ASTPtr(std::make_shared<ast::Cond>("false"));      }
-    | '(' cond ')'      { $$ = $2;                                              }
-    | '!' cond          { $$ = $2;                                              }
+    : "true"            { $$ = new ast::ASTPtr(std::make_shared<ast::Cond>("true"));         }
+    | "false"           { $$ = new ast::ASTPtr(std::make_shared<ast::Cond>("false"));        }
+    | '(' cond ')'      { $$ = $2;                                                           }
+    | '!' cond          { $$ = new ast::ASTPtr(std::make_shared<ast::Cond>("!", *$2));       }
     | expr '<' expr     { $$ = new ast::ASTPtr(std::make_shared<ast::Cond>("<", *$1, *$3));  }
     | expr '>' expr     { $$ = new ast::ASTPtr(std::make_shared<ast::Cond>(">", *$1, *$3));  }
     | expr "==" expr    { $$ = new ast::ASTPtr(std::make_shared<ast::Cond>("==", *$1, *$3)); }
@@ -208,8 +209,8 @@ func_def
     ;
 
 program
-    : func_def {sym::Table vars;
-                std::static_pointer_cast<ast::Func>(*$1)->sem(vars);
+    : func_def {std::static_pointer_cast<ast::Func>(*$1)->sem(vars);
+                //ast::llvm(*$1);
                 $$ = $1;}
     ;
 
@@ -249,4 +250,5 @@ int main(int argc, char *argv[]) {
 
     return 0;
 }
+
 

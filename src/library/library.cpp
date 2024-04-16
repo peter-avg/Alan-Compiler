@@ -1,16 +1,14 @@
-// STD Library for Alan Programming Language
-// Author: Elisavet Papadopoulou, Avgerinos Petros
-
 #include <stdio.h>
 #include <stdint.h>
+#include <stdlib.h>
 
 #include "library.hpp"
-#include "../errors/errors.hpp"
+// #include "../errors/errors.hpp"
 
 // Write Functions
 // ===============
 
-void writeInteger(int16_t integer) {
+void writeInteger(int integer) {
     printf("%d\n", integer);
 }
 
@@ -18,11 +16,11 @@ void writeByte(char byte) {
     printf("%d\n", (int)byte);
 }
 
-void writeChar(uint8_t character) {
+void writeChar(char character) {
     printf("%c\n", character);
 }
 
-void writeString(uint8_t* refbyte) {
+void writeString(char* refbyte) {
     printf("%s\n", refbyte);
 }
 
@@ -30,13 +28,15 @@ void writeString(uint8_t* refbyte) {
 // ==============
 
 int16_t readInteger() {
-    int32_t i;
+    int i;
     if (scanf("%d", &i) <= 0) {
-        RaiseTypeError(integerTypeError_c);
+        // RaiseTypeError(integerTypeError_c);
+        exit(1);
     }
 
     if (i > 32767 || i < -32768) {
-        RaiseTypeError(integerOverflowError_c);
+        // RaiseTypeError(integerOverflowError_c);
+        exit(1);
     }
 
     return i;
@@ -45,34 +45,37 @@ int16_t readInteger() {
 int16_t readByte() {
     char i;
     if (scanf("%c", &i) <= 0){
-        RaiseTypeError(byteTypeError_c);
+        // RaiseTypeError(byteTypeError_c);
+        exit(1);
     }
 
-    if ((int16_t)i > 255 || (int16_t)i < 0) {
-        RaiseTypeError(byteTypeError_c);
+    if ((int)i > 255 || (int)i < 0) {
+        // RaiseTypeError(byteTypeError_c);
+        exit(1);
     }
 
-    return (int16_t)i;
+    return (int)i;
 }
 
 uint8_t readChar(){
-    uint8_t c;
+    char c;
     if (scanf("%c", &c) <= 0) {
-        RaiseTypeError(charTypeError_c);
+        // RaiseTypeError(charTypeError_c);
+        exit(1);
     }
     return c;
 }
 
-void readString(int32_t n, uint8_t* refbyte){
-    for (int8_t i= 0; i < n; i++) {
-        int8_t c;
+void readString(int n, char* refbyte){
+    for (int i= 0; i < n; i++) {
+        char c;
 
         if (i + 1 < n) {
             c = getchar();
         } else {
             c = '\0';
         }
-if ( c == '\n' || c == EOF) {
+    if ( c == '\n' || c == EOF) {
             c = '\0';
             *refbyte ++ = c;
             break;
@@ -87,18 +90,18 @@ if ( c == '\n' || c == EOF) {
 // Transformation Functions
 // ========================
 
-int16_t extend(uint8_t byte) {
-    return (int16_t) byte;
+int16_t extend(char byte) {
+    return (int) byte;
 }
 
-uint8_t shrink(int16_t integer) {
-    return (uint8_t) integer;
+uint8_t shrink(int integer) {
+    return (char) integer;
 }
 
 // String Functions
 // ================
 
-int16_t alan_strlen(uint8_t* s) {
+int16_t alan_strlen(char* s) {
     int16_t i = 0;
     while (s[i] != '\0') {
         i++;
@@ -106,8 +109,8 @@ int16_t alan_strlen(uint8_t* s) {
     return i;
 }
 
-int16_t alan_strcmp(uint8_t* s1, uint8_t* s2) {
-    int16_t i = 0;
+int16_t alan_strcmp(char* s1, char* s2) {
+    int i = 0;
     while (s1[i] == s2[i]) {
         if (s1[i] == '\0') {
             return 0;
@@ -117,8 +120,8 @@ int16_t alan_strcmp(uint8_t* s1, uint8_t* s2) {
     return 1;
 }
 
-void alan_strcpy(uint8_t* trg, uint8_t* src) {
-    int16_t i = 0;
+void alan_strcpy(char* trg, char* src) {
+    int i = 0;
     while (src[i] != '\0') {
         trg[i] = src[i];
         i++;
@@ -126,8 +129,8 @@ void alan_strcpy(uint8_t* trg, uint8_t* src) {
     trg[i] = '\0';
 }
 
-void alan_strcat(uint8_t* trg, uint8_t* src) {
-    int16_t i = 0;
+void alan_strcat(char* trg, char* src) {
+    int i = 0;
     while (trg[i] != '\0') {
         i++;
     }
@@ -138,7 +141,7 @@ void alan_strcat(uint8_t* trg, uint8_t* src) {
 // ==============
 
 int testIntegers() {
-    int16_t i = readInteger();
+    int i = readInteger();
     writeInteger(i);
     return 0;
 }
@@ -150,13 +153,13 @@ int testBytes() {
 }
 
 int testChars() {
-    uint8_t c = readChar();
+    char c = readChar();
     writeChar(c);
     return 0;
 }
 
 int testString() {
-    uint8_t refbyte[300];
+    char refbyte[300];
     readString(100, refbyte);
     writeString(refbyte);
     return 0;
