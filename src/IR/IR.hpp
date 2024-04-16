@@ -1,27 +1,50 @@
-#include <iostream>
+#include <llvm/IR/Instructions.h>
+#include <llvm/IR/BasicBlock.h>
 #include <map>
 #include <deque>
 
-#include <llvm/IR/Instructions.h>
-#include <llvm/IR/BasicBlock.h>
+#include "../ast/ast.hpp"
 
 namespace IR {
 
+    void gen(ast::ASTPtr root);
+    void libgen();
 
-    class Block;
+    class FunctionBlock;
 
-    typedef std::shared_ptr<Block> BlockPtr;
+    typedef std::shared_ptr<FunctionBlock> BlockPtr;
     typedef std::deque<BlockPtr> BlockList;
     typedef std::map<std::string, llvm::Function*> functionTable;
     typedef std::map<std::string, llvm::AllocaInst*> valueTable;
 
-    class Block {
+    class FunctionBlock {
         public:
-            Block();
-            ~Block();
+            FunctionBlock();
+            ~FunctionBlock();
 
+            llvm::BasicBlock* getCurrentBlock();
+            void setCurrentBlock(llvm::BasicBlock* block);
+
+        private:
+            llvm::Function* function;
+            llvm::BasicBlock* currentBlock;
+            BlockList blocks;
+            valueTable values;
+            valueTable addresses;
     };
 
+    class FunctionScope {
+        public:
+            FunctionScope();
+            ~FunctionScope();
 
+            void openScope();
+            void closeScope();
+            void insertFunction(std::string name, llvm::Function* function);
+            llvm::Function * getFunction(std::string name);
+
+        private:
+            std::deque<functionTable> functions;
+    };
 
 }

@@ -9,6 +9,7 @@
 #include "../ast/ast.hpp"
 #include "../symbol/symbol.hpp"
 #include "../types/types.hpp"
+#include "IR.hpp"
 
 extern char * filename;
 
@@ -28,8 +29,112 @@ static llvm::Constant * c8(unsigned char c) {
     return llvm::ConstantInt::get(i8, c);
 }
 
+IR::BlockList blocks;
+
 namespace IR {
-    llvm::Type *translate(std::string type, sym::PassType pass) {
+
+    void libgen() {
+        
+        // writeInteger
+        // =============
+        llvm::FunctionType *writeIntegerType = llvm::FunctionType::get(proc, i32, false);
+        llvm::Function *writeIntegerFunc =
+            llvm::Function::Create(writeIntegerType, llvm::Function::ExternalLinkage, "writeInteger", module);
+
+        // writeByte
+        // =========
+        llvm::FunctionType *writeByteType = llvm::FunctionType::get(proc, i8, false);
+        llvm::Function *writeByteFunc =
+            llvm::Function::Create(writeByteType, llvm::Function::ExternalLinkage, "writeByte", module);
+
+        // writeChar
+        // =========
+        llvm::FunctionType *writeCharType = llvm::FunctionType::get(proc, i8, false);
+        llvm::Function *writeCharFunc =
+            llvm::Function::Create(writeCharType, llvm::Function::ExternalLinkage, "writeChar", module);
+
+        // writeString
+        // ===========
+        llvm::FunctionType *writeStringType = llvm::FunctionType::get(proc, i8->getPointerTo(), false);
+        llvm::Function *writeStringFunc =
+            llvm::Function::Create(writeStringType, llvm::Function::ExternalLinkage, "writeString", module);
+
+        // readInteger
+        // ===========
+        llvm::FunctionType *readIntegerType = llvm::FunctionType::get(i32, {}, false);
+        llvm::Function *readIntegerFunc =
+            llvm::Function::Create(readIntegerType, llvm::Function::ExternalLinkage, "readInteger", module);
+
+        // readByte
+        // ========
+        llvm::FunctionType *readByteType = llvm::FunctionType::get(i8, {}, false);
+        llvm::Function *readByteFunc =
+            llvm::Function::Create(readByteType, llvm::Function::ExternalLinkage, "readByte", module);
+
+        // readChar
+        // ========
+        llvm::FunctionType *readCharType = llvm::FunctionType::get(i8, {}, false);
+        llvm::Function *readCharFunc =
+            llvm::Function::Create(readCharType, llvm::Function::ExternalLinkage, "readChar", module);
+
+        // readString
+        // ==========
+        llvm::FunctionType *readStringType = llvm::FunctionType::get(proc, {i32, i8->getPointerTo()}, false);
+        llvm::Function *readStringFunc =
+            llvm::Function::Create(readStringType, llvm::Function::ExternalLinkage, "readString", module);
+
+        // extend
+        // ======
+        llvm::FunctionType *extendType = llvm::FunctionType::get(i32, i8, false);
+        llvm::Function *extendFunc =
+            llvm::Function::Create(extendType, llvm::Function::ExternalLinkage, "extend", module);
+
+        // shrink
+        // ======
+        llvm::FunctionType *shrinkType = llvm::FunctionType::get(i8, i32, false);
+        llvm::Function *shrinkFunc =
+            llvm::Function::Create(shrinkType, llvm::Function::ExternalLinkage, "shrink", module);
+
+        // strlen
+        // ======
+        llvm::FunctionType *strlenType = llvm::FunctionType::get(i32, i8->getPointerTo(), false);
+        llvm::Function *strlenFunc =
+            llvm::Function::Create(strlenType, llvm::Function::ExternalLinkage, "strlen", module);
+
+        // strcmp
+        // ======
+        llvm::FunctionType *strcmpType = llvm::FunctionType::get(i32, {i8->getPointerTo(), i8->getPointerTo()}, false);
+        llvm::Function *strcmpFunc =
+            llvm::Function::Create(strcmpType, llvm::Function::ExternalLinkage, "strcmp", module);
+
+        // strcpy
+        // ======
+        llvm::FunctionType *strcpyType = llvm::FunctionType::get(proc, {i8->getPointerTo(), i8->getPointerTo()}, false);
+        llvm::Function *strcpyFunc =
+            llvm::Function::Create(strcpyType, llvm::Function::ExternalLinkage, "strcpy", module);
+
+        // strcat
+        // ======
+        llvm::FunctionType *strcatType = llvm::FunctionType::get(proc, {i8->getPointerTo(), i8->getPointerTo()}, false);
+        llvm::Function *strcatFunc =
+            llvm::Function::Create(strcatType, llvm::Function::ExternalLinkage, "strcat", module);
+    }
+
+    void gen(ast::ASTPtr root) {
+        libgen();
+        llvm::FunctionType *funcType = llvm::FunctionType::get(proc, false);
+        llvm::Function *mainFunc = llvm::Function::Create(funcType, llvm::Function::ExternalLinkage, "main", module);
+        llvm::BasicBlock *entry = llvm::BasicBlock::Create(context, "entrypoint", mainFunc);
+        builder.SetInsertPoint(entry);
+        builder.CreateCall(mainFunc, {c32(0)});
+
+        
+        root->llvm();
+        llvm::verifyFunction(*mainFunc);
+        module.print(llvm::outs(), nullptr);
+    }
+
+    llvm::Type *translateType(std::string type, sym::PassType pass) {
         llvm::Type *ret = nullptr;
         if (type == "VoidType") ret = llvm::Type::getVoidTy(context);
         if (type == "IntType") ret = llvm::Type::getInt32Ty(context);
@@ -51,6 +156,7 @@ namespace ast {
     }
 
     llvm::Value* Param::llvm() const {
+        // blocks.back()->addParam
         return nullptr;
     }
 
@@ -75,8 +181,9 @@ namespace ast {
 
     llvm::Value* VarDef::llvm() const {
         std::string type_name = type->getTypeName();
-        llvm::Type *type = IR::translate(type_name, sym::PassType::value);
+        llvm::Type *type = IR::translateType(type_name, sym::PassType::value);
         llvm::Value *var = builder.CreateAlloca(type, nullptr, id);
+
         return var;
     }
 
@@ -164,107 +271,6 @@ namespace ast {
 
     llvm::Value* Print::llvm() const {
         return nullptr;
-    }
-
-    void llvm(ASTPtr root) {
-        libvm();
-        llvm::FunctionType *funcType = llvm::FunctionType::get(proc, false);
-        llvm::Function *mainFunc = llvm::Function::Create(funcType, llvm::Function::ExternalLinkage, "main", module);
-        llvm::BasicBlock *entry = llvm::BasicBlock::Create(context, "entrypoint", mainFunc);
-        builder.SetInsertPoint(entry);
-        builder.CreateCall(mainFunc, {c32(0)});
-
-        
-        root->llvm();
-        llvm::verifyFunction(*mainFunc);
-        module.print(llvm::outs(), nullptr);
-    }
-
-    void libvm() {
-        
-        // writeInteger
-        // =============
-        llvm::FunctionType *writeIntegerType = llvm::FunctionType::get(proc, i32, false);
-        llvm::Function *writeIntegerFunc =
-            llvm::Function::Create(writeIntegerType, llvm::Function::ExternalLinkage, "writeInteger", module);
-
-        // writeByte
-        // =========
-        llvm::FunctionType *writeByteType = llvm::FunctionType::get(proc, i8, false);
-        llvm::Function *writeByteFunc =
-            llvm::Function::Create(writeByteType, llvm::Function::ExternalLinkage, "writeByte", module);
-
-        // writeChar
-        // =========
-        llvm::FunctionType *writeCharType = llvm::FunctionType::get(proc, i8, false);
-        llvm::Function *writeCharFunc =
-            llvm::Function::Create(writeCharType, llvm::Function::ExternalLinkage, "writeChar", module);
-
-        // writeString
-        // ===========
-        llvm::FunctionType *writeStringType = llvm::FunctionType::get(proc, i8->getPointerTo(), false);
-        llvm::Function *writeStringFunc =
-            llvm::Function::Create(writeStringType, llvm::Function::ExternalLinkage, "writeString", module);
-
-        // readInteger
-        // ===========
-        llvm::FunctionType *readIntegerType = llvm::FunctionType::get(i32, {}, false);
-        llvm::Function *readIntegerFunc =
-            llvm::Function::Create(readIntegerType, llvm::Function::ExternalLinkage, "readInteger", module);
-
-        // readByte
-        // ========
-        llvm::FunctionType *readByteType = llvm::FunctionType::get(i8, {}, false);
-        llvm::Function *readByteFunc =
-            llvm::Function::Create(readByteType, llvm::Function::ExternalLinkage, "readByte", module);
-
-        // readChar
-        // ========
-        llvm::FunctionType *readCharType = llvm::FunctionType::get(i8, {}, false);
-        llvm::Function *readCharFunc =
-            llvm::Function::Create(readCharType, llvm::Function::ExternalLinkage, "readChar", module);
-
-        // readString
-        // ==========
-        llvm::FunctionType *readStringType = llvm::FunctionType::get(proc, {i32, i8->getPointerTo()}, false);
-        llvm::Function *readStringFunc =
-            llvm::Function::Create(readStringType, llvm::Function::ExternalLinkage, "readString", module);
-
-        // extend
-        // ======
-        llvm::FunctionType *extendType = llvm::FunctionType::get(i32, i8, false);
-        llvm::Function *extendFunc =
-            llvm::Function::Create(extendType, llvm::Function::ExternalLinkage, "extend", module);
-
-        // shrink
-        // ======
-        llvm::FunctionType *shrinkType = llvm::FunctionType::get(i8, i32, false);
-        llvm::Function *shrinkFunc =
-            llvm::Function::Create(shrinkType, llvm::Function::ExternalLinkage, "shrink", module);
-
-        // strlen
-        // ======
-        llvm::FunctionType *strlenType = llvm::FunctionType::get(i32, i8->getPointerTo(), false);
-        llvm::Function *strlenFunc =
-            llvm::Function::Create(strlenType, llvm::Function::ExternalLinkage, "strlen", module);
-
-        // strcmp
-        // ======
-        llvm::FunctionType *strcmpType = llvm::FunctionType::get(i32, {i8->getPointerTo(), i8->getPointerTo()}, false);
-        llvm::Function *strcmpFunc =
-            llvm::Function::Create(strcmpType, llvm::Function::ExternalLinkage, "strcmp", module);
-
-        // strcpy
-        // ======
-        llvm::FunctionType *strcpyType = llvm::FunctionType::get(proc, {i8->getPointerTo(), i8->getPointerTo()}, false);
-        llvm::Function *strcpyFunc =
-            llvm::Function::Create(strcpyType, llvm::Function::ExternalLinkage, "strcpy", module);
-
-        // strcat
-        // ======
-        llvm::FunctionType *strcatType = llvm::FunctionType::get(proc, {i8->getPointerTo(), i8->getPointerTo()}, false);
-        llvm::Function *strcatFunc =
-            llvm::Function::Create(strcatType, llvm::Function::ExternalLinkage, "strcat", module);
     }
 
 }

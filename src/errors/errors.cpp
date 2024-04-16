@@ -121,6 +121,18 @@ std::string newFileError(int code) {
     return message;
 }
 
+std::string newLLVMError(int code) {
+    std::string message;
+
+    switch (code) {
+        case EmptyScopeError_c:
+            message = "The scope you are trying to close is empty";
+            break;
+    }
+
+    return message;
+}
+
 void RaiseTokenError(int code, char token, int ascii) { 
     std::string message = newTokenError(code);
     colors::Font green_bold = {colors::Color::GREEN,colors::Style::BOLD};
@@ -180,5 +192,17 @@ void RaiseFileError(int code) {
     colors::Font red_normal = {colors::Color::RED,colors::Style::NORMAL};
     colors::Font white_normal = {colors::Color::WHITE,colors::Style::NORMAL};
     std::cout << white_normal << message << std::endl;
+    exit(EXIT_FAILURE);
+}
+
+void RaiseLLVMError(int code) {
+    std::string message = newLLVMError(code);
+    colors::Font green_bold = {colors::Color::GREEN,colors::Style::BOLD};
+    colors::Font red_normal = {colors::Color::RED,colors::Style::NORMAL};
+    colors::Font white_normal = {colors::Color::WHITE,colors::Style::NORMAL};
+    std::cout << green_bold << "{File: " 
+              << filename << "}::" << "{Line: " << line_number 
+              << "}" << red_normal << "\n LLVMError: " 
+              << white_normal << message << std::endl;
     exit(EXIT_FAILURE);
 }

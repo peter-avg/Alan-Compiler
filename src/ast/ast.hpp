@@ -115,6 +115,10 @@ namespace ast {
             virtual llvm::Value* llvm() const override; 
             virtual int eval() const override;
             virtual void sem(sym::Table &table) override;
+            types::TypePtr type = types::intType;
+            virtual types::TypePtr getType() override {
+                return type; 
+            }
 
         private:
             int num;
@@ -186,6 +190,10 @@ namespace ast {
             virtual int run() const override;
             virtual void sem(sym::Table &table) override;
             types::TypePtr type;
+
+            void setType (types::TypePtr t) {
+                type = t;
+            }
 
         private:
             ASTPtr expr;
@@ -287,9 +295,6 @@ namespace ast {
         private:
             ASTPtr expr;
     };
-
-    void llvm(ASTPtr ast);
-    void libvm();
 
 }
 

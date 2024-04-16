@@ -49,14 +49,22 @@ typedef enum {
     argumentTypeMismatchError_c,
 } SemanticErrorCodes;
 
+typedef enum {
+    EmptyScopeError_c,
+
+
+} LLVMErrorCodes;
+
 std::string newTokenError(int code);
 std::string newTypeError(int code);
 std::string newSemanticError(int code);
 std::string newFileError(int code);
+std::string newLLVMError(int code);
 
 void RaiseTypeError(int code);
 void RaiseTokenError(int code, char token, int ascii);
 void RaiseSemanticError(int code, Fatality fatality, std::string id = "");
 void RaiseFileError(int code);
+void RaiseLLVMError(int code);
 
 #endif // __ERRORS_HPP__

@@ -21,7 +21,7 @@ namespace types {
             virtual ~Type() = default;
             virtual void printOn(std::ostream &out) const = 0;
             std::string typeName;
-            virtual std::string getTypeName() const {
+            virtual std::string getTypeName() {
                 return typeName;
             }
     };
@@ -40,7 +40,7 @@ namespace types {
             virtual void printOn(std::ostream &out) const override {
                 out << "Void";
             };
-            virtual std::string getTypeName() const override {
+            virtual std::string getTypeName() override {
                 return typeName;
             }
             std::string typeName; 
@@ -52,13 +52,13 @@ namespace types {
                 typeName = "IntType";
             }
             virtual ~IntType() = default;
-            virtual void printOn(std::ostream &out) const {
+            virtual void printOn(std::ostream &out) const override {
                 out << "Int";
             };
             int getSize() const {
                 return size;
             };
-            std::string getTypeName() const override {
+            std::string getTypeName() override {
                 return typeName;
             }
             std::string typeName ;
@@ -78,7 +78,7 @@ namespace types {
             int getSize() const {
                 return size;
             };
-            std::string getTypeName() const override {
+            std::string getTypeName() override {
                 return typeName;
             }
             std::string typeName;

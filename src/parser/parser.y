@@ -2,6 +2,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <string>
+#include "../IR/IR.hpp"
 #include "../lexer/lexer.h"
 #include "../errors/errors.hpp"
 #include "../types/types.hpp"
@@ -209,8 +210,8 @@ func_def
     ;
 
 program
-    : func_def {std::static_pointer_cast<ast::Func>(*$1)->sem(vars);
-                //ast::llvm(*$1);
+    : func_def {//std::static_pointer_cast<ast::Func>(*$1)->sem(vars);
+                IR::gen(*$1);
                 $$ = $1;}
     ;
 
