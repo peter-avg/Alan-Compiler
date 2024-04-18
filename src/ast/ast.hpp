@@ -28,6 +28,7 @@ namespace ast {
             virtual types::TypePtr getType() const {
                 return type; 
             }
+            virtual std::string getId() const { return ""; };
             sym::PassType pass;
 
             int line;
@@ -59,7 +60,7 @@ namespace ast {
             virtual void printOn(std::ostream &out) const override;
             virtual llvm::Value* llvm() const override; 
             virtual int eval() const override { return 0; }
-            std::string getId() const { return id; }
+            std::string getId() const override { return id; }
             virtual void sem(sym::Table &table) override ;
             virtual types::TypePtr getType() const override {
                 return type; 
@@ -99,7 +100,9 @@ namespace ast {
                 return type; 
             }
 
-            private:
+            std::string getId() const override { return id; }
+
+        protected:
             types::TypePtr type;
             std::string id;
             ASTList param_list;
@@ -178,7 +181,7 @@ namespace ast {
 
     class If: public Stmt {
         public:
-            If(ASTPtr c, ASTPtr s1, ASTPtr s2 = 0): cond(c), stmt1(s1), stmt2(s2) {}
+            If(ASTPtr c, ASTPtr s1, ASTPtr s2 = nullptr): cond(c), stmt1(s1), stmt2(s2) {}
             virtual void printOn(std::ostream &out) const override;
             virtual llvm::Value* llvm() const override; 
             virtual int run() const override;
@@ -257,7 +260,7 @@ namespace ast {
             virtual llvm::Value* llvm() const override; 
             virtual int eval() const override;
             types::TypePtr type;
-            std::string getId() const { return id; }
+            std::string getId() const override { return id; }
             virtual void sem(sym::Table &table) override;
 
         private:

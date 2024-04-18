@@ -1,11 +1,18 @@
 #include <stdlib.h>
 #include <string>
+#include <iostream>
+#include <unistd.h>
 
 #include "errors.hpp"
 #include "../colors/colors.hpp"
 
 extern const char *filename;
 extern int line_number;
+
+void ClearScreen() {
+    sleep(1);
+    system("clear");
+}
 
 std::string newTokenError(int code) {
     
@@ -131,6 +138,12 @@ std::string newLLVMError(int code) {
         case VariableNotFoundError_c:
             message = "Variable not found";
             break;
+        case FunctionNotFoundError_c:
+            message = "Function not found";
+            break;
+        case BadIRError_c:
+            message = "Bad IR";
+            break;
     }
 
     return message;
@@ -191,10 +204,10 @@ void RaiseSemanticError(int code, Fatality type, std::string id) {
 
 void RaiseFileError(int code) {
     std::string message = newFileError(code);
-    colors::Font green_bold = {colors::Color::GREEN,colors::Style::BOLD};
-    colors::Font red_normal = {colors::Color::RED,colors::Style::NORMAL};
+    colors::Font red_normal = {colors::Color::RED,colors::Style::BOLD};
     colors::Font white_normal = {colors::Color::WHITE,colors::Style::NORMAL};
-    std::cout << white_normal << message << std::endl;
+    std::cout << red_normal << "\nFileError: " 
+              << white_normal << message << std::endl;
     exit(EXIT_FAILURE);
 }
 
@@ -209,3 +222,4 @@ void RaiseLLVMError(int code) {
               << white_normal << message << std::endl;
     exit(EXIT_FAILURE);
 }
+

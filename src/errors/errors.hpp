@@ -52,6 +52,8 @@ typedef enum {
 typedef enum {
     EmptyScopeError_c,
     VariableNotFoundError_c,
+    FunctionNotFoundError_c,
+    BadIRError_c,
 } LLVMErrorCodes;
 
 std::string newTokenError(int code);
@@ -65,5 +67,6 @@ void RaiseTokenError(int code, char token, int ascii);
 void RaiseSemanticError(int code, Fatality fatality, std::string id = "");
 void RaiseFileError(int code);
 void RaiseLLVMError(int code);
+void ClearScreen();
 
 #endif // __ERRORS_HPP__
