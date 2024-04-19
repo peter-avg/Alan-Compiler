@@ -93,6 +93,11 @@ sym::Table vars;
 %start program
 
 %%
+program
+    : func_def {//std::static_pointer_cast<ast::Func>(*$1)->sem(vars);
+                IR::gen(*$1);
+                $$ = $1;}
+    ;
 
 data_type
     : T_int     { $$ = &types::intType;  }
@@ -100,8 +105,13 @@ data_type
     ;
 
 type
-    : data_type '[' ']' { $$ = new types::TypePtr(std::make_shared<types::ArrayType>(*$1)); }
+    : data_type '[' ']' { $$ = new types::TypePtr(std::make_shared<types::ArrayType>(*$1, -1)); }
     | data_type         { $$ = $1;                                               }
+    ;
+
+func_def
+    : T_id '(' fpar_list ')' ':' r_type local_def_list compound_stmt 
+    { $$ = new ast::ASTPtr(std::make_shared<ast::Func>($1, *$3, *$6, *$7, *$8)); }
     ;
 
 r_type
@@ -208,16 +218,7 @@ fpar_list
     | fpar_def               { $$ = new ast::ASTList(); $$->push_back(*$1); }
     ;
 
-func_def
-    : T_id '(' fpar_list ')' ':' r_type local_def_list compound_stmt 
-    { $$ = new ast::ASTPtr(std::make_shared<ast::Func>($1, *$3, *$6, *$7, *$8)); }
-    ;
 
-program
-    : func_def {//std::static_pointer_cast<ast::Func>(*$1)->sem(vars);
-                IR::gen(*$1);
-                $$ = $1;}
-    ;
 
 %%
 

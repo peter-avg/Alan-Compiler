@@ -78,7 +78,6 @@ namespace IR {
     }
 
     llvm::Function *FunctionScope::getFunction(std::string name) {
-        std::cout << "Searching for function: " << name << "\n" << std::endl;
         for (auto funcs : functions) {
             for (auto func : funcs) {
                 if (func.first == name) {
