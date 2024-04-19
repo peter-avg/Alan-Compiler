@@ -4,15 +4,24 @@
 
 std::string version = "0.0.1";
 
-void Help() {
+void Version() {
     colors::Font green_bold = {colors::Color::GREEN,colors::Style::BOLD};
-    colors::Font green_normal = {colors::Color::GREEN,colors::Style::NORMAL};
     colors::Font red_normal = {colors::Color::RED,colors::Style::NORMAL};
     colors::Font white_normal = {colors::Color::WHITE,colors::Style::NORMAL};
 
     std::cout << green_bold << "Alan Compiler" << red_normal << " " << version << "\n";
     std::cout << white_normal << "A compiler for the Alan programming language\n";
-    std::cout << "Usage: alan [options] [file]\n";
+    exit(0);
+}
+
+void Help() {
+    colors::Font green_bold = {colors::Color::GREEN,colors::Style::BOLD};
+    colors::Font green_normal = {colors::Color::GREEN,colors::Style::NORMAL};
+    colors::Font white_normal = {colors::Color::WHITE,colors::Style::NORMAL};
+
+    std::cout << green_bold << "Alan Compiler" << " " << version << "\n";
+    std::cout << white_normal << "A compiler for the Alan programming language\n";
+    std::cout << green_normal << "Usage: alan [options] [file]\n";
     std::cout << "Options:\n";
     std::cout << green_normal << "  -h, --help" << white_normal << "    Display this information\n";
     std::cout << green_normal << "  -v, --version" << white_normal << " Display the version of the compiler\n";
@@ -36,6 +45,11 @@ int main(int argc, char *argv[]) {
         if (arg == "-h" || arg == "--help") {
             Help();
         }
+
+        if (arg == "-v" || arg == "--version") {
+            Version();
+        }
+
 
         if (arg == "-O") {
             command += " -O ";
