@@ -14,6 +14,8 @@ typedef enum {
 
 typedef enum {
     nofileError_c,
+    badfileError_c,
+    segfaultError_c,
 } ErrorCodes;
 
 typedef enum {

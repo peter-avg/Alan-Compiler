@@ -9,10 +9,13 @@
 extern const char *filename;
 extern int line_number;
 
+std::string version = "1.0.0";
+
 void ClearScreen() {
     sleep(1);
     system("clear");
 }
+
 
 std::string newTokenError(int code) {
     
@@ -122,6 +125,12 @@ std::string newFileError(int code) {
     switch (code) {
         case nofileError_c:
             message = "File not found error";
+            break;
+        case badfileError_c:
+            message = "Bad file error";
+            break;
+        case segfaultError_c:
+            message = "Segmentation fault error";
             break;
     }
 

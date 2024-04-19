@@ -261,6 +261,7 @@ namespace ast {
             virtual int eval() const override;
             types::TypePtr type;
             std::string getId() const override { return id; }
+            ASTPtr getExpr() const { return expr; }
             virtual void sem(sym::Table &table) override;
 
         private:

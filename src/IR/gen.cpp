@@ -12,6 +12,22 @@
 #include <llvm/Transforms/Scalar.h>
 #include <llvm/Transforms/Scalar/GVN.h>
 #include <llvm/Transforms/Utils.h>
+#include <llvm/Support/raw_ostream.h>
+#include <llvm/IR/LLVMContext.h>
+#include <llvm/IR/Module.h>
+#include <llvm/IR/LegacyPassManager.h>
+#include <llvm/Support/FileSystem.h>
+#include <llvm/Support/raw_ostream.h>
+#include <llvm/Target/TargetMachine.h>
+#include <llvm/Target/TargetOptions.h>
+#include <llvm/IRReader/IRReader.h>
+#include <llvm/Support/SourceMgr.h>
+
+#include <fcntl.h>
+#include <unistd.h>
+#include <iostream>
+#include <memory>
+#include <vector>
 
 #include "../ast/ast.hpp"
 #include "../symbol/symbol.hpp"
@@ -20,7 +36,8 @@
 #include "IR.hpp"
 
 extern char * filename;
-extern bool optimise;
+extern bool opt;
+extern bool llvm_out;
 
 static llvm::LLVMContext context;
 static llvm::IRBuilder<> builder(context);
@@ -42,16 +59,31 @@ static llvm::Constant * c8(unsigned char c) {
 std::vector<IR::BlockPtr> blocks;
 IR::FunctionScope scopes;
 
-
-
 llvm::Type *getLLVMType(types::TypePtr type, sym::PassType pass) {
     llvm::Type *ret = nullptr;
     if (type->getTypeName() == "VoidType") ret = proc;
     if (type->getTypeName() == "IntType") ret = i32;
     if (type->getTypeName() == "ByteType") ret = i8;
+    if (type->getTypeName() == "IarrayType") {
+        int size = type->getSize();
+        if (size == 0) {
+            ret = i32;
+        } else {
+            ret = llvm::ArrayType::get(i32, size);
+        }
+    }
+
+    if (type->getTypeName() == "BarrayType") {
+        int size = type->getSize();
+        if (size == 0) {
+            ret = i8;
+        } else {
+            ret = llvm::ArrayType::get(i8, size);
+        }
+    }
 
     if (pass == sym::PassType::reference) {
-        return ret->getPointerTo();
+        ret = ret->getPointerTo();
     }
     return ret;
 }
@@ -69,6 +101,21 @@ namespace IR {
         builder.SetInsertPoint(mainBB);
         builder.CreateCall(alanMainFunc, alanArgs);
         builder.CreateRet(llvm::ConstantInt::get(i32, 0));
+    }
+    
+    void optimise() {
+        if (opt) {
+            fpm = new llvm::legacy::FunctionPassManager(module.get());
+            fpm->add(llvm::createInstructionCombiningPass());
+            fpm->add(llvm::createReassociatePass());
+            fpm->add(llvm::createGVNPass());
+            fpm->add(llvm::createCFGSimplificationPass());
+            fpm->doInitialization();
+            for (auto &func : *module) {
+                fpm->run(func);
+            }
+            fpm->doFinalization();
+        }
     }
 
     void libgen() {
@@ -186,28 +233,35 @@ namespace IR {
         scopes.insertFunction("strcat", strcatFunc);
     }
 
-    void gen(ast::ASTPtr root, bool optimize) {
+    void gen(ast::ASTPtr root) {
         module = std::make_unique<llvm::Module>(filename, context);
         scopes.openScope();
         libgen();
         setupMain(root);
-        if (optimize) {
-            fpm = new llvm::legacy::FunctionPassManager(module.get());
-            fpm->add(llvm::createInstructionCombiningPass());
-            fpm->add(llvm::createReassociatePass());
-            fpm->add(llvm::createGVNPass());
-            fpm->add(llvm::createCFGSimplificationPass());
-            fpm->doInitialization();
-            for (auto &func : *module) {
-                fpm->run(func);
-            }
-            fpm->doFinalization();
-        }
+        optimise();
         scopes.closeScope();
-        if (llvm::verifyModule(*module, &llvm::outs())) {
-            RaiseLLVMError(BadIRError_c);
+        if (llvm_out) {
+            FILE *file = fopen("out.ll", "w");
+
+            if (file == nullptr) {
+                RaiseFileError(badfileError_c);
+            }
+
+            llvm::raw_fd_ostream os(fileno(file), false); 
+
+            if (llvm::verifyModule(*module, &os)) {
+                fclose(file); 
+                RaiseLLVMError(BadIRError_c);
+            }
+
+            module->print(os, nullptr);
+            fclose(file);
+        } else {
+            if (llvm::verifyModule(*module, &llvm::outs())) {
+                RaiseLLVMError(BadIRError_c);
+            }
+            module->print(llvm::outs(), nullptr);
         }
-        module->print(llvm::outs(), nullptr);
     }
 }
 
@@ -215,29 +269,31 @@ namespace IR {
 namespace ast {
 
 
+    // TODO: Done 
     llvm::Value* AST::llvm() const {
         return nullptr;
     }
 
+    // TODO: Should be adding parameters so that the calling function can use them
     llvm::Value* Param::llvm() const {
-        std::cout << "Param" << std::endl;
         llvm::Type *llvm_type = getLLVMType(type, pass);
         if (pass == sym::PassType::reference) {
             llvm_type = llvm_type->getPointerTo();
         }
-        blocks.back()->addParam(id, llvm_type, sym::PassType::value);
-        blocks.back()->addValue(id, nullptr, getLLVMType(type, pass), IR::ValueType::ADDRESS);
+        blocks.back()->addParam(id, llvm_type, pass);
+        blocks.back()->addValue(id, nullptr, getLLVMType(type, pass), pass);
         return nullptr;
     }
 
+    // TODO: Done
     llvm::Value* Block::llvm() const {
-        std::cout << "Block" << std::endl;
         for (auto stmt : list ) {
             stmt->llvm();
         }
         return nullptr;
     }
 
+    // TODO: This one is a doozy
     llvm::Value* Func::llvm() const {
         IR::BlockPtr newBlock = std::make_shared<IR::FunctionBlock>();
         blocks.push_back(newBlock);
@@ -255,7 +311,7 @@ namespace ast {
             arg->setName(par->getId());
             llvm::Value *alloca = builder.CreateAlloca(arg->getType(), nullptr, par->getId());
             builder.CreateStore(arg, alloca);
-            blocks.back()->addValue(par->getId(), alloca, arg->getType(), IR::ValueType::ADDRESS);
+            blocks.back()->addValue(par->getId(), alloca, arg->getType(), pass);
         }
 
         llvm::BasicBlock *FuncBB = llvm::BasicBlock::Create(context, "entry", func);
@@ -280,32 +336,32 @@ namespace ast {
         return nullptr;
     }
 
+    // TODO: Done
     llvm::Value* Const::llvm() const {
         return c32(num);
     }
 
+    // TODO: Done
     llvm::Value* Char::llvm() const {
         return c8(var);
     }
 
+    // TODO: VarDef by reference for both variables and arrays
     llvm::Value* VarDef::llvm() const {
-        llvm::Value* value = builder.CreateAlloca(getLLVMType(this->type, sym::PassType::value), nullptr, id);
-        blocks.back()->addValue(id, value, getLLVMType(this->type, sym::PassType::value), IR::ValueType::VALUE);
-        return value;
-
-
-
-
-
-
-        // types::TypePtr type = this->getType();
-        // llvm::Type *llvm_type = getLLVMType(type, sym::PassType::value);
-        // llvm::Value *var = builder.CreateAlloca(llvm_type, nullptr, id);
-        // blocks.back()->addValue(id, var, llvm_type, IR::ValueType::VALUE);
-        //
-        // return nullptr;
+        // Variable
+        if (indeces == INT_MAX) {
+            llvm::Value* value = builder.CreateAlloca(getLLVMType(this->type, sym::PassType::value), nullptr, id);
+            blocks.back()->addValue(id, value, getLLVMType(this->type, sym::PassType::value), sym::PassType::value);
+            return value;
+        // Array
+        } else { 
+            llvm::Value* value = builder.CreateAlloca(getLLVMType(this->type, sym::PassType::reference), nullptr, id);
+            blocks.back()->addValue(id, value, getLLVMType(this->type, sym::PassType::reference), sym::PassType::reference);
+        }
+        return nullptr;
     }
 
+    // TODO: Done
     llvm::Value* Cond::llvm() const {
         if (first == nullptr && second == nullptr) {
             if (operation == "true") {
@@ -324,6 +380,7 @@ namespace ast {
         return c32(0);
     }
 
+    // TODO: Probably not done, we should be certain about the previous block and the current block
     llvm::Value* While::llvm() const {
         llvm::Function *function = builder.GetInsertBlock()->getParent();
         llvm::BasicBlock *CondBB = llvm::BasicBlock::Create(context, "cond", function);
@@ -340,6 +397,7 @@ namespace ast {
         return nullptr;
     }
 
+    // TODO: Probably not done, we should be certain about the previous block and the current block
     llvm::Value* If::llvm() const {
         llvm::Value *n = cond->llvm();
         llvm::BasicBlock *PrevBB = builder.GetInsertBlock();
@@ -370,43 +428,46 @@ namespace ast {
         return nullptr;
     }
 
+    // TODO: Done
     llvm::Value* BinOp::llvm() const {
-        std::cout << "BinOp" << std::endl;
+        llvm::Value *exp1 = this->expr1->llvm();
+        llvm::Value *exp2 = this->expr2->llvm();
         if (expr2 != nullptr) {
             switch(op) {
-                case '+': return builder.CreateAdd(expr1->llvm(), expr2->llvm(), "addtmp");
-                case '-': return builder.CreateSub(expr1->llvm(), expr2->llvm(), "subtmp");
-                case '*': return builder.CreateMul(expr1->llvm(), expr2->llvm(), "multmp");
-                case '/': return builder.CreateSDiv(expr1->llvm(), expr2->llvm(), "divtmp");
-                case '%': return builder.CreateSRem(expr1->llvm(), expr2->llvm(), "modtmp");
+                case '+': return builder.CreateAdd(exp1, exp2, "addtmp");
+                case '-': return builder.CreateSub(exp1, exp2, "subtmp");
+                case '*': return builder.CreateMul(exp1, exp2, "multmp");
+                case '/': return builder.CreateSDiv(exp1, exp2, "divtmp");
+                case '%': return builder.CreateSRem(exp1, exp2, "modtmp");
             }
         }
         switch(op) {
-            case '+': return builder.CreateAdd(expr1->llvm(), c32(0), "addtmp");
-            case '!': return builder.CreateNot(expr1->llvm(), "nottmp");
-            case '-': return builder.CreateNeg(expr1->llvm(), "negtmp");
+            case '+': return builder.CreateAdd(exp1, c32(0), "addtmp");
+            case '!': return builder.CreateNot(exp1, "nottmp");
+            case '-': return builder.CreateNeg(exp1, "negtmp");
         }
         return c32(0);
     }
 
+    // TODO: Done
     llvm::Value* String::llvm() const {
-        return builder.CreateGlobalStringPtr(str);
+        return builder.CreateGlobalStringPtr(this->str);
     }
 
+    // TODO: Add by reference for both variables and arrays
     llvm::Value* LValue::llvm() const {
-        std::cout << "LValue" << std::endl;
-        if (this->expr == nullptr) {
-            IR::Value val = blocks.back()->getValue(id);
-            return builder.CreateLoad(val.value);
-        } else {
-            return builder.CreateLoad(this->expr->llvm());
-        }
-
-        return nullptr;
+    if (this->getExpr() == nullptr) {
+            return builder.CreateLoad(blocks.back()->getValue(this->id).value);
+    }
+    else {
+        auto *array_index = this->getExpr()->llvm();
+            return builder.CreateLoad(builder.CreateGEP(blocks.back()->getValue(this->id).value,std::vector<llvm::Value *>{c32(0), array_index}));
+    }
+    return nullptr;
     }
 
+    // TODO: This one is a doozy
     llvm::Value* Call::llvm() const {
-        std::cout << "Call" << std::endl;
         llvm::Function *func = scopes.getFunction(id);
         std::vector<llvm::Value*> llvm_args;
         for (auto arg : block) {
@@ -415,13 +476,40 @@ namespace ast {
         return builder.CreateCall(func, llvm_args);
     }
 
+    // TODO: Pass by reference for both variables and arrays
     llvm::Value* Assign::llvm() const {
-        std::cout << "Assign" << std::endl;
-        llvm::Value* expression = expr->llvm();
-        llvm::Value* address = blocks.back()->getValue(lvalue->getId()).value;
-        return builder.CreateStore(expression, address);
+        auto lval = std::static_pointer_cast<ast::LValue>(lvalue);
+        auto *exp = this->expr->llvm();
+        // Pass by value Variable
+        IR::Value val = blocks.back()->getValue(lval->getId());
+        if (lval->getExpr() == nullptr) {
+            // Pass by reference
+            if (val.valueType == sym::reference) {
+                llvm::Value * alloca = builder.CreateLoad(val.value);
+                return builder.CreateStore(exp,alloca);
+            // Pass by value
+            } else {
+                return builder.CreateStore(exp,val.value);
+            }
+        }
+        // Pass by value Array
+        else {
+            auto *array_index = lval->getExpr()->llvm();
+            // Pass by reference
+            if (val.valueType == sym::reference) {
+                llvm::Value * v = builder.CreateLoad(val.value);
+                return builder.CreateStore(exp, v);
+            // Pass by value
+            } else {
+                std::cout << "Is there an issue here ?" << std::endl;
+                llvm::Value * v = builder.CreateGEP(val.value, std::vector<llvm::Value *>{c32(0), array_index});
+                return builder.CreateStore(exp, v);
+            }
+        }
+        return nullptr;
     }
 
+    // IGNORE
     llvm::Value* Print::llvm() const {
         return nullptr;
     }

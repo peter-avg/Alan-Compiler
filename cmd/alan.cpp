@@ -50,7 +50,6 @@ int main(int argc, char *argv[]) {
             Version();
         }
 
-
         if (arg == "-O") {
             command += " -O ";
         }

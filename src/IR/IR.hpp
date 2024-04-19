@@ -11,18 +11,20 @@ namespace IR {
     enum class ValueType {
         ADDRESS,
         VALUE,
+        REFERENCE
     };
 
     struct Value {
         public:
             llvm::Value* value;
             llvm::Type* type;
-            ValueType valueType;
+            sym::PassType valueType;
     };
 
-    void gen(ast::ASTPtr root, bool optimize);
-    void libgen();
     void setupMain(ast::ASTPtr root);
+    void optimise();
+    void gen(ast::ASTPtr root);
+    void libgen();
 
     class FunctionBlock;
 
@@ -46,7 +48,7 @@ namespace IR {
 
             // Adders
             // ======
-            void addValue(std::string name, llvm::Value* value, llvm::Type* type, ValueType valueType);
+            void addValue(std::string name, llvm::Value* value, llvm::Type* type, sym::PassType pass);
             void addParam(std::string name, llvm::Type* type, sym::PassType pass);
 
         private:

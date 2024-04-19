@@ -2,6 +2,8 @@
 #include <iostream>
 #include <cstdlib>
 #include <string>
+#include <unistd.h>
+#include <signal.h>
 #include "../IR/IR.hpp"
 #include "../lexer/lexer.h"
 #include "../errors/errors.hpp"
@@ -15,9 +17,11 @@
 //%option noyywrap nodefault;
 extern FILE* yyin;
 Fatality fatality = WARNING;
-const char * filename = "\0";
+const char * filename = "";
 extern int line_number;
 extern int yylex();
+bool opt;
+bool llvm_out;
 sym::Table vars;
 %}
 
@@ -217,13 +221,24 @@ program
 
 %%
 
+void segfault(int sig) {
+    RaiseFileError(segfaultError_c);
+}
+
 int main(int argc, char *argv[]) {
+    signal(SIGSEGV, segfault);
     
 
     for (int i = 0; i < argc; i++) {
         std::string arg = argv[i];
         if (arg == "-Wonce")
             fatality = FATAL;
+        
+        if (arg == "-O")
+            opt = true;
+
+        if (arg == "-L")
+            llvm_out = true;
 
         size_t pos = arg.find_last_of('.');
         if (pos != std::string::npos && arg.substr(pos + 1) == "alan") {
@@ -232,7 +247,7 @@ int main(int argc, char *argv[]) {
     }
 
     // if filename is not provided
-    if (filename == "\0") {
+    if (filename == "") {
         RaiseFileError(nofileError_c);
     }
 

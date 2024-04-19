@@ -3,7 +3,6 @@
 
 #include <iostream>
 #include <memory>
-#include <type_traits>
 namespace types {
 
     #define INT_SIZE 4
@@ -16,9 +15,6 @@ namespace types {
         ARRAY,
         ARRAYI
     };
-
-
-
 
     class Type;
     class IntType;
@@ -36,6 +32,10 @@ namespace types {
             virtual std::string getTypeName() {
                 return typeName;
             }
+
+            virtual int getSize() const {
+                return 0;
+            };
     };
 
     inline std::ostream &operator<<(std::ostream &out, const Type &type) {
@@ -67,7 +67,7 @@ namespace types {
             virtual void printOn(std::ostream &out) const override {
                 out << "Int";
             };
-            int getSize() const {
+            int getSize() const override {
                 return size;
             };
             std::string getTypeName() override {
@@ -87,7 +87,7 @@ namespace types {
             virtual void printOn(std::ostream &out) const override {
                 out << "Byte";
             };
-            int getSize() const {
+            int getSize() const override {
                 return size;
             };
             std::string getTypeName() override {
@@ -101,9 +101,15 @@ namespace types {
 
     class ArrayType : public Type { 
         public:
-            ArrayType(TypePtr type = nullptr, int size = 0) : type(type), size(size) {}
+            ArrayType(TypePtr type = nullptr, int size = 0) : type(type), size(size) {
+                if (type->getTypeName() == "IntType") {
+                    typeName = "IarrayType";
+                } else {
+                    typeName = "BarrayType";
+                }
+            }
             virtual ~ArrayType() = default;
-            virtual void printOn(std::ostream &out) const {
+            virtual void printOn(std::ostream &out) const override {
                 out << "Type(Array(";
                 out << *type;
                 out << ":Size( " << size << ")))";
@@ -112,7 +118,7 @@ namespace types {
                 return type;
             };
 
-            int getSize() const {
+            int getSize() const override {
                 return size;
             };
             

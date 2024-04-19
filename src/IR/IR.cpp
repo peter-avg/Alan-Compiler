@@ -49,7 +49,7 @@ namespace IR {
         params.push_back(type);
     }
 
-    void FunctionBlock::addValue(std::string name, llvm::Value* value, llvm::Type* type, ValueType valueType) {
+    void FunctionBlock::addValue(std::string name, llvm::Value* value, llvm::Type* type, sym::PassType valueType) {
         values[name] = {value, type, valueType};
     }
 
