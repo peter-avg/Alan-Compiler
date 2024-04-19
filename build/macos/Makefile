@@ -1,6 +1,7 @@
 SRC_DIR := ../../src
 MAIN_DIR := ../..
 LIB_DIR := $(SRC_DIR)/library
+CMD_DIR := $(MAIN_DIR)/cmd
 
 CC := g++
 CXXFLAGS := -Wfatal-errors -std=c++14
@@ -12,10 +13,10 @@ OBJS := $(SRC_DIR)/parser/parser.cpp $(SRC_DIR)/symbol/symbol.cpp $(SRC_DIR)/err
         $(SRC_DIR)/IR/IR.cpp $(SRC_DIR)/IR/gen.cpp
 
 .PHONY: all clean
-all: alan $(SRC_DIR)/library/library.a
+all: comp $(SRC_DIR)/library/library.a
 
-alan: $(OBJS) $(SRC_DIR)/lexer/lexer.cpp $(SRC_DIR)/parser/parser.cpp $(SRC_DIR)/library/library.a
-	$(CC) $(OBJS) $(LLVM_FLAGS) $(CXXFLAGS) $(LIB_DIR)/library.a -o $(MAIN_DIR)/$@
+comp: $(OBJS) $(SRC_DIR)/lexer/lexer.cpp $(SRC_DIR)/parser/parser.cpp $(SRC_DIR)/library/library.a
+	$(CC) $(OBJS) $(LLVM_FLAGS) $(CXXFLAGS) $(LIB_DIR)/library.a -o $(CMD_DIR)/$@
 
 $(SRC_DIR)/library/library.a: $(SRC_DIR)/library/library.o
 	ar rcs $@ $^
@@ -30,6 +31,6 @@ $(SRC_DIR)/library/library.o: $(SRC_DIR)/library/library.cpp
 	$(CC) -c $< -o $@
 
 clean:
-	rm -rf $(MAIN_DIR)/alan $(SRC_DIR)/library/library.a $(SRC_DIR)/library/library.o \
+	rm -rf $(CMD_DIR)/comp $(SRC_DIR)/library/library.a $(SRC_DIR)/library/library.o \
 	$(SRC_DIR)/lexer/lexer.cpp $(SRC_DIR)/parser/parser.cpp $(SRC_DIR)/parser/parser.hpp
 

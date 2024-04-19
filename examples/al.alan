@@ -1,0 +1,12 @@
+chars () : int 
+
+    c : int;
+    a : int;
+{
+    a = 1;
+    c = 1;
+    a = c + c;
+    writeInteger(a);
+}
+
+
