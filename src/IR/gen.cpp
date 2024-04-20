@@ -279,7 +279,7 @@ namespace ast {
         return nullptr;
     }
 
-    // TODO: Should be adding parameters so that the calling function can use them
+    // TODO: Done
     llvm::Value* Param::llvm() const {
         llvm::Type *llvm_type = getLLVMType(type, pass);
         blocks.back()->addParam(id, llvm_type, pass);
@@ -295,7 +295,7 @@ namespace ast {
         return nullptr;
     }
 
-    // TODO: This one is a doozy
+    // TODO: This one causes scoping issues and seg faults 
     llvm::Value* Func::llvm() const {
         IR::BlockPtr blockity = std::make_shared<IR::FunctionBlock>();
         blocks.push_back(blockity);
@@ -503,7 +503,7 @@ namespace ast {
         return nullptr;
     }
 
-    // TODO: This one is a doozy
+    // TODO: This could be a bit of a mess, no sure yet
     llvm::Value* Call::llvm() const {
         llvm::Function *func = scopes.getFunction(id);
         std::vector<llvm::Value*> llvm_args;
