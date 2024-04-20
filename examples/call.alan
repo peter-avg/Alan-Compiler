@@ -1,14 +1,13 @@
 test() : proc
 
-    test2(n : int) : int
+    test2(n : reference int) : proc
     {
         n = n + 1;
-        return n;
-
     }
 
     n : int;
 
 {
     n = test2(2);
+    writeInteger(n);
 }

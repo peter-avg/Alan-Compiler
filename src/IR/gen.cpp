@@ -94,27 +94,26 @@ namespace IR {
 
     void setupOutput() {
         if (llvm_out) {
-            FILE *file = fopen("out.ll", "w");
-
-            if (file == nullptr) {
-                RaiseFileError(badfileError_c);
-            }
-
-            llvm::raw_fd_ostream os(fileno(file), false); 
-
-            if (llvm::verifyModule(*module, &os)) {
-                fclose(file); 
-                RaiseLLVMError(BadIRError_c);
-            }
-
-            module->print(os, nullptr);
-            fclose(file);
-        } else {
             if (llvm::verifyModule(*module, &llvm::outs())) {
                 RaiseLLVMError(BadIRError_c);
             }
             module->print(llvm::outs(), nullptr);
         }
+        FILE *file = fopen("out.ll", "w");
+
+        if (file == nullptr) {
+            RaiseFileError(badfileError_c);
+        }
+
+        llvm::raw_fd_ostream os(fileno(file), false); 
+
+        if (llvm::verifyModule(*module, &os)) {
+            fclose(file); 
+            RaiseLLVMError(BadIRError_c);
+        }
+
+        module->print(os, nullptr);
+        fclose(file);
     }
 
     void setupMain(ast::ASTPtr root) {
@@ -298,9 +297,9 @@ namespace ast {
 
     // TODO: This one is a doozy
     llvm::Value* Func::llvm() const {
-        IR::BlockPtr newBlock = std::make_shared<IR::FunctionBlock>();
-        blocks.push_back(newBlock);
-        for (auto par : param_list) {
+        IR::BlockPtr blockity = std::make_shared<IR::FunctionBlock>();
+        blocks.push_back(blockity);
+        for (auto par : param_list){
             par->llvm();
         }
         llvm::FunctionType *functype = llvm::FunctionType::get(getLLVMType(type, sym::PassType::value), blocks.back()->getParams(), false);
@@ -308,34 +307,48 @@ namespace ast {
         blocks.back()->setFunction(func);
         scopes.insertFunction(id, func);
         scopes.openScope();
-
-        for (auto par : param_list) {
-            llvm::Argument *arg = func->arg_begin();
-            arg->setName(par->getId());
-            llvm::Value *alloca = builder.CreateAlloca(arg->getType(), nullptr, par->getId());
-            builder.CreateStore(arg, alloca);
-            blocks.back()->addValue(par->getId(), alloca, arg->getType(), pass);
+        int i = 0;
+        for (auto &arg : func->args()) {
+            auto param = std::dynamic_pointer_cast<ast::Param>(param_list[i]);
+            arg.setName(param->getId());
+            i++;
         }
-
-        llvm::BasicBlock *FuncBB = llvm::BasicBlock::Create(context, "entry", func);
-        builder.SetInsertPoint(FuncBB);
-        blocks.back()->setCurrentBlock(FuncBB);
-        for (auto decl : def_list) {
-            decl->llvm();
+        llvm::BasicBlock *funcBB = llvm::BasicBlock::Create(context, "entry", func);
+        builder.SetInsertPoint(funcBB);
+        blocks.back()->setCurrentBlock(funcBB);
+        for (auto &arg : func->args()) {
+            auto *alloca = builder.CreateAlloca(arg.getType(), nullptr, arg.getName());
+            if (arg.getType()->isPointerTy()) {
+                std::cout << arg.getName().str() << std::endl;
+                blocks.back()->addValue(arg.getName().str(), alloca, arg.getType()->getPointerElementType(), sym::PassType::reference);
+            }
+            else {
+                std::cout << arg.getName().str() << std::endl;
+                blocks.back()->addValue(arg.getName().str(), alloca, arg.getType(), sym::PassType::value);
+            }
+            builder.CreateStore(&arg, alloca);
+        }
+        for (auto def : def_list) {
+            def->llvm();
         }
         compound->llvm();
-
-        if (func->getReturnType() == proc) {
-            builder.CreateRetVoid();
-        } else if (func->getReturnType() == i32) {
+        if (func->getReturnType()->isIntegerTy(32)) {
             builder.CreateRet(c32(0));
-        } else if (func->getReturnType() == i8) {
+        }
+        else if (func->getReturnType()->isIntegerTy(8)) {
             builder.CreateRet(c8(0));
         }
-
+        else {
+            builder.CreateRetVoid();
+        }
         blocks.pop_back();
         scopes.closeScope();
 
+        if (!main) {
+            std::cout << "Function " << id << " created" << std::endl;
+            builder.SetInsertPoint(blocks.back()->getCurrentBlock());
+        }
+        
         return nullptr;
     }
 
@@ -492,13 +505,53 @@ namespace ast {
 
     // TODO: This one is a doozy
     llvm::Value* Call::llvm() const {
-        // llvm::Function *func = scopes.getFunction(id);
-        // std::vector<llvm::Value*> llvm_args;
-        // for (auto arg : block) {
-        //     llvm_args.push_back(arg->llvm());
-        // }
-        // return builder.CreateCall(func, llvm_args);
-        return nullptr;
+        llvm::Function *func = scopes.getFunction(id);
+        std::vector<llvm::Value*> llvm_args;
+        int i = 0;
+        for (auto &arg : func->args()) {
+            if (arg.getType()->isPointerTy()) {
+                auto variable = std::dynamic_pointer_cast<ast::LValue>(block[i]);
+                // It's a variable of sorts 
+                if (variable != nullptr) {
+                    // It's a variable
+                    if (variable->getExpr() == nullptr) {
+                        IR::Value val = blocks.back()->getValue(variable->getId());
+                        // Pass by reference
+                        if (val.valueType == sym::reference) {
+                            llvm::Value *alloca = builder.CreateLoad(val.value);
+                            llvm_args.push_back(alloca);
+                        // Pass by value
+                        } else {
+                            llvm_args.push_back(val.value);
+                        }
+                    // It's an array
+                    } else {
+                        auto array_index = variable->getExpr()->llvm();
+                        IR::Value val = blocks.back()->getValue(variable->getId());
+                        // Pass by reference
+                        if (val.valueType == sym::reference) {
+                            llvm::Value *alloca = builder.CreateLoad(val.value);
+                            llvm::Value *v = builder.CreateGEP(alloca, array_index);
+                            llvm_args.push_back(v);
+                        // Pass by value
+                        } else {
+                            llvm::Value *v = builder.CreateGEP(val.value, std::vector<llvm::Value *>{c32(0), array_index});
+                            llvm_args.push_back(v);
+                        }
+                    }
+                }
+                // It's a string 
+                auto string = std::dynamic_pointer_cast<ast::String>(block[i]);
+                if (string != nullptr) {
+                    llvm_args.push_back(string->llvm());
+                }
+                i++;
+            } else {
+                llvm_args.push_back(block[i]->llvm());
+                i++;
+            }
+        }
+        return builder.CreateCall(func, llvm_args);
     }
 
     // TODO: Done
@@ -514,12 +567,10 @@ namespace ast {
             }
             // Pass by reference
             if (val.valueType == sym::reference) {
-                std::cout << "Pass by reference Variable " << *expr << std::endl;
                 llvm::Value * alloca = builder.CreateLoad(val.value);
                 return builder.CreateStore(exp,alloca);
             // Pass by value
             } else {
-                std::cout << "Pass by value Variable" << std::endl;
                 return builder.CreateStore(exp,val.value);
             }
         }

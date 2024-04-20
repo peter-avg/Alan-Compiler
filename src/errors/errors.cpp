@@ -163,10 +163,12 @@ void RaiseTokenError(int code, char token, int ascii) {
     colors::Font green_bold = {colors::Color::GREEN,colors::Style::BOLD};
     colors::Font red_normal = {colors::Color::RED,colors::Style::NORMAL};
     colors::Font white_normal = {colors::Color::WHITE,colors::Style::NORMAL};
+    colors::Font reset = {colors::Color::RESET,colors::Style::NORMAL};
     std::cout << green_bold << "{File: " 
               << filename << "}::" << "{Line: " << line_number 
               << "}" << red_normal << "\nTokenError: " 
-              << white_normal << message << ": '" << token << "' (ASCII: " << ascii << ")" << std::endl;
+              << white_normal << message << ": '" << token
+              << "' (ASCII: " << ascii << ")" << std::endl << reset;
 
     exit(EXIT_FAILURE);
 }
@@ -176,10 +178,11 @@ void RaiseTypeError(int code) {
     colors::Font green_bold = {colors::Color::GREEN,colors::Style::BLINK};
     colors::Font red_normal = {colors::Color::RED,colors::Style::NORMAL};
     colors::Font white_normal = {colors::Color::WHITE,colors::Style::NORMAL};
+    colors::Font reset = {colors::Color::RESET,colors::Style::HIDDEN};
     std::cout << green_bold << "{File: " 
               << filename << "}::" << "{Line: " << line_number 
               << "}" << red_normal << "\nTypeError: " 
-              << white_normal << message << std::endl;
+              << white_normal << message << std::endl << reset;
     exit(EXIT_FAILURE);
 }
 
@@ -189,20 +192,22 @@ void RaiseSemanticError(int code, Fatality type, std::string id) {
         colors::Font green_bold = {colors::Color::GREEN,colors::Style::BOLD};
         colors::Font red_normal = {colors::Color::RED,colors::Style::NORMAL};
         colors::Font white_normal = {colors::Color::WHITE,colors::Style::NORMAL};
+        colors::Font reset = {colors::Color::RESET,colors::Style::HIDDEN};
         std::cout << green_bold << "{File: " 
                   << filename << "}::" << "{Line: " << line_number 
                   << "}" << red_normal << "\n SemanticError: " 
-                  << white_normal << message << std::endl;
+                  << white_normal << message << std::endl << reset;
 
     } else {
         std::string message = newSemanticError(code);
         colors::Font green_bold = {colors::Color::GREEN,colors::Style::BOLD};
         colors::Font red_normal = {colors::Color::RED,colors::Style::NORMAL};
         colors::Font white_normal = {colors::Color::WHITE,colors::Style::NORMAL};
+        colors::Font reset = {colors::Color::RESET,colors::Style::HIDDEN};
         std::cout << green_bold << "{File: " 
                   << filename << "}::" << "{Line: " << line_number 
                   << "}" << red_normal << "\n SemanticError: " 
-                  << white_normal << message << ": " << id << std::endl;
+                  << white_normal << message << ": " << id << std::endl << reset;
 
     }
 
@@ -215,8 +220,9 @@ void RaiseFileError(int code) {
     std::string message = newFileError(code);
     colors::Font red_normal = {colors::Color::RED,colors::Style::BOLD};
     colors::Font white_normal = {colors::Color::WHITE,colors::Style::NORMAL};
+    colors::Font reset = {colors::Color::RESET,colors::Style::HIDDEN};
     std::cout << red_normal << "\nFileError: " 
-              << white_normal << message << std::endl;
+              << white_normal << message << std::endl << reset;
     exit(EXIT_FAILURE);
 }
 
@@ -225,10 +231,11 @@ void RaiseLLVMError(int code) {
     colors::Font green_bold = {colors::Color::GREEN,colors::Style::BOLD};
     colors::Font red_normal = {colors::Color::RED,colors::Style::NORMAL};
     colors::Font white_normal = {colors::Color::WHITE,colors::Style::NORMAL};
+    colors::Font reset = {colors::Color::RESET,colors::Style::HIDDEN};
     std::cout << green_bold << "{File: " 
               << filename << "}::" << "{Line: " << line_number 
               << "}" << red_normal << "\n LLVMError: " 
-              << white_normal << message << std::endl;
+              << white_normal << message << std::endl << reset;
     exit(EXIT_FAILURE);
 }
 

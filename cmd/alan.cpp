@@ -50,11 +50,11 @@ int main(int argc, char *argv[]) {
             Version();
         }
 
-        if (arg == "-O") {
+        if (arg == "-o") {
             command += " -O ";
         }
 
-        if (arg == "-L") {
+        if (arg == "-f") {
             command += " -L ";
         }
 
