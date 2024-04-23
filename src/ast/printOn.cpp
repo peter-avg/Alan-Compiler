@@ -85,10 +85,10 @@ namespace ast {
     }
 
     void VarDef::printOn(std::ostream &out) const {
-        if (value == INT_MAX) { 
+        if (indeces == INT_MAX) { 
             out << "Var(" << id << ": " << *type << ")";
         } else {
-            out << "Var(" << id << ": " << *type << " = " << value << ")";
+            out << "Var(" << id << ": " << *type << " = " << indeces << ")";
         }
     }
 

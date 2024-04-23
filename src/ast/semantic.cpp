@@ -1,6 +1,7 @@
 #include "../symbol/symbol.hpp"
 #include "ast.hpp"
 #include "../errors/errors.hpp"
+#include "../library/library.hpp"
 #include <iostream>
 #include <memory>
 #include <ostream>
@@ -13,7 +14,9 @@ namespace ast {
      *                                  Semantic                                      *
      *                                                                                *
      * ********************************************************************************/
-
+    void addLibrary(sym::Table &table) {
+        
+    }
 
     bool main_func = false;
     
@@ -23,6 +26,7 @@ namespace ast {
             std::cerr << "Error: " << id << " already exists in the current scope" << std::endl;
             return;
         }
+        std::cout << "Param: The Parameter -> \"" << id << "\" is of type -> " << type->getTypeName() <<  std::endl;
         sym::EntryPtr entry = std::make_shared<sym::ParamEntry>(id, table.getCurrentScope(), type, pass);
         table.insertEntry(entry);
     };
@@ -85,11 +89,12 @@ namespace ast {
     };
 
     void VarDef::sem(sym::Table &table) {
-        std::cout << "VarDef" << std::endl;
         sym::EntryPtr varentry = table.lookupEntry(id, sym::LOCAL);
         if (varentry != nullptr) {
             RaiseSemanticError(variableExistsError_c, FATAL);
         }
+
+        std::cout << "VarDef: Var -> \"" << id << "\" is of type -> " << type->getTypeName() << std::endl;
         varentry = std::make_shared<sym::VarEntry>(id, table.getCurrentScope(), type);
         table.insertEntry(varentry);
     };
@@ -163,7 +168,8 @@ namespace ast {
     void BinOp::sem(sym::Table &table) {
         expr1->sem(table);
         expr2->sem(table);
-
+        std::cout << "BinOp: Expr1 is of type -> " << expr1->type->getTypeName() << std::endl;
+        std::cout << "BinOp: Expr2 is of type -> " << expr2->type->getTypeName() << std::endl;
         if (!types::sameType(expr1->type->getTypeName(), expr2->type->getTypeName()))
             std::cerr << "Error: Binary operation expressions don't have the same type" << std::endl;
         type = expr1->type;
@@ -176,44 +182,46 @@ namespace ast {
     };
 
     void LValue::sem(sym::Table &table) {
-        std::cout << "LValue" << std::endl;
+        sym::EntryPtr varentry = table.lookupEntry(id, sym::GLOBAL);
+        if (varentry == nullptr) 
+            std::cerr << "Error: Variable \"" << id << "\" not found in scope -> " << table.getCurrentScope() << std::endl;
         if (expr != nullptr) {
             expr->sem(table);
             if (!types::sameType(expr->type->getTypeName(), "IntType")){
                 std::cerr << "Error: Index of array must be of type int" << std::endl;
             }
+            type = varentry->getType()->getArrayType();
         }
-        sym::EntryPtr varentry = table.lookupEntry(id, sym::LOCAL);
-
-        if (varentry == nullptr) 
-            std::cerr << "Error: Variable \"" << id << "\" not found in scope -> " << table.getCurrentScope() << std::endl;
-        type = varentry->getType();
+        else 
+            type = varentry->getType();
+        std::cout << "LValue: Type of var -> \"" << id << "\" is -> " << type->getTypeName() << std::endl;
     };
 
     void Call::sem(sym::Table &table) {
-       int scope = table.getCurrentScope();
-       sym::EntryPtr funcentry = std::make_shared<sym::FuncEntry>(id, table.getCurrentScope(), nullptr);
-       funcentry = table.lookupEntry(id, sym::GLOBAL);
-       if (funcentry == nullptr) 
+        int scope = table.getCurrentScope();
+        sym::EntryPtr funcentry = std::make_shared<sym::FuncEntry>(id, table.getCurrentScope(), nullptr);
+        funcentry = table.lookupEntry(id, sym::GLOBAL);
+        if (funcentry == nullptr) 
            std::cerr << "Error: No function " << id << " found in this scope" <<  std::endl;
-       if (funcentry->getEType() != sym::FUNC) {
+        if (funcentry->getEType() != sym::FUNC) {
            std::cerr << "Error: " << id << " is not a function" <<  std::endl;
-       }
-       if (block.size() < funcentry->parameters.size()) 
+        }
+        if (block.size() < funcentry->parameters.size()) 
            std::cerr << "Error: Not enough arguments" << std::endl;
-       else if (block.size() > funcentry->parameters.size())
+        else if (block.size() > funcentry->parameters.size())
            std::cerr << "Error: Too many arguments" << std::endl;
 
-       for(auto &item: block) {
+        for(auto &item: block) {
            item->sem(table);
-       }
-       int i = 0;
-       for (auto &item: block) {
+        }
+        int i = 0;
+        for (auto &item: block) {
             if (!types::sameType(item->getType()->getTypeName(), funcentry->parameters[i++]->getType()->getTypeName())){
-                std::cerr << "Error: type of argument does not match type of parameter" << std::endl;
+                std::cout << "Parameter " << funcentry->parameters[i-1]->getId() << " is of type " << funcentry->parameters[i-1]->getType()->getTypeName() << std::endl; 
+                std::cerr << "Error: type of argument " << *item << " does not match type of parameter " << funcentry->parameters[i-1]->getId() << std::endl;
             }
-       }
-       this->type = funcentry->getType(); 
+        }
+        this->type = funcentry->getType(); 
     };
 
 

@@ -24,6 +24,14 @@ namespace types {
             virtual std::string getTypeName() const {
                 return typeName;
             }
+            virtual TypePtr getArrayType() const{ 
+                return type;
+            };
+            virtual bool isArray() {
+                return false;
+            }
+        private: 
+            TypePtr type;
     };
 
     inline std::ostream &operator<<(std::ostream &out, const Type &type) {
@@ -44,6 +52,9 @@ namespace types {
                 return typeName;
             }
             std::string typeName; 
+            virtual bool isArray() override {
+                return false;
+            }
     };
 
     class IntType : public Type { 
@@ -52,7 +63,7 @@ namespace types {
                 typeName = "IntType";
             }
             virtual ~IntType() = default;
-            virtual void printOn(std::ostream &out) const {
+            virtual void printOn(std::ostream &out) const override {
                 out << "Int";
             };
             int getSize() const {
@@ -62,6 +73,9 @@ namespace types {
                 return typeName;
             }
             std::string typeName ;
+            virtual bool isArray() override {
+                return false;
+            }
         private:
             int size = INT_SIZE;
     };
@@ -82,6 +96,10 @@ namespace types {
                 return typeName;
             }
             std::string typeName;
+            
+            virtual bool isArray() override {
+                return false;
+            }
         private:
             int size = BYTE_SIZE;
     };
@@ -91,18 +109,30 @@ namespace types {
         public:
             ArrayType(TypePtr type = nullptr, int size = 0) : type(type), size(size) {}
             virtual ~ArrayType() = default;
-            virtual void printOn(std::ostream &out) const {
+            virtual void printOn(std::ostream &out) const override {
                 out << "Type(Array(";
                 out << *type;
                 out << ":Size( " << size << ")))";
             };
-            TypePtr getType() const { 
+            virtual TypePtr getArrayType() const  override { 
                 return type;
             };
+            std::string getTypeName() const override {
+                if (type->getTypeName() == "IntType") 
+                    return "IArrayType";
+                else if (type->getTypeName() == "ByteType"){
+                    return "BArrayType";
+                }
+                else return "ArrayType";
+            }
 
             int getSize() const {
                 return size;
             };
+
+            virtual bool isArray() override {
+                return true;
+            }
             
         private:
             TypePtr type;
@@ -128,6 +158,7 @@ namespace types {
             TypePtr type;
     };
     
+    extern TypePtr voidType;
     extern TypePtr intType;
     extern TypePtr byteType;
     extern TypePtr BarrayType;

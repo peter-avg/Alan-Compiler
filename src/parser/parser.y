@@ -26,10 +26,10 @@ extern int yylex();
 }
 
 
+%token T_int "int"
 %token T_byte "byte"  
 %token T_false "false"
 %token T_if "if"
-%token T_int "int"
 %token T_proc "proc" 
 %token T_reference "reference"
 %token T_return "return"
@@ -206,7 +206,7 @@ func_def
 
 program
     : func_def {std::cout << *(*$1) << std::endl;
-                sym::Table vars;
+                sym::Table vars = sym::initializeSymbolTable();
                 std::static_pointer_cast<ast::Func>(*$1)->sem(vars);
                 $$ = $1;}
     ;

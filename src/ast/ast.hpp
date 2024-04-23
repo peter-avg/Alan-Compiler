@@ -48,9 +48,18 @@ namespace ast {
 
     class Param : public Expr {
         public:
-            Param(std::string id, std::string pass_string, types::TypePtr t) : id(id), type(t) {
+            Param(std::string id, std::string pass_string, types::TypePtr t) : id(id), type(t){
                 if (pass_string == "reference") pass = sym::reference;
                 else if (pass_string == "value") pass = sym::value;
+
+                if (type->isArray()) {
+                    std::cout << "AST->Param(): The type of the array parameter -> \"" << id << "\" is -> " << type->getArrayType()->getTypeName() << std::endl;
+                    if (t->getArrayType()->getTypeName() == "IntType") {
+                        this->type = types::IarrayType;
+                    } else  if (t->getArrayType()->getTypeName() == "ByteType"){
+                        this->type = types::BarrayType;
+                    }
+                }
             }
             virtual void printOn(std::ostream &out) const override;
             //virtual int eval() const override { return 0; }
@@ -62,6 +71,7 @@ namespace ast {
 
         private:
             types::TypePtr type;
+            types::TypePtr new_type;
             std::string id;
             sym::PassType pass;
     };
@@ -114,7 +124,20 @@ namespace ast {
 
     class VarDef: public Stmt {
         public:
-            VarDef(std::string id, types::TypePtr t, int c = INT_MAX) : id(id), type(t), value(c) {}
+            VarDef(std::string id, types::TypePtr t, int c = INT_MAX) : id(id), type(t), indeces(c) {
+                std::cout << "AST->VarDef(): This is the constructor of the VarDef " << std::endl;
+                if (c != INT_MAX) {
+                    std::cout << "AST->VarDef(): The type of the array variable -> \"" << id << "\" is -> " << type->getTypeName() << std::endl;
+                    if (t->getTypeName() == "IntType") {
+                        this->type = types::IarrayType;
+                        std::cout << "AST->VarDef(): The type of the variable -> \"" << id << "\" is now -> " << type->getTypeName() << std::endl;
+                    } else if (t->getTypeName() == "ByteType"){
+                        this->type = types::BarrayType;
+                        std::cout << "AST->VarDef(): The type of the variable -> \"" << id << "\" is now -> " << type->getTypeName() << std::endl;
+                    }
+                }
+
+            }
             virtual void printOn(std::ostream &out) const override;
             //virtual int run() const override;
             virtual void sem(sym::Table &table) override;
@@ -123,8 +146,9 @@ namespace ast {
             }
         private: 
             types::TypePtr type;
+            types::TypePtr t;
             std::string id;
-            int value;
+            int indeces;
     };
 
     class Cond: public Expr {
