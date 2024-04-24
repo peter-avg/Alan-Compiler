@@ -14,9 +14,6 @@ namespace ast {
      *                                  Semantic                                      *
      *                                                                                *
      * ********************************************************************************/
-    void addLibrary(sym::Table &table) {
-        
-    }
 
     bool main_func = false;
     
@@ -26,13 +23,11 @@ namespace ast {
             std::cerr << "Error: " << id << " already exists in the current scope" << std::endl;
             return;
         }
-        std::cout << "Param: The Parameter -> \"" << id << "\" is of type -> " << type->getTypeName() <<  std::endl;
         sym::EntryPtr entry = std::make_shared<sym::ParamEntry>(id, table.getCurrentScope(), type, pass);
         table.insertEntry(entry);
     };
 
     void Block::sem(sym::Table &table) {
-        std::cout << "Block" << std::endl;
         for (auto item : list) {
             item->sem(table);
         }
@@ -40,7 +35,6 @@ namespace ast {
 
     void Func::sem(sym::Table &table) {
         /* Check if the function already exists */
-        std::cout << "Func: " << std::endl;
         sym::EntryPtr funcentry =  std::make_shared<sym::FuncEntry>(id, table.getCurrentScope(), type);
         funcentry = table.lookupEntry(id, sym::GLOBAL);
         if (funcentry != nullptr) {
@@ -94,7 +88,6 @@ namespace ast {
             RaiseSemanticError(variableExistsError_c, FATAL);
         }
 
-        std::cout << "VarDef: Var -> \"" << id << "\" is of type -> " << type->getTypeName() << std::endl;
         varentry = std::make_shared<sym::VarEntry>(id, table.getCurrentScope(), type);
         table.insertEntry(varentry);
     };
@@ -167,11 +160,11 @@ namespace ast {
 
     void BinOp::sem(sym::Table &table) {
         expr1->sem(table);
-        expr2->sem(table);
-        std::cout << "BinOp: Expr1 is of type -> " << expr1->type->getTypeName() << std::endl;
-        std::cout << "BinOp: Expr2 is of type -> " << expr2->type->getTypeName() << std::endl;
-        if (!types::sameType(expr1->type->getTypeName(), expr2->type->getTypeName()))
-            std::cerr << "Error: Binary operation expressions don't have the same type" << std::endl;
+        if (expr2 != nullptr) {
+            expr2->sem(table);
+            if (!types::sameType(expr1->type->getTypeName(), expr2->type->getTypeName()))
+                std::cerr << "Error: Binary operation expressions don't have the same type" << std::endl;
+        }
         type = expr1->type;
     };
 
@@ -194,7 +187,6 @@ namespace ast {
         }
         else 
             type = varentry->getType();
-        std::cout << "LValue: Type of var -> \"" << id << "\" is -> " << type->getTypeName() << std::endl;
     };
 
     void Call::sem(sym::Table &table) {
@@ -217,7 +209,6 @@ namespace ast {
         int i = 0;
         for (auto &item: block) {
             if (!types::sameType(item->getType()->getTypeName(), funcentry->parameters[i++]->getType()->getTypeName())){
-                std::cout << "Parameter " << funcentry->parameters[i-1]->getId() << " is of type " << funcentry->parameters[i-1]->getType()->getTypeName() << std::endl; 
                 std::cerr << "Error: type of argument " << *item << " does not match type of parameter " << funcentry->parameters[i-1]->getId() << std::endl;
             }
         }
