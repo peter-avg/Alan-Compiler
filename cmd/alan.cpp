@@ -3,6 +3,8 @@
 #include "../src/colors/colors.hpp"
 
 std::string version = "0.0.1";
+std::string outputname = "a.out";
+bool output_asm = false;
 
 void Version() {
     colors::Font green_bold = {colors::Color::GREEN,colors::Style::BOLD};
@@ -58,12 +60,14 @@ int main(int argc, char *argv[]) {
             command += " -L ";
         }
 
+        if (arg == "-s") {
+            output_asm = true;
+        }
+
         size_t pos = arg.find_last_of('.');
         if (pos != std::string::npos && arg.substr(pos + 1) == "alan") {
             filename = argv[i];
         }
-
-
     }
 
     if (filename == "") {
@@ -80,6 +84,18 @@ int main(int argc, char *argv[]) {
 
     int res = system(command.c_str());
     if (res != 0) {
+        exit(1);
     }
 
+    if (system("llc -o out.s out.ll") != 0) {
+        exit(1);
+    }
+
+    if (output_asm) {
+        system("cat out.s");
+    }
+
+    if (system("gcc -o a.out out.s") != 0) {
+        exit(1);
+    }
 }

@@ -1,11 +1,10 @@
 MAIN_DIR := ../..
 SRC_DIR := $(MAIN_DIR)/src
-LIB_DIR := $(SRC_DIR)/library
 CMD_DIR := $(MAIN_DIR)/cmd
 
 CC := g++
 CXXFLAGS := -Wfatal-errors -std=c++14
-LIBFLAGS := -arch x86_64 #-arch arm64 -mmacosx-version-min=11.0
+LIBFLAGS := #-arch x86_64 -arch arm64 -mmacosx-version-min=11.0
 LLVM_FLAGS := $(shell llvm-config --ldflags --libs)
 
 OBJS := $(SRC_DIR)/parser/parser.cpp $(SRC_DIR)/symbol/symbol.cpp $(SRC_DIR)/errors/errors.cpp \
@@ -17,7 +16,7 @@ OBJS := $(SRC_DIR)/parser/parser.cpp $(SRC_DIR)/symbol/symbol.cpp $(SRC_DIR)/err
 all: comp $(SRC_DIR)/library/library.a
 
 comp: $(OBJS) $(SRC_DIR)/lexer/lexer.cpp $(SRC_DIR)/parser/parser.cpp $(SRC_DIR)/library/library.a
-	$(CC) $(OBJS) $(LLVM_FLAGS) $(CXXFLAGS) $(LIB_DIR)/library.a -o $(CMD_DIR)/$@
+	$(CC) $(OBJS) $(LLVM_FLAGS) $(CXXFLAGS) -o $(CMD_DIR)/$@
 
 $(SRC_DIR)/library/library.a: $(SRC_DIR)/library/library.o
 	ar rcs $@ $^
@@ -33,9 +32,9 @@ $(SRC_DIR)/library/library.o: $(SRC_DIR)/library/library.cpp
 
 clean:
 	rm $(SRC_DIR)/library/library.a $(SRC_DIR)/library/library.o \
-	$(SRC_DIR)/lexer/lexer.cpp $(SRC_DIR)/parser/parser.cpp $(SRC_DIR)/parser/parser.hpp
+	$(SRC_DIR)/lexer/lexer.cpp $(SRC_DIR)/parser/parser.cpp $(SRC_DIR)/parser/parser.hpp > /dev/null 2>&1
 
 distclean: clean
-	rm $(CMD_DIR)/comp
+	rm $(CMD_DIR)/comp > /dev/null 2>&1
 
 

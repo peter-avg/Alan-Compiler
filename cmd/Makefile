@@ -8,8 +8,8 @@ all:
 	$(MAKE) -C ../build/macos/ && { $(CXX) $(CXXFLAGS) $(OBJS) -o ../alan; } && rm -rf ../dSYM ../alan.dSYM
 
 clean:
-	$(MAKE) clean -C ../build/macos/ && rm -f ../out.ll ../out.s && rm -rf ../dSYM ../alan.dSYM
+	$(MAKE) clean -C ../build/macos/ && rm -f ../out.ll ../out.s && rm -rf ../dSYM ../alan.dSYM > /dev/null 2>&1
 
 distclean: clean
-	rm -f ../alan ../cmd/comp
+	rm -f ../alan ./comp ../a.out ../out > /dev/null 2>&1
 
