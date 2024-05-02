@@ -1,6 +1,6 @@
 #!/bin/bash
 
-files=(examples/*.alan)
+files=(../test/examples/*.alan)
 
 for file in "${files[@]}"
 do
