@@ -58,6 +58,14 @@ static llvm::Constant * c8(unsigned char c) {
 
 IR::Variables named_variables;
 
+bool hasReturnInstruction(const llvm::BasicBlock *BB) {
+    for (const auto &Inst : *BB) {
+        if (isa<llvm::ReturnInst>(&Inst))
+            return true;
+    }
+    return false;
+}
+
 llvm::Type *getLLVMType(types::TypePtr type, sym::PassType pass) {
     llvm::Type *ret = nullptr;
     if (type->getTypeName() == "VoidType") ret = proc;
@@ -88,6 +96,8 @@ llvm::Type *getLLVMType(types::TypePtr type, sym::PassType pass) {
 }
 
 namespace IR {
+
+
 
     void setupOutput() {
         if (llvm_out) {
@@ -255,7 +265,11 @@ namespace ast {
         named_variables.openScope();
         std::vector<llvm::Type *> args;
         for (auto param : param_list) {
-            args.push_back(getLLVMType(param->getType(), param->getPass()));
+            if (param->getPass() == sym::PassType::reference && param->getType()->getTypeName() == "BarrayType") {
+                args.push_back(getLLVMType(param->getType(), sym::PassType::value));
+            } else {
+                args.push_back(getLLVMType(param->getType(), param->getPass()));
+            }
         }
         llvm::FunctionType *funcType = llvm::FunctionType::get(getLLVMType(type, sym::PassType::value), args, false);
         llvm::Function *func = llvm::Function::Create(funcType, llvm::Function::ExternalLinkage, id, module.get());
@@ -263,10 +277,17 @@ namespace ast {
         builder.SetInsertPoint(entry);
         for (auto &arg : func->args()) {
             arg.setName(param_list[arg.getArgNo()]->getId());
-            llvm::Value *alloca = builder.CreateAlloca(arg.getType(), nullptr, param_list[arg.getArgNo()]->getId());
-            builder.CreateStore(&arg, alloca);
-            IR::Value val = {alloca, arg.getType(), param_list[arg.getArgNo()]->getPass()};
-            named_variables.addVariable(param_list[arg.getArgNo()]->getId(), val);
+            if (param_list[arg.getArgNo()]->getPass() == sym::PassType::reference && param_list[arg.getArgNo()]->getType()->getTypeName() == "BarrayType") {
+                llvm::Value *alloca = builder.CreateAlloca(getLLVMType(param_list[arg.getArgNo()]->getType(), sym::PassType::value), nullptr, param_list[arg.getArgNo()]->getId());
+                builder.CreateStore(&arg, alloca);
+                IR::Value val = {alloca, arg.getType(), sym::PassType::value};
+                named_variables.addVariable(param_list[arg.getArgNo()]->getId(), val);
+            } else {
+                llvm::Value *alloca = builder.CreateAlloca(getLLVMType(param_list[arg.getArgNo()]->getType(), param_list[arg.getArgNo()]->getPass()), nullptr, param_list[arg.getArgNo()]->getId());
+                builder.CreateStore(&arg, alloca);
+                IR::Value val = {alloca, arg.getType(), param_list[arg.getArgNo()]->getPass()};
+                named_variables.addVariable(param_list[arg.getArgNo()]->getId(), val);
+            }
         }
 
         for (auto decl : def_list) {
@@ -280,10 +301,13 @@ namespace ast {
             if (BB.getTerminator() == nullptr) {
                 if (getLLVMType(type, sym::PassType::value) == proc) {
                     builder.CreateRetVoid();
+                    break;
                 } else if (getLLVMType(type, sym::PassType::value) == i32) {
                     builder.CreateRet(c32(0));
+                    break;
                 } else {
                     builder.CreateRet(c8(0));
+                    break;
                 }
             }
         }
@@ -350,7 +374,9 @@ namespace ast {
         builder.CreateCondBr(cond, LoopBB, AfterBB);
         builder.SetInsertPoint(LoopBB);
         stmt->llvm();
-        builder.CreateBr(CondBB);
+        if (!hasReturnInstruction(LoopBB)) {
+            builder.CreateBr(CondBB);
+        }
         builder.SetInsertPoint(AfterBB);
         return nullptr;
     }
@@ -365,16 +391,20 @@ namespace ast {
         llvm::BasicBlock *AfterBB = llvm::BasicBlock::Create(context, "endif", function);
         builder.CreateCondBr(n, ThenBB, ElseBB);
         builder.SetInsertPoint(ThenBB);
-        stmt1->llvm();
-        builder.CreateBr(AfterBB);
+        llvm::Value *then = stmt1->llvm();
+        if (!hasReturnInstruction(ThenBB)) {
+            builder.CreateBr(AfterBB);
+        }
+        llvm::Value *else_;
         builder.SetInsertPoint(ElseBB);
         if (stmt2 != nullptr) {
-            stmt2->llvm();
+            else_ = stmt2->llvm();
         }
-        builder.CreateBr(AfterBB);
+        if (!hasReturnInstruction(ElseBB)) {
+            builder.CreateBr(AfterBB);
+        }
         builder.SetInsertPoint(AfterBB);
         return nullptr;
-
     }
 
     // TODO: Done

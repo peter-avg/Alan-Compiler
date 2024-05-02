@@ -6,14 +6,14 @@ SRCS = alan.cpp
 
 all: 
 	$(MAKE) -C ../build/macos/
-	$(CXX) $(CXXFLAGS) $(SRCS) -o ../test/alan
+	$(CXX) $(CXXFLAGS) $(SRCS) -o ../bin/alan
 
 clean:
 	$(MAKE) clean -C ../build/macos/
-	rm -f ../out.ll ../out.s ../a.out ../out
-	rm -rf ../dSYM ../alan.dSYM
+	rm -f ../out.ll ../out.s ../a.out ../out ../bin/out.ll ../bin/out.s ../bin/a.out ../bin/out
+	rm -rf ../dSYM ../alan.dSYM ../bin/alan.dSYM ../bin/dSYM
 
 distclean: clean
-	rm -f ../test/alan ./comp
+	rm -f ../bin/alan ../bin/comp
 
 

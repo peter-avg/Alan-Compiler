@@ -38,7 +38,9 @@ int main(int argc, char *argv[]) {
         Help();
     }
 
-    std::string command = "./cmd/comp";
+    system("export PATH=$HOME/Coding/Compilers/Alan/bin:$PATH");
+
+    std::string command = "./comp";
     std::string filename = "";
 
     for (int i = 0; i < argc; i++) {
@@ -75,7 +77,7 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
 
-    if (command == "./cmd/comp") {
+    if (command == "./comp") {
         command += " ";
     }
 

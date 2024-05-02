@@ -1,6 +1,7 @@
 MAIN_DIR := ../..
 SRC_DIR := $(MAIN_DIR)/src
 CMD_DIR := $(MAIN_DIR)/cmd
+BIN_DIR := $(MAIN_DIR)/bin
 
 CC := g++
 CXXFLAGS := -Wfatal-errors -std=c++14
@@ -16,7 +17,7 @@ OBJS := $(SRC_DIR)/parser/parser.cpp $(SRC_DIR)/symbol/symbol.cpp $(SRC_DIR)/err
 all: comp $(SRC_DIR)/library/library.a
 
 comp: $(OBJS) $(SRC_DIR)/lexer/lexer.cpp $(SRC_DIR)/parser/parser.cpp $(SRC_DIR)/library/library.a
-	$(CC) $(OBJS) $(LLVM_FLAGS) $(CXXFLAGS) -o $(CMD_DIR)/$@
+	$(CC) $(OBJS) $(LLVM_FLAGS) $(CXXFLAGS) -o $(BIN_DIR)/$@
 
 $(SRC_DIR)/library/library.a: $(SRC_DIR)/library/library.o
 	ar rcs $@ $^
@@ -32,9 +33,9 @@ $(SRC_DIR)/library/library.o: $(SRC_DIR)/library/library.cpp
 
 clean:
 	rm $(SRC_DIR)/library/library.a $(SRC_DIR)/library/library.o \
-	$(SRC_DIR)/lexer/lexer.cpp $(SRC_DIR)/parser/parser.cpp $(SRC_DIR)/parser/parser.hpp > /dev/null 2>&1
+	$(SRC_DIR)/lexer/lexer.cpp $(SRC_DIR)/parser/parser.cpp $(SRC_DIR)/parser/parser.hpp
 
 distclean: clean
-	rm $(CMD_DIR)/comp > /dev/null 2>&1
+	rm $(BIN_DIR)/comp
 
 

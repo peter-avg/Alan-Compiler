@@ -1,0 +1,9 @@
+test() : proc 
+    test2(str : reference byte []) : proc
+    {
+        writeString(str);
+    }
+
+    {
+        test2("hey");
+    }

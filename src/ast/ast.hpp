@@ -29,6 +29,7 @@ namespace ast {
                 return type; 
             }
             virtual std::string getId() const { return ""; };
+            virtual sym::PassType getPass() const { return sym::value; }
             sym::PassType pass;
 
             int line;
@@ -66,6 +67,10 @@ namespace ast {
                 return type; 
             }
 
+            sym::PassType getPass() const override {
+                return pass;
+            }
+
         private:
             types::TypePtr type;
             std::string id;
@@ -90,8 +95,8 @@ namespace ast {
         public:
             Func(std::string id,ASTList p,
                     types::TypePtr ret, ASTList local_def,
-                    ASTPtr compound) : id(id), param_list(p),
-            type(ret), def_list(local_def), compound(compound)  {}
+                    ASTPtr compound, bool main = false) : id(id), param_list(p),
+            type(ret), def_list(local_def), compound(compound), main(main)  {}
             virtual void printOn(std::ostream &out) const override;
             virtual llvm::Value* llvm() const override; 
             virtual int run() const override;
@@ -108,7 +113,7 @@ namespace ast {
             ASTList param_list;
             ASTList def_list;
             ASTPtr compound;
-            bool main = false;
+            bool main;
     };
 
     class Const: public Expr {

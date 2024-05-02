@@ -10,9 +10,10 @@ fact() : proc
 
 {
     z = fact1(7);
-    if (z == 5040) Print "42\n";
+    if (z == 5040) {
+        z = 1;
+    }
     else {
-        Print z; Print 99999;
-
+        z = 2;
     }
 }

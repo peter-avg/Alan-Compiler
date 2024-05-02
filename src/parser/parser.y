@@ -4,7 +4,7 @@
 #include <string>
 #include <unistd.h>
 #include <signal.h>
-#include "../IR/IR.hpp"
+#include "../IR/gen.hpp"
 #include "../lexer/lexer.h"
 #include "../errors/errors.hpp"
 #include "../types/types.hpp"

@@ -22,9 +22,9 @@ main () : proc
     number  : int;
     counter : int;
 
-{ -- start main
+{
     writeString("Limit: ");
-    limit = readInteger();
+    limit = 5;
     writeString("Primes:\n");
     counter = 0;
     if (limit >= 2) {
@@ -54,4 +54,4 @@ main () : proc
     writeString("\nTotal: ");
     writeInteger(counter);
     writeString("\n");
-} -- end main
+}
