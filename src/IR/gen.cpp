@@ -25,7 +25,6 @@
 
 #include <fcntl.h>
 #include <unistd.h>
-#include <iostream>
 #include <memory>
 #include <vector>
 
@@ -33,7 +32,7 @@
 #include "../symbol/symbol.hpp"
 #include "../errors/errors.hpp"
 #include "../types/types.hpp"
-#include "IR.hpp"
+#include "gen.hpp"
 
 extern char * filename;
 extern bool opt;
@@ -57,8 +56,7 @@ static llvm::Constant * c8(unsigned char c) {
     return llvm::ConstantInt::get(i8, c);
 }
 
-std::vector<IR::BlockPtr> blocks;
-IR::FunctionScope scopes;
+IR::Variables named_variables;
 
 llvm::Type *getLLVMType(types::TypePtr type, sym::PassType pass) {
     llvm::Type *ret = nullptr;
@@ -79,7 +77,6 @@ llvm::Type *getLLVMType(types::TypePtr type, sym::PassType pass) {
         if (size == 0) {
             ret = i8;
         } else {
-            // ret = llvm::ArrayType::get(i8, size);
             ret = i8ptr;
         }
     }
@@ -107,26 +104,18 @@ namespace IR {
 
         llvm::raw_fd_ostream os(fileno(file), false); 
 
+        module->print(os, nullptr);
+
         if (llvm::verifyModule(*module, &os)) {
             fclose(file); 
             RaiseLLVMError(BadIRError_c);
         }
 
-        module->print(os, nullptr);
         fclose(file);
     }
 
     void setupMain(ast::ASTPtr root) {
-        auto *mainType = llvm::FunctionType::get(i32, std::vector<llvm::Type *>{}, false);
-        auto *mainFunc = llvm::Function::Create(mainType, llvm::Function::ExternalLinkage, "main", module.get());
-        llvm::BasicBlock *mainBB = llvm::BasicBlock::Create(context, "entry", mainFunc);
         root->llvm();
-        auto alanMain = std::dynamic_pointer_cast<ast::Func>(root);
-        auto *alanMainFunc = scopes.getFunction(alanMain->getId());
-        std::vector<llvm::Value *> alanArgs;
-        builder.SetInsertPoint(mainBB);
-        builder.CreateCall(alanMainFunc, alanArgs);
-        builder.CreateRet(llvm::ConstantInt::get(i32, 0));
     }
     
     void optimise() {
@@ -152,39 +141,28 @@ namespace IR {
         llvm::Function *writeIntegerFunc =
             llvm::Function::Create(writeIntegerType, llvm::Function::ExternalLinkage, "writeInteger", module.get());
 
-        scopes.insertFunction("writeInteger", writeIntegerFunc);
-
         // writeByte
         // =========
         llvm::FunctionType *writeByteType = llvm::FunctionType::get(proc, i8, false);
         llvm::Function *writeByteFunc =
             llvm::Function::Create(writeByteType, llvm::Function::ExternalLinkage, "writeByte", module.get());
         
-        scopes.insertFunction("writeByte", writeByteFunc);
-
         // writeChar
         // =========
         llvm::FunctionType *writeCharType = llvm::FunctionType::get(proc, i8, false);
         llvm::Function *writeCharFunc =
             llvm::Function::Create(writeCharType, llvm::Function::ExternalLinkage, "writeChar", module.get());
 
-        scopes.insertFunction("writeChar", writeCharFunc);
-
         // writeString
         // ===========
         llvm::FunctionType *writeStringType = llvm::FunctionType::get(proc, i8->getPointerTo(), false);
         llvm::Function *writeStringFunc =
             llvm::Function::Create(writeStringType, llvm::Function::ExternalLinkage, "writeString", module.get());
-
-        scopes.insertFunction("writeString", writeStringFunc);
-
         // readInteger
         // ===========
         llvm::FunctionType *readIntegerType = llvm::FunctionType::get(i32, {}, false);
         llvm::Function *readIntegerFunc =
             llvm::Function::Create(readIntegerType, llvm::Function::ExternalLinkage, "readInteger", module.get());
-
-        scopes.insertFunction("readInteger", readIntegerFunc);
 
         // readByte
         // ========
@@ -192,15 +170,11 @@ namespace IR {
         llvm::Function *readByteFunc =
             llvm::Function::Create(readByteType, llvm::Function::ExternalLinkage, "readByte", module.get());
 
-        scopes.insertFunction("readByte", readByteFunc);
-
         // readChar
         // ========
         llvm::FunctionType *readCharType = llvm::FunctionType::get(i8, {}, false);
         llvm::Function *readCharFunc =
             llvm::Function::Create(readCharType, llvm::Function::ExternalLinkage, "readChar", module.get());
-
-        scopes.insertFunction("readChar", readCharFunc);
 
         // readString
         // ==========
@@ -208,15 +182,11 @@ namespace IR {
         llvm::Function *readStringFunc =
             llvm::Function::Create(readStringType, llvm::Function::ExternalLinkage, "readString", module.get());
 
-        scopes.insertFunction("readString", readStringFunc);
-
         // extend
         // ======
         llvm::FunctionType *extendType = llvm::FunctionType::get(i32, i8, false);
         llvm::Function *extendFunc =
             llvm::Function::Create(extendType, llvm::Function::ExternalLinkage, "extend", module.get());
-
-        scopes.insertFunction("extend", extendFunc);
 
         // shrink
         // ======
@@ -224,15 +194,11 @@ namespace IR {
         llvm::Function *shrinkFunc =
             llvm::Function::Create(shrinkType, llvm::Function::ExternalLinkage, "shrink", module.get());
 
-        scopes.insertFunction("shrink", shrinkFunc);
-
         // strlen
         // ======
         llvm::FunctionType *strlenType = llvm::FunctionType::get(i32, i8->getPointerTo(), false);
         llvm::Function *strlenFunc =
             llvm::Function::Create(strlenType, llvm::Function::ExternalLinkage, "strlen", module.get());
-
-        scopes.insertFunction("strlen", strlenFunc);
 
         // strcmp
         // ======
@@ -240,32 +206,24 @@ namespace IR {
         llvm::Function *strcmpFunc =
             llvm::Function::Create(strcmpType, llvm::Function::ExternalLinkage, "strcmp", module.get());
 
-        scopes.insertFunction("strcmp", strcmpFunc);
-
         // strcpy
         // ======
         llvm::FunctionType *strcpyType = llvm::FunctionType::get(proc, {i8->getPointerTo(), i8->getPointerTo()}, false);
         llvm::Function *strcpyFunc =
             llvm::Function::Create(strcpyType, llvm::Function::ExternalLinkage, "strcpy", module.get());
 
-        scopes.insertFunction("strcpy", strcpyFunc);
-
         // strcat
         // ======
         llvm::FunctionType *strcatType = llvm::FunctionType::get(proc, {i8->getPointerTo(), i8->getPointerTo()}, false);
         llvm::Function *strcatFunc =
             llvm::Function::Create(strcatType, llvm::Function::ExternalLinkage, "strcat", module.get());
-
-        scopes.insertFunction("strcat", strcatFunc);
     }
 
     void gen(ast::ASTPtr root) {
         module = std::make_unique<llvm::Module>(filename, context);
-        scopes.openScope();
         libgen();
         setupMain(root);
         optimise();
-        scopes.closeScope();
         setupOutput();
     }
 }
@@ -281,9 +239,6 @@ namespace ast {
 
     // TODO: Done
     llvm::Value* Param::llvm() const {
-        llvm::Type *llvm_type = getLLVMType(type, pass);
-        blocks.back()->addParam(id, llvm_type, pass);
-        blocks.back()->addValue(id, nullptr, getLLVMType(type, pass), pass);
         return nullptr;
     }
 
@@ -297,58 +252,43 @@ namespace ast {
 
     // TODO: This one causes scoping issues and seg faults 
     llvm::Value* Func::llvm() const {
-        IR::BlockPtr blockity = std::make_shared<IR::FunctionBlock>();
-        blocks.push_back(blockity);
-        for (auto par : param_list){
-            par->llvm();
+        named_variables.openScope();
+        std::vector<llvm::Type *> args;
+        for (auto param : param_list) {
+            args.push_back(getLLVMType(param->getType(), param->getPass()));
         }
-        llvm::FunctionType *functype = llvm::FunctionType::get(getLLVMType(type, sym::PassType::value), blocks.back()->getParams(), false);
-        llvm::Function *func = llvm::Function::Create(functype, llvm::Function::ExternalLinkage, id, module.get());
-        blocks.back()->setFunction(func);
-        scopes.insertFunction(id, func);
-        scopes.openScope();
-        int i = 0;
+        llvm::FunctionType *funcType = llvm::FunctionType::get(getLLVMType(type, sym::PassType::value), args, false);
+        llvm::Function *func = llvm::Function::Create(funcType, llvm::Function::ExternalLinkage, id, module.get());
+        llvm::BasicBlock *entry = llvm::BasicBlock::Create(context, "entry", func);
+        builder.SetInsertPoint(entry);
         for (auto &arg : func->args()) {
-            auto param = std::dynamic_pointer_cast<ast::Param>(param_list[i]);
-            arg.setName(param->getId());
-            i++;
-        }
-        llvm::BasicBlock *funcBB = llvm::BasicBlock::Create(context, "entry", func);
-        builder.SetInsertPoint(funcBB);
-        blocks.back()->setCurrentBlock(funcBB);
-        for (auto &arg : func->args()) {
-            auto *alloca = builder.CreateAlloca(arg.getType(), nullptr, arg.getName());
-            if (arg.getType()->isPointerTy()) {
-                std::cout << arg.getName().str() << std::endl;
-                blocks.back()->addValue(arg.getName().str(), alloca, arg.getType()->getPointerElementType(), sym::PassType::reference);
-            }
-            else {
-                std::cout << arg.getName().str() << std::endl;
-                blocks.back()->addValue(arg.getName().str(), alloca, arg.getType(), sym::PassType::value);
-            }
+            arg.setName(param_list[arg.getArgNo()]->getId());
+            llvm::Value *alloca = builder.CreateAlloca(arg.getType(), nullptr, param_list[arg.getArgNo()]->getId());
             builder.CreateStore(&arg, alloca);
+            IR::Value val = {alloca, arg.getType(), param_list[arg.getArgNo()]->getPass()};
+            named_variables.addVariable(param_list[arg.getArgNo()]->getId(), val);
         }
-        for (auto def : def_list) {
-            def->llvm();
-        }
-        compound->llvm();
-        if (func->getReturnType()->isIntegerTy(32)) {
-            builder.CreateRet(c32(0));
-        }
-        else if (func->getReturnType()->isIntegerTy(8)) {
-            builder.CreateRet(c8(0));
-        }
-        else {
-            builder.CreateRetVoid();
-        }
-        blocks.pop_back();
-        scopes.closeScope();
 
-        if (!main) {
-            std::cout << "Function " << id << " created" << std::endl;
-            builder.SetInsertPoint(blocks.back()->getCurrentBlock());
+        for (auto decl : def_list) {
+            builder.SetInsertPoint(entry);
+            decl->llvm();
         }
-        
+        builder.SetInsertPoint(entry);
+        compound->llvm();
+
+        for (auto &BB : *func) {
+            if (BB.getTerminator() == nullptr) {
+                if (getLLVMType(type, sym::PassType::value) == proc) {
+                    builder.CreateRetVoid();
+                } else if (getLLVMType(type, sym::PassType::value) == i32) {
+                    builder.CreateRet(c32(0));
+                } else {
+                    builder.CreateRet(c8(0));
+                }
+            }
+        }
+
+        named_variables.closeScope();
         return nullptr;
     }
 
@@ -367,12 +307,14 @@ namespace ast {
         // Variable
         if (indeces == INT_MAX) {
             llvm::Value* value = builder.CreateAlloca(getLLVMType(type, sym::PassType::value), nullptr, id);
-            blocks.back()->addValue(id, value, getLLVMType(type, sym::PassType::value), sym::PassType::value);
+            IR::Value val = {value, getLLVMType(type, sym::PassType::value), sym::PassType::value};
+            named_variables.addVariable(id, val);
             // return value;
         // Array
         } else { 
             llvm::Value* value = builder.CreateAlloca(getLLVMType(type, sym::PassType::reference), nullptr, id);
-            blocks.back()->addValue(id, value, getLLVMType(type, sym::PassType::reference), sym::PassType::reference);
+            IR::Value val = {value, getLLVMType(type, sym::PassType::reference), sym::reference};
+            named_variables.addVariable(id, val);
         }
         return nullptr;
     }
@@ -475,7 +417,7 @@ namespace ast {
     llvm::Value* LValue::llvm() const {
         // Variable
         if (expr == nullptr) {
-            IR::Value val = blocks.back()->getValue(id);
+            IR::Value val = named_variables.getVariable(id);
             // Pass by reference
             if (val.valueType == sym::reference) {
                 llvm::Value *alloca = builder.CreateLoad(val.value);
@@ -488,7 +430,7 @@ namespace ast {
         // Array
         else {
             llvm::Value * array_index = expr->llvm();
-            IR::Value val = blocks.back()->getValue(id);
+            IR::Value val = named_variables.getVariable(id);
             // Pass by reference
             if (val.valueType == sym::reference) {
                 llvm::Value *pointer_to = builder.CreateLoad(val.value);
@@ -505,7 +447,7 @@ namespace ast {
 
     // TODO: This could be a bit of a mess, no sure yet
     llvm::Value* Call::llvm() const {
-        llvm::Function *func = scopes.getFunction(id);
+        llvm::Function *func = module->getFunction(id);
         std::vector<llvm::Value*> llvm_args;
         int i = 0;
         for (auto &arg : func->args()) {
@@ -515,7 +457,7 @@ namespace ast {
                 if (variable != nullptr) {
                     // It's a variable
                     if (variable->getExpr() == nullptr) {
-                        IR::Value val = blocks.back()->getValue(variable->getId());
+                        IR::Value val = named_variables.getVariable(variable->getId());
                         // Pass by reference
                         if (val.valueType == sym::reference) {
                             llvm::Value *alloca = builder.CreateLoad(val.value);
@@ -527,7 +469,7 @@ namespace ast {
                     // It's an array
                     } else {
                         auto array_index = variable->getExpr()->llvm();
-                        IR::Value val = blocks.back()->getValue(variable->getId());
+                        IR::Value val = named_variables.getVariable(variable->getId());
                         // Pass by reference
                         if (val.valueType == sym::reference) {
                             llvm::Value *alloca = builder.CreateLoad(val.value);
@@ -559,7 +501,7 @@ namespace ast {
         auto *exp = expr->llvm();
         auto lval = std::static_pointer_cast<ast::LValue>(lvalue);
         // Pass by value Variable
-        IR::Value val = blocks.back()->getValue(lval->getId());
+        IR::Value val = named_variables.getVariable(lval->getId());
         if (lval->getExpr() == nullptr) {
             auto possible_string = std::dynamic_pointer_cast<ast::String>(expr);
             if (possible_string != nullptr) {
