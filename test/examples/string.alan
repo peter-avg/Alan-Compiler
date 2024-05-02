@@ -2,4 +2,5 @@ strings () : proc
     c : byte[20];
 {
     c = "Hello";
+    writeString(c);
 }

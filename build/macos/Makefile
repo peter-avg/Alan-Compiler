@@ -10,7 +10,7 @@ LLVM_FLAGS := $(shell llvm-config --ldflags --libs)
 OBJS := $(SRC_DIR)/parser/parser.cpp $(SRC_DIR)/symbol/symbol.cpp $(SRC_DIR)/errors/errors.cpp \
         $(SRC_DIR)/lexer/lexer.cpp $(SRC_DIR)/correcting/correcting.cpp $(SRC_DIR)/types/types.cpp \
         $(SRC_DIR)/ast/printOn.cpp $(SRC_DIR)/ast/semantic.cpp $(SRC_DIR)/ast/interpret.cpp \
-        $(SRC_DIR)/IR/IR.cpp $(SRC_DIR)/IR/gen.cpp
+        $(SRC_DIR)/IR/gen.cpp
 
 .PHONY: all clean distclean
 all: comp $(SRC_DIR)/library/library.a

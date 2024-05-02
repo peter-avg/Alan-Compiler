@@ -1,0 +1,14 @@
+main () : proc
+
+    test2 (n : int) : int
+    {
+        n = n + 1;
+        return n;
+    }
+
+    n : int;
+    a : int;
+
+{
+    n = test2(2);
+}

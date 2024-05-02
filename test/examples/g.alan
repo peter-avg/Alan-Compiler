@@ -1,0 +1,5 @@
+test() : proc 
+    a : byte[20];
+{
+    a = "Hello\n";
+}
