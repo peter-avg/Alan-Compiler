@@ -6,5 +6,7 @@ for file in "${files[@]}"
 do
     echo "Testing $file"
     ./alan "$file"
+    echo "$file Output: "
+    ./a.out
     echo "---------------------------------"
 done
