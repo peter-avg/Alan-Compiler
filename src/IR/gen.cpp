@@ -86,6 +86,7 @@ llvm::Type *getLLVMType(types::TypePtr type, sym::PassType pass) {
             ret = i8;
         } else {
             ret = i8ptr;
+            return ret;
         }
     }
 
@@ -265,11 +266,7 @@ namespace ast {
         named_variables.openScope();
         std::vector<llvm::Type *> args;
         for (auto param : param_list) {
-            if (param->getPass() == sym::PassType::reference && param->getType()->getTypeName() == "BarrayType") {
-                args.push_back(getLLVMType(param->getType(), sym::PassType::value));
-            } else {
-                args.push_back(getLLVMType(param->getType(), param->getPass()));
-            }
+            args.push_back(getLLVMType(param->getType(), param->getPass()));
         }
         llvm::FunctionType *funcType = llvm::FunctionType::get(getLLVMType(type, sym::PassType::value), args, false);
         llvm::Function *func = llvm::Function::Create(funcType, llvm::Function::ExternalLinkage, id, module.get());
@@ -277,17 +274,10 @@ namespace ast {
         builder.SetInsertPoint(entry);
         for (auto &arg : func->args()) {
             arg.setName(param_list[arg.getArgNo()]->getId());
-            if (param_list[arg.getArgNo()]->getPass() == sym::PassType::reference && param_list[arg.getArgNo()]->getType()->getTypeName() == "BarrayType") {
-                llvm::Value *alloca = builder.CreateAlloca(getLLVMType(param_list[arg.getArgNo()]->getType(), sym::PassType::value), nullptr, param_list[arg.getArgNo()]->getId());
-                builder.CreateStore(&arg, alloca);
-                IR::Value val = {alloca, arg.getType(), sym::PassType::value};
-                named_variables.addVariable(param_list[arg.getArgNo()]->getId(), val);
-            } else {
-                llvm::Value *alloca = builder.CreateAlloca(getLLVMType(param_list[arg.getArgNo()]->getType(), param_list[arg.getArgNo()]->getPass()), nullptr, param_list[arg.getArgNo()]->getId());
-                builder.CreateStore(&arg, alloca);
-                IR::Value val = {alloca, arg.getType(), param_list[arg.getArgNo()]->getPass()};
-                named_variables.addVariable(param_list[arg.getArgNo()]->getId(), val);
-            }
+            llvm::Value *alloca = builder.CreateAlloca(getLLVMType(param_list[arg.getArgNo()]->getType(), param_list[arg.getArgNo()]->getPass()), nullptr, param_list[arg.getArgNo()]->getId());
+            builder.CreateStore(&arg, alloca);
+            IR::Value val = {alloca, arg.getType(), param_list[arg.getArgNo()]->getPass()};
+            named_variables.addVariable(param_list[arg.getArgNo()]->getId(), val);
         }
 
         for (auto decl : def_list) {
@@ -502,6 +492,7 @@ namespace ast {
                         IR::Value val = named_variables.getVariable(variable->getId());
                         // Pass by reference
                         if (val.valueType == sym::reference) {
+                            std::cout << val.value->getValueID() << std::endl;
                             llvm::Value *alloca = builder.CreateLoad(val.value);
                             llvm::Value *v = builder.CreateGEP(alloca, array_index);
                             llvm_args.push_back(v);
@@ -524,6 +515,7 @@ namespace ast {
             }
         }
         return builder.CreateCall(func, llvm_args);
+
     }
 
     // TODO: Done
