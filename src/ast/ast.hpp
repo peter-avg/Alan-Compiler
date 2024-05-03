@@ -1,7 +1,7 @@
 #ifndef __AST_HPP__
 #define __AST_HPP__
 
-#include "/opt/homebrew/Cellar/llvm@12/12.0.1_1/include/llvm/IR/Value.h"
+#include <llvm/IR/Value.h>
 
 #include <iostream>
 #include <string>
