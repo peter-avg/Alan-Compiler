@@ -1,9 +1,13 @@
 .PHONY: all clean distclean
 
-CXX = g++ 
 CXXFLAGS = -std=c++11 -Wall -Wextra -Werror -pedantic -O3 -g
 SRCS = alan.cpp
 OS := $(shell uname)
+ifeq ($(OS),Darwin)  # macOS
+	CXX = g++ 
+else ifeq ($(OS),Linux)
+	CXX = clang++
+endif
 
 
 all: 
