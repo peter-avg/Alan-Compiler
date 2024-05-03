@@ -54,9 +54,18 @@ namespace ast {
 
     class Param : public Expr {
         public:
-            Param(std::string id, std::string pass_string, types::TypePtr t) : id(id), type(t) {
+            Param(std::string id, std::string pass_string, types::TypePtr t) : id(id), type(t){
                 if (pass_string == "reference") pass = sym::reference;
                 else if (pass_string == "value") pass = sym::value;
+
+                if (type->isArray()) {
+                    std::cout << "AST->Param(): The type of the array parameter -> \"" << id << "\" is -> " << type->getArrayType()->getTypeName() << std::endl;
+                    if (t->getArrayType()->getTypeName() == "IntType") {
+                        this->type = types::IarrayType;
+                    } else  if (t->getArrayType()->getTypeName() == "ByteType"){
+                        this->type = types::BarrayType;
+                    }
+                }
             }
             virtual void printOn(std::ostream &out) const override;
             virtual llvm::Value* llvm() const override; 
@@ -73,6 +82,7 @@ namespace ast {
 
         private:
             types::TypePtr type;
+            types::TypePtr new_type;
             std::string id;
             sym::PassType pass;
     };
@@ -136,12 +146,13 @@ namespace ast {
         public:
             VarDef(std::string id, types::TypePtr t, int c = INT_MAX) : id(id), type(t), indeces(c) {
                 if (c != INT_MAX) {
-                    if (type == types::intType) {
-                        type = types::IarrayType;
-                    } else {
-                        type = types::BarrayType;
+                    if (t->getTypeName() == "IntType") {
+                        this->type = types::IarrayType;
+                    } else if (t->getTypeName() == "ByteType"){
+                        this->type = types::BarrayType;
                     }
                 }
+
             }
             virtual void printOn(std::ostream &out) const override;
             virtual llvm::Value* llvm() const override; 
@@ -152,6 +163,7 @@ namespace ast {
             }
         private: 
             types::TypePtr type;
+            types::TypePtr t;
             std::string id;
             int indeces;
     };

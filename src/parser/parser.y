@@ -35,10 +35,10 @@ sym::Table vars;
 }
 
 
+%token T_int "int"
 %token T_byte "byte"  
 %token T_false "false"
 %token T_if "if"
-%token T_int "int"
 %token T_proc "proc" 
 %token T_reference "reference"
 %token T_return "return"
@@ -94,7 +94,9 @@ sym::Table vars;
 
 %%
 program
-    : func_def {//std::static_pointer_cast<ast::Func>(*$1)->sem(vars);
+    : func_def {
+                sym::Table vars = sym::initializeSymbolTable();
+                std::static_pointer_cast<ast::Func>(*$1)->sem(vars);
                 IR::gen(*$1);
                 $$ = $1;}
     ;

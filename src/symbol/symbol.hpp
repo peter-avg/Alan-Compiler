@@ -254,6 +254,7 @@ namespace sym {
             bool isEmpty() const;
             void addReturn();
             int getReturns();
+            void addLibrary();
             types::TypePtr getScopeType();
 
         private:
@@ -261,6 +262,7 @@ namespace sym {
             ScopeStack scopeStack;
     };
 
+    Table initializeSymbolTable(); 
 }
 
 #endif // __SYMBOL_HPP__

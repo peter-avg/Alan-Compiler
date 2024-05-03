@@ -15,10 +15,10 @@ int line_number = 0;
 int nested_comments = 0;
 %}
 
-L [a-zA-Z]
+L [a-z_A-Z]
 D [0-9]
 W [ \t\r]
-E [ntr\\\'\"\0]
+E [ntr0\\\'\"]
 N [a-fA-F0-9]
 
 %x COMMENT
