@@ -126,7 +126,13 @@ namespace IR {
     }
 
     void setupMain(ast::ASTPtr root) {
+        llvm::FunctionType *mainType = llvm::FunctionType::get(proc, false);
+        llvm::Function *mainFunc = llvm::Function::Create(mainType, llvm::Function::ExternalLinkage, "main", module.get());
+        llvm::BasicBlock *entry = llvm::BasicBlock::Create(context, "entry", mainFunc);
         root->llvm();
+        builder.SetInsertPoint(entry);
+        builder.CreateCall(module->getFunction(root->getId()));
+        builder.CreateRetVoid();
     }
     
     void optimise() {
