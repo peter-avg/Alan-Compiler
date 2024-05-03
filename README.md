@@ -13,7 +13,7 @@
 ## Usage 
 The Alan executable is located in the ```bin``` folder and should be used in the 
 ```bin``` folder. The executable requires ```lib.a``` also located in the ```bin```, 
-which was provided by professor Kostis Sagonas.
+which was provided by professor * [Kostis Sagonas](https://github.com/kostis).
 
 * ```cd bin```
 * ```./alan [OPTIONS] source_file```
