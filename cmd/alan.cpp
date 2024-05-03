@@ -97,7 +97,7 @@ int main(int argc, char *argv[]) {
         system("cat out.s");
     }
 
-    if (system("gcc -o a.out out.s") != 0) {
+    if (system("gcc -no-pie -o a.out out.s lib.a") != 0) {
         exit(1);
     }
 }
