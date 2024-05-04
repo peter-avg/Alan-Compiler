@@ -27,9 +27,9 @@ void Help() {
     std::cout << "Options:\n";
     std::cout << green_normal << "  -h, --help" << white_normal << "    Display this information\n";
     std::cout << green_normal << "  -v, --version" << white_normal << " Display the version of the compiler\n";
-    std::cout << green_normal << "  -O" << white_normal << "            Optimize the code\n";
-    std::cout << green_normal << "  -L" << white_normal << "            Output Intermediate Representation\n";
-    std::cout << green_normal <<"  -S" << white_normal << "            Output Assembly\n";
+    std::cout << green_normal << "  -o" << white_normal << "            Optimize the code\n";
+    std::cout << green_normal << "  -f" << white_normal << "            Output Intermediate Representation\n";
+    std::cout << green_normal <<"  -s" << white_normal << "            Output Assembly\n";
     exit(0);
 }
 
@@ -38,9 +38,7 @@ int main(int argc, char *argv[]) {
         Help();
     }
 
-    system("export PATH=$HOME/Coding/Compilers/Alan/bin:$PATH");
-
-    std::string command = "./comp";
+    std::string command = "comp";
     std::string filename = "";
 
     for (int i = 0; i < argc; i++) {
@@ -77,12 +75,37 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
 
-    if (command == "./comp") {
+    if (command == "comp") {
         command += " ";
     }
 
     command += filename;
 
+
+    if (system("pwd > tmp") != 0) {
+        exit(1);
+    }
+
+    FILE *f = fopen("tmp", "r");
+    char cwd[1024];
+    fgets(cwd, 1024, f);
+    fclose(f);
+
+    std::string cwd_str = cwd;
+
+    cwd_str.pop_back();
+
+    std::string bin_path = cwd_str + "/bin";
+
+    if (system("rm tmp") != 0) {
+        exit(1);
+    }
+
+    std::string export_path = "export PATH=" + bin_path + ":$PATH";
+
+    if (system(export_path.c_str()) != 0) {
+        exit(1);
+    }
 
     int res = system(command.c_str());
     if (res != 0) {
@@ -97,7 +120,11 @@ int main(int argc, char *argv[]) {
         system("cat out.s");
     }
 
-    if (system("gcc -no-pie -o a.out out.s lib.a") != 0) {
+    std::string last_command = "gcc -no-pie -o a.out out.s " + bin_path +"/lib.a";
+    
+    std::cout << last_command << "\n";
+
+    if (system(last_command.c_str()) != 0) {
         exit(1);
     }
 }

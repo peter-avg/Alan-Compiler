@@ -131,7 +131,11 @@ namespace IR {
         llvm::BasicBlock *entry = llvm::BasicBlock::Create(context, "entry", mainFunc);
         root->llvm();
         builder.SetInsertPoint(entry);
-        builder.CreateCall(module->getFunction(root->getId()));
+        if (root->getId() == "main") {
+            builder.CreateCall(module->getFunction("main.1"));
+        } else {
+            builder.CreateCall(module->getFunction(root->getId()));
+        }
         builder.CreateRetVoid();
     }
     

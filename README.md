@@ -11,12 +11,13 @@
 * ```make -C cmd```
 
 ## Usage 
-The Alan executable is located in the ```bin``` folder and should be used in the 
-```bin``` folder. The executable requires ```lib.a``` also located in the ```bin```, 
+The Alan executable is located in the ```bin``` folder and has been exported to 
+the bash session's path for as long as the session is active.
+The executable requires ```lib.a``` also located in the ```bin```, 
 which was provided by professor [Kostis Sagonas](https://github.com/kostis).
 
 * ```cd bin```
-* ```./alan [OPTIONS] source_file```
+* ```alan [OPTIONS] source_file```
 
 The compiler can be used with any of these flags
 ```c++
@@ -27,7 +28,7 @@ The compiler can be used with any of these flags
     -s                Output Assembly to Standard Output
 ```
 
-The compiler with provide an executable of the program named ```a.out```.
+The compiler will provide an executable of the program named ```a.out```.
 
 ## Demo 
 <div align="center">
