@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <iostream>
 #include "../src/colors/colors.hpp"
+#include <filesystem>
 
 std::string version = "0.0.1";
 std::string outputname = "a.out";
@@ -13,6 +14,16 @@ void Version() {
 
     std::cout << green_bold << "Alan Compiler" << red_normal << " " << version << "\n";
     std::cout << white_normal << "A compiler for the Alan programming language\n";
+    exit(0);
+}
+
+void Source() {
+    colors::Font green_bold = {colors::Color::GREEN,colors::Style::BOLD};
+    colors::Font red_normal = {colors::Color::RED,colors::Style::NORMAL};
+    colors::Font white_normal = {colors::Color::WHITE,colors::Style::NORMAL};
+
+    std::cout << green_bold << "Alan Compiler" << red_normal << " " << version << "\n";
+    std::cout << white_normal << "You should source your bashrc or zshrc file\n";
     exit(0);
 }
 
@@ -81,32 +92,6 @@ int main(int argc, char *argv[]) {
 
     command += filename;
 
-
-    if (system("pwd > tmp") != 0) {
-        exit(1);
-    }
-
-    FILE *f = fopen("tmp", "r");
-    char cwd[1024];
-    fgets(cwd, 1024, f);
-    fclose(f);
-
-    std::string cwd_str = cwd;
-
-    cwd_str.pop_back();
-
-    std::string bin_path = cwd_str + "/bin";
-
-    if (system("rm tmp") != 0) {
-        exit(1);
-    }
-
-    std::string export_path = "export PATH=" + bin_path + ":$PATH";
-
-    if (system(export_path.c_str()) != 0) {
-        exit(1);
-    }
-
     int res = system(command.c_str());
     if (res != 0) {
         exit(1);
@@ -120,7 +105,14 @@ int main(int argc, char *argv[]) {
         system("cat out.s");
     }
 
-    std::string last_command = "gcc -no-pie -o a.out out.s " + bin_path +"/lib.a";
+    std::string alan_lib_path = std::getenv("ALAN_LIB_VARIABLE_PATH");
+    if (alan_lib_path.empty()) {
+        Source();
+    }
+
+    std::string last_command = "gcc -no-pie -o a.out out.s " + alan_lib_path + "/lib.a";
+    
+    std::cout << last_command << "\n";
 
     if (system(last_command.c_str()) != 0) {
         exit(1);
