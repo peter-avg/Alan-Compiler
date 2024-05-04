@@ -34,6 +34,6 @@ The compiler will provide an executable of the program named ```a.out```.
 
 ## Demo 
 <div align="center">
-    <img src="./assets/hello.gif" width="400" height="300" />
+    <img src="./assets/hello.gif" width="600" height="450" />
 </div>
 
