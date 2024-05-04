@@ -1,7 +1,4 @@
 # AlanCompiler
-<div align="center">
-    <img src="./assets/alan.png" width="300">
-</div>
 
 ## Dependencies
 * [C++14](https://www.cplusplus.com/)
