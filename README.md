@@ -1,7 +1,4 @@
 # AlanCompiler
-<div align="center">
-    <img src="./assets/alan.png" width="300">
-</div>
 
 ## Dependencies
 * [C++14](https://www.cplusplus.com/)
@@ -32,4 +29,8 @@ The compiler can be used with any of these flags
 
 The compiler with provide an executable of the program named ```a.out```.
 
+## Demo 
+<div align="center">
+    <img src="./assets/hello.gif" width="40" height="40" />
+</div>
 
