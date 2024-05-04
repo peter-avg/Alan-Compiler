@@ -14,11 +14,13 @@ source $HOME/.bashrc
 ```
 
 ## Usage 
+* ```alan [OPTIONS] source_file```
+
 The Alan executable is located in the ```bin``` folder.
 The executable requires ```lib.a``` also located in the ```bin``` folder, 
 which was provided by professor [Kostis Sagonas](https://github.com/kostis).
-
-* ```alan [OPTIONS] source_file```
+The building process of the compiler adds the lib.a and bin paths to your 
+```.bashrc``` and/or ```.zshrc```. 
 
 The compiler can be used with any of these options
 ```c++
