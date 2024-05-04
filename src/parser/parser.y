@@ -22,6 +22,7 @@ extern int line_number;
 extern int yylex();
 bool opt;
 bool llvm_out;
+bool print_out = false;
 sym::Table vars;
 %}
 
@@ -95,6 +96,8 @@ sym::Table vars;
 %%
 program
     : func_def {//std::static_pointer_cast<ast::Func>(*$1)->sem(vars);
+                if (print_out)
+                    std::cout << **$1 << std::endl;
                 IR::gen(*$1);
                 $$ = $1;}
     ;
@@ -240,6 +243,9 @@ int main(int argc, char *argv[]) {
 
         if (arg == "-L")
             llvm_out = true;
+        
+        if (arg == "-P")
+            print_out = true;
 
         size_t pos = arg.find_last_of('.');
         if (pos != std::string::npos && arg.substr(pos + 1) == "alan") {

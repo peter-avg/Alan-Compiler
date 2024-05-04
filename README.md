@@ -27,6 +27,7 @@ The compiler can be used with any of these options
     -o                Optimize the code
     -f                Output Intermediate Representation to Standard Output
     -s                Output Assembly to Standard Output
+    -p                Output the AST tree 
 ```
 
 The compiler will provide an executable of the program named ```a.out```.
