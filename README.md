@@ -5,6 +5,7 @@
 * [Bison](https://www.gnu.org/software/bison/)
 * [Flex](https://en.wikipedia.org/wiki/Flex_(lexical_analyser_generator))
 * [LLVM12](https://llvm.org/)
+* [CLANG12](https://clang.llvm.org)
 
 ## Installation 
 ```bash 
