@@ -121,8 +121,6 @@ int main(int argc, char *argv[]) {
     }
 
     std::string last_command = "gcc -no-pie -o a.out out.s " + bin_path +"/lib.a";
-    
-    std::cout << last_command << "\n";
 
     if (system(last_command.c_str()) != 0) {
         exit(1);
