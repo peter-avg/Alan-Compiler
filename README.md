@@ -7,19 +7,20 @@
 * [LLVM12](https://llvm.org/)
 
 ## Installation 
-* ```git clone https://github.com/ntua-el15074/Alan-Compiler.git```
-* ```make -C cmd```
+```bash 
+git clone https://github.com/ntua-el15074/Alan-Compiler.git
+make -C cmd
+source $HOME/.bashrc
+```
 
 ## Usage 
-The Alan executable is located in the ```bin``` folder and has been exported to 
-the bash session's path for as long as the session is active.
-The executable requires ```lib.a``` also located in the ```bin```, 
+The Alan executable is located in the ```bin``` folder.
+The executable requires ```lib.a``` also located in the ```bin``` folder, 
 which was provided by professor [Kostis Sagonas](https://github.com/kostis).
 
-* ```cd bin```
 * ```alan [OPTIONS] source_file```
 
-The compiler can be used with any of these flags
+The compiler can be used with any of these options
 ```c++
     -h, --help        Display this information
     -v, --version     Display the version of the compiler
