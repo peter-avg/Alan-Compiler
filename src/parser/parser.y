@@ -16,7 +16,7 @@
 
 //%option noyywrap nodefault;
 extern FILE* yyin;
-Fatality fatality = WARNING;
+Fatality fatality = FATAL;
 const char * filename = "";
 extern int line_number;
 extern int yylex();
@@ -95,7 +95,8 @@ sym::Table vars;
 
 %%
 program
-    : func_def {//std::static_pointer_cast<ast::Func>(*$1)->sem(vars);
+    : func_def {vars.addLibrary();
+                std::static_pointer_cast<ast::Func>(*$1)->sem(vars);
                 if (print_out)
                     std::cout << **$1 << std::endl;
                 IR::gen(*$1);
@@ -254,7 +255,7 @@ int main(int argc, char *argv[]) {
     }
 
     // if filename is not provided
-    if (filename == "") {
+    if (!strcmp(filename,"")) {
         RaiseFileError(nofileError_c);
     }
 

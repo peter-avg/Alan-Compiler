@@ -6,21 +6,26 @@
 std::string version = "0.0.1";
 std::string outputname = "a.out";
 bool output_asm = false;
+bool clean_up = false;
+int count = 0;
+colors::Font green_bold = {colors::Color::GREEN,colors::Style::BOLD};
+colors::Font red_normal = {colors::Color::RED,colors::Style::NORMAL};
+colors::Font red_bold = {colors::Color::RED,colors::Style::BOLD};
+colors::Font white_normal = {colors::Color::WHITE,colors::Style::NORMAL};
+colors::Font green_normal = {colors::Color::GREEN,colors::Style::NORMAL};
+
+void NoFileSpecified() {
+    std::cout << red_bold << "FileError: " << white_normal << "No File specified" << std::endl;
+    exit(0);
+}
 
 void Version() {
-    colors::Font green_bold = {colors::Color::GREEN,colors::Style::BOLD};
-    colors::Font red_normal = {colors::Color::RED,colors::Style::NORMAL};
-    colors::Font white_normal = {colors::Color::WHITE,colors::Style::NORMAL};
-
     std::cout << green_bold << "Alan Compiler" << red_normal << " " << version << "\n";
     std::cout << white_normal << "A compiler for the Alan programming language\n";
     exit(0);
 }
 
 void Source() {
-    colors::Font green_bold = {colors::Color::GREEN,colors::Style::BOLD};
-    colors::Font red_normal = {colors::Color::RED,colors::Style::NORMAL};
-    colors::Font white_normal = {colors::Color::WHITE,colors::Style::NORMAL};
 
     std::cout << green_bold << "Alan Compiler" << red_normal << " " << version << "\n";
     std::cout << white_normal << "You should source your bashrc or zshrc file\n";
@@ -28,10 +33,6 @@ void Source() {
 }
 
 void Help() {
-    colors::Font green_bold = {colors::Color::GREEN,colors::Style::BOLD};
-    colors::Font green_normal = {colors::Color::GREEN,colors::Style::NORMAL};
-    colors::Font white_normal = {colors::Color::WHITE,colors::Style::NORMAL};
-
     std::cout << green_bold << "Alan Compiler" << " " << version << "\n";
     std::cout << white_normal << "A compiler for the Alan programming language\n";
     std::cout << green_normal << "Usage: alan [options] [file]\n";
@@ -47,7 +48,7 @@ void Help() {
 
 int main(int argc, char *argv[]) {
     if (argc == 1) {
-        Help();
+        NoFileSpecified();
     }
 
     std::string command = "comp";
@@ -57,27 +58,38 @@ int main(int argc, char *argv[]) {
         std::string arg = argv[i];
 
         if (arg == "-h" || arg == "--help") {
+            count++;
             Help();
         }
 
         if (arg == "-v" || arg == "--version") {
+            count++;
             Version();
         }
 
         if (arg == "-o") {
+            count++;
             command += " -O ";
         }
 
         if (arg == "-f") {
+            count++;
             command += " -L ";
         }
 
         if (arg == "-s") {
+            count++;
             output_asm = true;
         }
 
         if (arg == "-p") {
+            count++;
             command += " -P ";
+        }
+
+        if (arg == "-c") {
+            count++;
+            clean_up = true;
         }
 
         size_t pos = arg.find_last_of('.');
@@ -86,8 +98,8 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    if (filename == "") {
-        std::cout << "No file specified\n";
+    if (!strcmp(filename.c_str(), "") && clean_up) {
+        NoFileSpecified();
         exit(1);
     }
 
@@ -115,8 +127,12 @@ int main(int argc, char *argv[]) {
         Source();
     }
 
+
     std::string last_command = "gcc -no-pie -o a.out out.s " + alan_lib_path + "/lib.a";
-    
+
+    if (clean_up) {
+        last_command += " && rm out.s out.ll";
+    }
 
     if (system(last_command.c_str()) != 0) {
         exit(1);

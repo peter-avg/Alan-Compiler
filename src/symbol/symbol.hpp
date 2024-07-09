@@ -50,22 +50,22 @@ namespace sym {
             virtual void addParameters(EntryPtr parameter) {}; 
             virtual void addLocaldefs(ast::ASTList local_defs) {}; 
             virtual void addCompound(ast::ASTPtr compound) {};
-            virtual ast::ASTPtr getCompound() {
+            virtual ast::ASTPtr getCompound() const {
                 return compound;
             }
             
-            virtual ast::ASTList getLocaldefs() {
+            virtual ast::ASTList getLocaldefs() const {
                 return local_defs;
             }
-            virtual types::TypePtr getType() {
+            virtual types::TypePtr getType() const {
                 return type;
             }
 
-            virtual EntryType getEType() {
+            virtual EntryType getEType() const {
                 return etype;
             }
 
-            types::TypePtr getScopeType();
+            types::TypePtr getScopeType() const;
 
             ast::ASTPtr compound;
             ast::ASTList local_defs;
@@ -100,10 +100,10 @@ namespace sym {
                 this->value = value;
             }
 
-            types::TypePtr getType() override {
+            types::TypePtr getType() const override {
                 return type;
             }
-            EntryType getEType() override {
+            EntryType getEType() const override {
                 return etype;
             }
             types::TypePtr type;
@@ -136,10 +136,10 @@ namespace sym {
                 this->value = value;
             }
 
-            types::TypePtr getType() override {
+            types::TypePtr getType() const override {
                 return type;
             }
-            EntryType getEType() override {
+            EntryType getEType() const override {
                 return etype;
             }
             types::TypePtr type;
@@ -183,18 +183,18 @@ namespace sym {
                 compound = comp;
             }
 
-            virtual ast::ASTList getLocaldefs() override {
+            virtual ast::ASTList getLocaldefs() const override {
                 return local_defs;
             }
-            virtual ast::ASTPtr getCompound() override {
+            virtual ast::ASTPtr getCompound() const override {
                 return compound;
             }
 
-            types::TypePtr getType() override {
+            types::TypePtr getType() const override {
                 return type;
             }
             
-            EntryType getEType() override {
+            EntryType getEType() const override {
                 return etype;
             }
             ast::ASTList local_defs;
@@ -254,12 +254,15 @@ namespace sym {
             bool isEmpty() const;
             void addReturn();
             int getReturns();
+            void addLibrary();
             types::TypePtr getScopeType();
 
         private:
             HashTable table;
             ScopeStack scopeStack;
     };
+
+    Table initializeSymbolTable();
 
 }
 

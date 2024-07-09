@@ -81,7 +81,7 @@ namespace types {
     class ByteType : public Type { 
         public:
             ByteType() {
-                typeName = "ByteType";
+                typeName = "byteType";
             }
             virtual ~ByteType() = default;
             virtual void printOn(std::ostream &out) const override {

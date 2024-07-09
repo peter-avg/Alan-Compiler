@@ -4,7 +4,6 @@
 #include <iostream>
 #include <memory>
 #include <ostream>
-#include <typeinfo>
 
 extern int line_number;
 extern const char *filename;
@@ -73,7 +72,7 @@ namespace ast {
                 RaiseSemanticError(voidFunctionWrongReturnError_c, fatality);
         }
 
-        else if (funcentry->getType()->getTypeName() == "IntType" || funcentry->getType()->getTypeName() == "ByteType"){
+        else if (funcentry->getType()->getTypeName() == "IntType" || funcentry->getType()->getTypeName() == "byteType"){
             if (table.getReturns() == 0 )
                 RaiseSemanticError(functionRequiresMoreParamsError_c, fatality);
                 // std::cerr << "Error: " << *(funcentry->getType()) << " function requires one or more return statements" << std::endl;
@@ -96,13 +95,12 @@ namespace ast {
     };
 
     void Cond::sem(sym::Table &table) {
-        
-        if (operation == "true" || operation == "false")
+        if (operation == "true" || operation == "false") {
             type = types::byteType;
-
+        }
         else if (operation == "!") {
             first->sem(table);
-            if (!types::sameType(first->type->getTypeName(), "byteType")) 
+            if (!types::sameType(first->getType()->getTypeName(), "byteType")) 
                 RaiseSemanticError(conditionTypeError_c, fatality);
             type = types::byteType;
         }
@@ -110,9 +108,9 @@ namespace ast {
         else if (operation == "&" || operation == "|"){
             first->sem(table);
             second->sem(table);
-            if (!types::sameType(first->type->getTypeName(), "byteType")) {
-                if (!types::sameType(second->type->getTypeName(), "byteType")) {
-                    RaiseSemanticError(conditionTypeError_c, fatality);
+            if (!types::sameType(first->getType()->getTypeName(), "byteType")) {
+                if (!types::sameType(second->getType()->getTypeName(), "byteType")) {
+                    RaiseSemanticError(operandMismatchType_c, fatality);
                 }
             }
             type = types::byteType;
@@ -120,8 +118,8 @@ namespace ast {
         else {
             first->sem(table);
             second->sem(table);
-            if (!types::sameType(first->type->getTypeName(), second->type->getTypeName()))
-                RaiseSemanticError(conditionTypeError_c, fatality);
+            if (!types::sameType(first->getType()->getTypeName(), second->getType()->getTypeName()))
+                RaiseSemanticError(operandMismatchType_c, fatality);
                 // std::cerr << "Error: Expressions don't have the same type" << std::endl;
             type = types::byteType;
         }
@@ -129,7 +127,7 @@ namespace ast {
 
     void While::sem(sym::Table &table) {
           cond->sem(table);
-          if (!types::sameType(cond->type->getTypeName(), "ByteType")){
+          if (!types::sameType(cond->getType()->getTypeName(), "byteType")){
               RaiseSemanticError(conditionTypeError_c, fatality);
               // std::cerr << "Error: Condition in While Statement is not of Boolean type" << std::endl;
           }
@@ -138,7 +136,7 @@ namespace ast {
     void If::sem(sym::Table &table) {
        cond->sem(table);
 
-      if (!types::sameType(cond->type->getTypeName(), "ByteType")){
+      if (!types::sameType(cond->getType()->getTypeName(), "byteType")){
           RaiseSemanticError(conditionTypeError_c, fatality);
           // std::cerr << "Error: Condition in If Statement is not of Boolean type" << std::endl;
       }
@@ -150,7 +148,7 @@ namespace ast {
 
     void Return::sem(sym::Table &table) {
         expr->sem(table);
-        type  = expr->type;
+        type  = expr->getType();
         
         if (!types::sameType(this->type->getTypeName(), table.getScopeType()->getTypeName())){
             RaiseSemanticError(returnTypeMismatchError_c, fatality);
@@ -168,9 +166,10 @@ namespace ast {
         expr1->sem(table);
         expr2->sem(table);
 
-        if (!types::sameType(expr1->type->getTypeName(), expr2->type->getTypeName()))
+        if (!types::sameType(expr1->getType()->getTypeName(), expr2->getType()->getTypeName()))
             RaiseSemanticError(BinOpTypeMismatchError_c, fatality);
-        type = expr1->type;
+
+        type = expr1->getType();
     };
 
 
@@ -181,7 +180,7 @@ namespace ast {
     void LValue::sem(sym::Table &table) {
         if (expr != nullptr) {
             expr->sem(table);
-            if (!types::sameType(expr->type->getTypeName(), "IntType")){
+            if (!types::sameType(expr->getType()->getTypeName(), "IntType")){
                 RaiseSemanticError(arrayindexTypeError_c, fatality);
                 // std::cerr << "Error: Index of array must be of type int" << std::endl;
             }
@@ -192,7 +191,7 @@ namespace ast {
             // std::cerr << "Error: Variable \"" << id << "\" not found in scope -> " << table.getCurrentScope() << std::endl;
             RaiseSemanticError(variableNotFoundError_c, fatality);
         }
-        type = varentry->getType();
+        this->type = varentry->getType();
     };
 
     void Call::sem(sym::Table &table) {
@@ -229,11 +228,12 @@ namespace ast {
     void Assign::sem(sym::Table &table) {
         lvalue->sem(table); 
         expr->sem(table);
-        if (!types::sameType(lvalue->type->getTypeName(), expr->type->getTypeName()))
+        if (!types::sameType(lvalue->getType()->getTypeName(), expr->getType()->getTypeName()))
             RaiseSemanticError(expressionsDiffTypeError_c, fatality);
             // std::cerr << "Error: type of expression does not match type of LValue" << std::endl;
 
-        type = lvalue->type;
+        type = lvalue->getType();
+        
     };
 
     void Print::sem(sym::Table &table) {

@@ -49,6 +49,7 @@ typedef enum {
     notenoughparamsError_c,
     toomanyparamsError_c,
     argumentTypeMismatchError_c,
+    operandMismatchType_c,
 } SemanticErrorCodes;
 
 typedef enum {

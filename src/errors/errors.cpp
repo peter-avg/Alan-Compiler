@@ -90,6 +90,9 @@ std::string newSemanticError(int code) {
         case expressionsDiffTypeError_c:
             message = "Expressions have different types";
             break;
+        case operandMismatchType_c: 
+            message = "Operands have different types";
+            break;
         case returnTypeMismatchError_c:
             message = "Function Return type mismatch";
             break;

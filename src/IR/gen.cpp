@@ -60,7 +60,7 @@ IR::Variables named_variables;
 
 bool hasReturnInstruction(const llvm::BasicBlock *BB) {
     for (const auto &Inst : *BB) {
-        if (isa<llvm::ReturnInst>(&Inst))
+        if (llvm::isa<llvm::ReturnInst>(&Inst))
             return true;
     }
     return false;
@@ -351,6 +351,7 @@ namespace ast {
             }
             return c32(0);
         }
+        if (operation == "!") return builder.CreateNot(first->llvm(), "nottmp");
         if (operation == "<") return builder.CreateICmpSLT(first->llvm(), second->llvm(), "lttmp");
         if (operation == ">") return builder.CreateICmpSGT(first->llvm(), second->llvm(), "gttmp");
         if (operation == "==") return builder.CreateICmpEQ(first->llvm(), second->llvm(), "eqtmp");
@@ -502,7 +503,6 @@ namespace ast {
                         IR::Value val = named_variables.getVariable(variable->getId());
                         // Pass by reference
                         if (val.valueType == sym::reference) {
-                            std::cout << val.value->getValueID() << std::endl;
                             llvm::Value *alloca = builder.CreateLoad(val.value);
                             llvm::Value *v = builder.CreateGEP(alloca, array_index);
                             llvm_args.push_back(v);
