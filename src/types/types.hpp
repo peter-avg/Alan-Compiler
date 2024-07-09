@@ -121,9 +121,9 @@ namespace types {
         public:
             ArrayType(TypePtr type = nullptr, int size = 0) : type(type), size(size) {
                 if (type->getTypeName() == "IntType") {
-                    typeName = "IarrayType";
+                    typeName = "IArrayType";
                 } else {
-                    typeName = "BarrayType";
+                    typeName = "BArrayType";
                 }
             }
             virtual ~ArrayType() = default;

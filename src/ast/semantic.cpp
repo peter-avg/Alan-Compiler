@@ -134,7 +134,6 @@ namespace ast {
        cond->sem(table);
 
       if (!types::sameType(cond->getType()->getTypeName(), "ByteType")){
-          std::cout << "If statement Condition is of type: " << cond->getType()->getTypeName() << std::endl;
           RaiseSemanticError(conditionTypeError_c, FATAL);
           // std::cerr << "Error: Condition in If Statement is not of Boolean type" << std::endl;
       }

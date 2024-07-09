@@ -53,6 +53,19 @@ namespace IR {
                 return Value();
             }
 
+            std::vector<std::pair<std::string, Value>> getPreviousVariables() {
+                std::vector<std::pair<std::string, Value>> result;
+                if (variables.size() == 1) {
+                    return result;
+                }
+                for (int i = variables.size() - 2; i >= 0; i--) {
+                    for (auto it = variables[i].begin(); it != variables[i].end(); it++) {
+                        result.push_back(std::make_pair(it->first, it->second));
+                    }
+                }
+                return result;
+            }
+
         private:
             std::vector<std::map<std::string, Value>> variables;
 
