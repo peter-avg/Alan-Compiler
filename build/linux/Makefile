@@ -3,11 +3,11 @@ SRC_DIR := $(MAIN_DIR)/src
 CMD_DIR := $(MAIN_DIR)/cmd
 BIN_DIR := $(MAIN_DIR)/bin
 
-CC := g++
+CC := clang++-12
 CXXFLAGS := -Wfatal-errors -std=c++14
 LIBFLAGS := #-arch x86_64 -arch arm64 -mmacosx-version-min=11.0
-LLVM_FLAGS := $(shell llvm-config --ldflags --libs)
-LLVM_FLAGS_INC := -I$(shell llvm-config --includedir)
+LLVM_FLAGS := $(shell llvm-config-12 --ldflags --libs)
+LLVM_FLAGS_INC := -I$(shell llvm-config-12 --includedir)
 
 OBJS := $(SRC_DIR)/parser/parser.cpp $(SRC_DIR)/symbol/symbol.cpp $(SRC_DIR)/errors/errors.cpp \
         $(SRC_DIR)/lexer/lexer.cpp $(SRC_DIR)/correcting/correcting.cpp $(SRC_DIR)/types/types.cpp \
@@ -18,7 +18,7 @@ OBJS := $(SRC_DIR)/parser/parser.cpp $(SRC_DIR)/symbol/symbol.cpp $(SRC_DIR)/err
 all: comp $(SRC_DIR)/library/library.a
 
 comp: $(OBJS) $(SRC_DIR)/lexer/lexer.cpp $(SRC_DIR)/parser/parser.cpp $(SRC_DIR)/library/library.a
-	$(CC) $(OBJS) $(LLVM_FLAGS) $(CXXFLAGS) -o $(BIN_DIR)/$@
+	$(CC) $(OBJS) $(LLVM_FLAGS) $(LLVM_FLAGS_INC) $(CXXFLAGS) -o $(BIN_DIR)/$@
 
 $(SRC_DIR)/library/library.a: $(SRC_DIR)/library/library.o
 	ar rcs $@ $^

@@ -48,6 +48,7 @@ namespace sym {
     };
 
     void Table::insertEntry(EntryPtr entry) {
+        //std::cout << "insertEntry: id of Entry -> \"" << entry->getId() << "\" of EType -> ";
         table[entry->getId()].push_back(entry);
         /*std::cout << "insertEntry: id of Entry -> \"" << entry->getId() << "\" of EType -> ";
         switch(entry->getEType()){

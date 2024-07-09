@@ -1,5 +1,5 @@
 chars () : proc 
     c : byte;
 {
-    c = '\xFF';
+    c = 'r';
 }

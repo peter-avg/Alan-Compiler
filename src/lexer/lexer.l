@@ -18,7 +18,7 @@ int nested_comments = 0;
 L [a-z_A-Z]
 D [0-9]
 W [ \t\r]
-E [ntr0\\\'\"]
+E [ntr0\'\"\\]
 N [a-fA-F0-9]
 
 %x COMMENT

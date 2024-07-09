@@ -6,6 +6,7 @@
 #include <signal.h>
 #include "../IR/gen.hpp"
 #include "../lexer/lexer.h"
+#include <cstring>
 #include "../errors/errors.hpp"
 #include "../types/types.hpp"
 #include "../ast/ast.hpp"
@@ -16,12 +17,13 @@
 
 //%option noyywrap nodefault;
 extern FILE* yyin;
-Fatality fatality = WARNING;
+Fatality fatality = FATAL;
 const char * filename = "";
 extern int line_number;
 extern int yylex();
 bool opt;
 bool llvm_out;
+bool print_out = false;
 sym::Table vars;
 %}
 
@@ -94,9 +96,10 @@ sym::Table vars;
 
 %%
 program
-    : func_def {
-                sym::Table vars = sym::initializeSymbolTable();
+    : func_def {vars.addLibrary();
                 std::static_pointer_cast<ast::Func>(*$1)->sem(vars);
+                if (print_out)
+                    std::cout << **$1 << std::endl;
                 IR::gen(*$1);
                 $$ = $1;}
     ;
@@ -242,6 +245,9 @@ int main(int argc, char *argv[]) {
 
         if (arg == "-L")
             llvm_out = true;
+        
+        if (arg == "-P")
+            print_out = true;
 
         size_t pos = arg.find_last_of('.');
         if (pos != std::string::npos && arg.substr(pos + 1) == "alan") {
@@ -250,7 +256,7 @@ int main(int argc, char *argv[]) {
     }
 
     // if filename is not provided
-    if (filename == "") {
+    if (!strcmp(filename,"")) {
         RaiseFileError(nofileError_c);
     }
 
