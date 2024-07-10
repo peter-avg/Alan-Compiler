@@ -314,8 +314,8 @@ namespace ast {
             //     arg.setName(var.first);
             //     llvm::Value *alloca = builder.CreateAlloca(var.second.type, nullptr, var.first);
             //     builder.CreateStore(&arg, alloca);
-            //     // IR::Value val = {alloca, var.second.type, sym::PassType::reference};
-            //     // named_variables.addVariable(var.first, val);
+            //     IR::Value val = {alloca, var.second.type, sym::PassType::reference};
+            //     named_variables.addVariable(var.first, val);
             // }
         }
 
@@ -559,10 +559,14 @@ namespace ast {
             }
             // else {
             //     // global variable
-            //     auto gl = named_variables.getVariable(arg.getName().str());
-            //     if (gl.value != nullptr) {
-            //         llvm_args.push_back(gl.value);
-            //         i++;
+            //     auto gl = named_variables.getPreviousVariables();
+            //     if (gl.size() == 0) {
+            //         for (int j = gl.size() - 1; j >= 0; j--) {
+            //             if (gl[j].first == block[i]->getId()) {
+            //                 llvm_args.push_back(gl[j].second.value);
+            //                 break;
+            //             }
+            //         }
             //     }
             // }
         }
