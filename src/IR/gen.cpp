@@ -451,7 +451,10 @@ namespace ast {
     // TODO: Done
     llvm::Value* BinOp::llvm() const {
         llvm::Value *exp1 = expr1->llvm();
-        llvm::Value *exp2 = expr2->llvm();
+        llvm::Value *exp2 = nullptr;
+        if (expr2 != nullptr) {
+            exp2 = expr2->llvm();
+        }
         if (expr2 != nullptr) {
             switch(op) {
                 case '+': return builder.CreateAdd(exp1, exp2, "addtmp");
@@ -460,11 +463,12 @@ namespace ast {
                 case '/': return builder.CreateSDiv(exp1, exp2, "divtmp");
                 case '%': return builder.CreateSRem(exp1, exp2, "modtmp");
             }
-        }
-        switch(op) {
-            case '+': return builder.CreateAdd(exp1, c32(0), "addtmp");
-            case '!': return builder.CreateNot(exp1, "nottmp");
-            case '-': return builder.CreateNeg(exp1, "negtmp");
+        } else {
+            switch(op) {
+                case '+': return builder.CreateAdd(exp1, c32(0), "addtmp");
+                case '!': return builder.CreateNot(exp1, "nottmp");
+                case '-': return builder.CreateNeg(exp1, "negtmp");
+            }
         }
         return c32(0);
     }
