@@ -281,42 +281,29 @@ namespace ast {
             args.push_back(getLLVMType(param->getType(), param->getPass()));
         }
 
+        for (auto global : globals_list) {
+            args.push_back(getLLVMType(global->getType(), sym::PassType::reference));
+        }
 
-        // auto global_vars = named_variables.getPreviousVariables();
-        // if (global_vars.size() > 0) {
-        //     for (auto var : global_vars) {
-        //         args.push_back(var.second.type->getPointerTo());
-        //     }
-        // }
 
         llvm::FunctionType *funcType = llvm::FunctionType::get(getLLVMType(type, sym::PassType::value), args, false);
         llvm::Function *func = llvm::Function::Create(funcType, llvm::Function::ExternalLinkage, id, module.get());
         llvm::BasicBlock *entry = llvm::BasicBlock::Create(context, "entry", func);
         builder.SetInsertPoint(entry);
-        int count = 0;
         for (auto &arg : func->args()) {
             if (arg.getArgNo() < param_list.size()) {
-                count++;
                 arg.setName(param_list[arg.getArgNo()]->getId());
                 llvm::Value *alloca = builder.CreateAlloca(getLLVMType(param_list[arg.getArgNo()]->getType(), param_list[arg.getArgNo()]->getPass()), nullptr, param_list[arg.getArgNo()]->getId());
                 builder.CreateStore(&arg, alloca);
                 IR::Value val = {alloca, arg.getType(), param_list[arg.getArgNo()]->getPass()};
-                named_variables.addVariable(param_list[arg.getArgNo()]->getId(), val);
+                named_variables.addVariable(param_list[arg.getArgNo()]->getId(), val); 
+            } else {
+                arg.setName(globals_list[arg.getArgNo() - param_list.size()]->getId());
+                llvm::Value *alloca = builder.CreateAlloca(getLLVMType(globals_list[arg.getArgNo() - param_list.size()]->getType(), sym::PassType::reference), nullptr, globals_list[arg.getArgNo() - param_list.size()]->getId());
+                builder.CreateStore(&arg, alloca);
+                IR::Value val = {alloca, arg.getType(), sym::PassType::reference};
+                named_variables.addVariable(globals_list[arg.getArgNo() - param_list.size()]->getId(), val); 
             }
-            // else {
-            //     bool flag = false;
-            //     auto var = global_vars[arg.getArgNo() - param_list.size()];
-            //     for (auto param : param_list) {
-            //         if (var.first == param->getId()) { flag = true; break; }
-            //     }
-            //     if (flag) continue;
-            //     count++;
-            //     arg.setName(var.first);
-            //     llvm::Value *alloca = builder.CreateAlloca(var.second.type, nullptr, var.first);
-            //     builder.CreateStore(&arg, alloca);
-            //     IR::Value val = {alloca, var.second.type, sym::PassType::reference};
-            //     named_variables.addVariable(var.first, val);
-            // }
         }
 
 
@@ -556,23 +543,47 @@ namespace ast {
 
                     i++;
 
-                } else {
-                    llvm_args.push_back(block[i]->llvm());
-                    i++;
+                }
+            } else {
+                auto variable = std::dynamic_pointer_cast<ast::LValue>(globals_list[arg.getArgNo() - block.size()]);
+                if (variable == nullptr) {
+                    std::cout << "SKATA " << std::endl;
+                }
+                // It's a variable of sorts 
+                if (variable != nullptr) {
+                    // It's a variable
+                    if (variable->getExpr() == nullptr) {
+                        IR::Value val = named_variables.getVariable(variable->getId());
+                        // Pass by reference
+                        if (val.valueType == sym::reference) {
+                            llvm::Value *alloca = builder.CreateLoad(val.value);
+                            llvm_args.push_back(alloca);
+                        // Pass by value
+                        } else {
+                            llvm_args.push_back(val.value);
+                        }
+                    // It's an array
+                    } else {
+                        auto array_index = variable->getExpr()->llvm();
+                        IR::Value val = named_variables.getVariable(variable->getId());
+                        // Pass by reference
+                        if (val.valueType == sym::reference) {
+                            llvm::Value *alloca = builder.CreateLoad(val.value);
+                            llvm::Value *v = builder.CreateGEP(alloca, array_index);
+                            llvm_args.push_back(v);
+                        // Pass by value
+                        } else {
+                            llvm::Value *v = builder.CreateGEP(val.value, std::vector<llvm::Value *>{c32(0), array_index});
+                            llvm_args.push_back(v);
+                        }
+                    }
+                }
+                // It's a string 
+                auto string = std::dynamic_pointer_cast<ast::String>(globals_list[arg.getArgNo() - block.size()]);
+                if (string != nullptr) {
+                    llvm_args.push_back(string->llvm());
                 }
             }
-            // else {
-            //     // global variable
-            //     auto gl = named_variables.getPreviousVariables();
-            //     if (gl.size() == 0) {
-            //         for (int j = gl.size() - 1; j >= 0; j--) {
-            //             if (gl[j].first == block[i]->getId()) {
-            //                 llvm_args.push_back(gl[j].second.value);
-            //                 break;
-            //             }
-            //         }
-            //     }
-            // }
         }
         return builder.CreateCall(func, llvm_args);
 
