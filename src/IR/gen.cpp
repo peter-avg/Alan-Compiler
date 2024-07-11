@@ -314,8 +314,8 @@ namespace ast {
             //     arg.setName(var.first);
             //     llvm::Value *alloca = builder.CreateAlloca(var.second.type, nullptr, var.first);
             //     builder.CreateStore(&arg, alloca);
-            //     // IR::Value val = {alloca, var.second.type, sym::PassType::reference};
-            //     // named_variables.addVariable(var.first, val);
+            //     IR::Value val = {alloca, var.second.type, sym::PassType::reference};
+            //     named_variables.addVariable(var.first, val);
             // }
         }
 
@@ -451,7 +451,10 @@ namespace ast {
     // TODO: Done
     llvm::Value* BinOp::llvm() const {
         llvm::Value *exp1 = expr1->llvm();
-        llvm::Value *exp2 = expr2->llvm();
+        llvm::Value *exp2 = nullptr;
+        if (expr2 != nullptr) {
+            exp2 = expr2->llvm();
+        }
         if (expr2 != nullptr) {
             switch(op) {
                 case '+': return builder.CreateAdd(exp1, exp2, "addtmp");
@@ -460,11 +463,12 @@ namespace ast {
                 case '/': return builder.CreateSDiv(exp1, exp2, "divtmp");
                 case '%': return builder.CreateSRem(exp1, exp2, "modtmp");
             }
-        }
-        switch(op) {
-            case '+': return builder.CreateAdd(exp1, c32(0), "addtmp");
-            case '!': return builder.CreateNot(exp1, "nottmp");
-            case '-': return builder.CreateNeg(exp1, "negtmp");
+        } else {
+            switch(op) {
+                case '+': return builder.CreateAdd(exp1, c32(0), "addtmp");
+                case '!': return builder.CreateNot(exp1, "nottmp");
+                case '-': return builder.CreateNeg(exp1, "negtmp");
+            }
         }
         return c32(0);
     }
@@ -559,10 +563,14 @@ namespace ast {
             }
             // else {
             //     // global variable
-            //     auto gl = named_variables.getVariable(arg.getName().str());
-            //     if (gl.value != nullptr) {
-            //         llvm_args.push_back(gl.value);
-            //         i++;
+            //     auto gl = named_variables.getPreviousVariables();
+            //     if (gl.size() == 0) {
+            //         for (int j = gl.size() - 1; j >= 0; j--) {
+            //             if (gl[j].first == block[i]->getId()) {
+            //                 llvm_args.push_back(gl[j].second.value);
+            //                 break;
+            //             }
+            //         }
             //     }
             // }
         }
