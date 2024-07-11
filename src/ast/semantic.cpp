@@ -234,7 +234,7 @@ namespace ast {
 
         for (auto global: funcentry->getGlobals()) {
             std::cout << "Call::sem(): there is a global variable in function with id -> " << funcentry->getId() << std::endl;
-            this->addGlobalVariables(ast::ASTPtr(std::make_shared<ast::Param>(global->getId(), "reference", global->getType())));
+            this->addGlobalVariables(ast::ASTPtr(std::make_shared<ast::LValue>(global->getId(), "reference", global->getType())));
         }
 
         for (auto global: this->globals_list) {
