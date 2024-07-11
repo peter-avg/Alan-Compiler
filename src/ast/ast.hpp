@@ -1,7 +1,7 @@
 #ifndef __AST_HPP__
 #define __AST_HPP__
 
-#include <llvm/IR/Value.h>
+//#include <llvm/IR/Value.h>
 
 #include <iostream>
 #include <string>
@@ -21,15 +21,16 @@ namespace ast {
         public:
             virtual void printOn(std::ostream &out) const = 0;
             virtual void sem(sym::Table &table) {};
-            virtual llvm::Value* llvm() const;
-            virtual int run() const { return 0; };
-            virtual int eval() const { return 0; }
+            //virtual llvm::Value* llvm() const;
+            //virtual int run() const { return 0; };
+            //virtual int eval() const { return 0; }
             types::TypePtr type;
             virtual types::TypePtr getType() const {
                 return type; 
             }
             virtual std::string getId() const { return ""; };
             virtual sym::PassType getPass() const { return sym::value; }
+            virtual void addGlobalVariables(ASTPtr global) {};
             sym::PassType pass;
 
             int line;
@@ -42,8 +43,8 @@ namespace ast {
     
     class Stmt: public AST {
         public:
-            virtual int run() const override { return 0; }
-            virtual llvm::Value* llvm() const override { return nullptr; }
+            //virtual int run() const override { return 0; }
+            //virtual llvm::Value* llvm() const override { return nullptr; }
             virtual types::TypePtr getType() const override {
                 return type; 
             }
@@ -52,8 +53,8 @@ namespace ast {
 
     class Expr: public AST {
         public:
-            virtual int eval() const override { return 0; }
-            virtual llvm::Value* llvm() const override { return nullptr; }
+            //virtual int eval() const override { return 0; }
+            //virtual llvm::Value* llvm() const override { return nullptr; }
             virtual types::TypePtr getType() const override {
                 return type; 
             }
@@ -80,8 +81,8 @@ namespace ast {
             // virtual void sem(sym::Table &table) override ;
             // virtual types::TypePtr getType() const override {
             void printOn(std::ostream &out) const override;
-            llvm::Value* llvm() const override; 
-            int eval() const override { return 0; }
+            //llvm::Value* llvm() const override; 
+            //int eval() const override { return 0; }
             void sem(sym::Table &table) override ;
             types::TypePtr getType() const override {
                 return type; 
@@ -109,8 +110,8 @@ namespace ast {
             // virtual int run() const override;
             // virtual void sem(sym::Table &table) override;
             void printOn(std::ostream &out) const override;
-            llvm::Value* llvm() const override; 
-            int run() const override;
+            //llvm::Value* llvm() const override; 
+            //int run() const override;
             void sem(sym::Table &table) override;
 
         private:
@@ -129,11 +130,15 @@ namespace ast {
             // virtual void sem(sym::Table &table) override;
             // virtual types::TypePtr getType() const override {
             void printOn(std::ostream &out) const override;
-            llvm::Value* llvm() const override; 
-            int run() const override;
+            //llvm::Value* llvm() const override; 
+            //int run() const override;
             void sem(sym::Table &table) override;
             types::TypePtr getType() const override {
                 return type; 
+            }
+
+            void addGlobalVariables(ASTPtr global) override {
+                globals_list.push_back(global);
             }
 
             std::string getId() const override { return id; }
@@ -144,6 +149,7 @@ namespace ast {
             ASTList param_list;
             ASTList def_list;
             ASTPtr compound;
+            ASTList globals_list;
             bool main;
     };
 
@@ -157,8 +163,8 @@ namespace ast {
             //     return type; 
             // }
             void printOn(std::ostream &out) const override;
-            llvm::Value* llvm() const override; 
-            int eval() const override;
+            //llvm::Value* llvm() const override; 
+            //int eval() const override;
             void sem(sym::Table &table) override;
             types::TypePtr getType() const override {
                  return type; 
@@ -182,8 +188,8 @@ namespace ast {
 
             }
             void printOn(std::ostream &out) const override;
-            llvm::Value* llvm() const override; 
-            int run() const override;
+            //llvm::Value* llvm() const override; 
+            //int run() const override;
             void sem(sym::Table &table) override;
             types::TypePtr getType() const override {
                 return type; 
@@ -203,8 +209,8 @@ namespace ast {
             // virtual int eval() const override;
             // virtual void sem(sym::Table &table) override;
             void printOn(std::ostream &out) const override;
-            llvm::Value* llvm() const override; 
-            int eval() const override;
+            //llvm::Value* llvm() const override; 
+            //int eval() const override;
             void sem(sym::Table &table) override;
             types::TypePtr getType() const override {
                 return type; 
@@ -224,9 +230,9 @@ namespace ast {
             // virtual void printOn(std::ostream &out) const override;
             // virtual int run() const override;
             // virtual void sem(sym::Table &table) override;
-            llvm::Value* llvm() const override; 
+            //llvm::Value* llvm() const override; 
             void printOn(std::ostream &out) const override;
-            int run() const override;
+            //int run() const override;
             void sem(sym::Table &table) override;
 
         private: 
@@ -242,8 +248,8 @@ namespace ast {
             // virtual int run() const override;
             // virtual void sem(sym::Table &table) override;
             void printOn(std::ostream &out) const override;
-            llvm::Value* llvm() const override; 
-            int run() const override;
+            //llvm::Value* llvm() const override; 
+            //int run() const override;
             void sem(sym::Table &table) override;
 
         private:
@@ -260,8 +266,8 @@ namespace ast {
             // virtual int run() const override;
             // virtual void sem(sym::Table &table) override;
             void printOn(std::ostream &out) const override;
-            llvm::Value* llvm() const override; 
-            int run() const override;
+            //llvm::Value* llvm() const override; 
+            //int run() const override;
             void sem(sym::Table &table) override;
             types::TypePtr type;
             types::TypePtr getType() const override {
@@ -286,8 +292,8 @@ namespace ast {
             // virtual int eval() const override { return 0; }
             // virtual void sem(sym::Table &table) override;
             void printOn(std::ostream &out) const override;
-            llvm::Value* llvm() const override; 
-            int eval() const override { return 0; }
+            //llvm::Value* llvm() const override; 
+            //int eval() const override { return 0; }
             void sem(sym::Table &table) override;
             types::TypePtr getType() const override {
                 return type; 
@@ -307,8 +313,8 @@ namespace ast {
             // virtual int eval() const override;
             // virtual void sem(sym::Table &table) override;
             void printOn(std::ostream &out) const override;
-            llvm::Value* llvm() const override; 
-            int eval() const override;
+            //llvm::Value* llvm() const override; 
+            //int eval() const override;
             void sem(sym::Table &table) override;
 
         private:
@@ -327,8 +333,8 @@ namespace ast {
             // virtual llvm::Value* llvm() const override; 
             void printOn(std::ostream &out) const override;
             void sem(sym::Table &table) override;
-            int eval() const override;
-            llvm::Value* llvm() const override; 
+            //int eval() const override;
+            //llvm::Value* llvm() const override; 
         private:
             std::string str;
     };
@@ -342,8 +348,8 @@ namespace ast {
             // virtual int eval() const override;
             // virtual void sem(sym::Table &table) override;
             void printOn(std::ostream &out) const override;
-            llvm::Value* llvm() const override; 
-            int eval() const override;
+            //llvm::Value* llvm() const override; 
+            //int eval() const override;
             void sem(sym::Table &table) override;
             types::TypePtr getType() const override {
                 return type; 
@@ -366,15 +372,19 @@ namespace ast {
             // virtual int eval() const override;
             // virtual void sem(sym::Table &table) override;
             void printOn(std::ostream &out) const override;
-            llvm::Value* llvm() const override;
-            int eval() const override;
+            //llvm::Value* llvm() const override;
+            //int eval() const override;
             void sem(sym::Table &table) override;
             types::TypePtr getType() const override {
                 return type; 
             }
             types::TypePtr type;
+            void addGlobalVariables(ASTPtr global) override {
+                globals_list.push_back(global);
+            }
         private:
             std::string id;
+            ASTList globals_list;
             ASTList block;
     };
 
@@ -386,8 +396,8 @@ namespace ast {
             // virtual int run() const override;
             // virtual void sem(sym::Table &table) override;
             void printOn(std::ostream &out) const override;
-            llvm::Value* llvm() const override;
-            int run() const override;
+            //llvm::Value* llvm() const override;
+            //int run() const override;
             void sem(sym::Table &table) override;
             types::TypePtr type;
 
@@ -404,8 +414,8 @@ namespace ast {
             // virtual int run() const override;
             // virtual void sem(sym::Table &table) override;
             void printOn(std::ostream &out) const override;
-            llvm::Value* llvm() const override;
-            int run() const override;
+            //llvm::Value* llvm() const override;
+            //int run() const override;
             void sem(sym::Table &table) override;
         private:
             ASTPtr expr;

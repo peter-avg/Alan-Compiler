@@ -27,6 +27,7 @@ namespace sym {
         value, 
         reference
     } PassType;
+
     /**************************************************************************/
     /*                                                                        */
     /*                          Entry Class                                   */
@@ -48,8 +49,12 @@ namespace sym {
             virtual int getValue() const = 0;
             virtual void setValue(int value) {};
             virtual void addParameters(EntryPtr parameter) {}; 
+            virtual void addGlobals(EntryPtr globals) {}; 
             virtual void addLocaldefs(ast::ASTList local_defs) {}; 
             virtual void addCompound(ast::ASTPtr compound) {};
+            virtual EntriesVector getGlobals() {
+                return globals;
+            }
             virtual ast::ASTPtr getCompound() const {
                 return compound;
             }
@@ -70,6 +75,7 @@ namespace sym {
             ast::ASTPtr compound;
             ast::ASTList local_defs;
             EntriesVector parameters;
+            EntriesVector globals;
             types::TypePtr type;
 
         private:
@@ -78,6 +84,7 @@ namespace sym {
             EntryType etype;
     };
 
+    
     class ParamEntry : public Entry {
         public:
             ParamEntry(const std::string &id, int level, types::TypePtr type, PassType mode) :
@@ -175,6 +182,10 @@ namespace sym {
             virtual void addParameters(EntryPtr parameter) override{
                 parameters.push_back(parameter);
             }
+
+            virtual void addGlobals(EntryPtr global) override{
+                globals.push_back(global);
+            }
             
             virtual void addLocaldefs(ast::ASTList local_defs) override{
                 this->local_defs = local_defs; 
@@ -254,6 +265,7 @@ namespace sym {
             bool isEmpty() const;
             void addReturn();
             int getReturns();
+            void addGlobalVariables(EntryPtr global);
             void addLibrary();
             types::TypePtr getScopeType();
 

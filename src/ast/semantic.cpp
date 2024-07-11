@@ -64,6 +64,15 @@ namespace ast {
 
         compound->sem(table);
 
+        funcentry = table.lookupEntry(id, sym::GLOBAL);
+        for (auto global: funcentry->getGlobals()) {
+            this->addGlobalVariables(ast::ASTPtr(std::make_shared<ast::Param>(global->getId(), "reference", global->getType())));
+        }
+
+        for (auto global: this->globals_list) {
+            std::cout << "Func::sem() -> added global variable in globals with id -> " << global->getId() << std::endl; 
+        }
+
         if (funcentry->getType()->getTypeName() == "VoidType") {
             if (table.getReturns() != 0) 
                 std::cerr << "Error: Void function can't have a return statement" << std::endl;
@@ -175,21 +184,28 @@ namespace ast {
         type = types::BarrayType;
     };
 
+    /* TODO: need to add globals in ast nodes Call, Func, have them 
+     * semantically analyzed and then add them in the ast nodes */ 
+    
     void LValue::sem(sym::Table &table) {
         sym::EntryPtr varentry = table.lookupEntry(id, sym::GLOBAL);
         if (varentry == nullptr) 
-            std::cerr << "Error: Variable \"" << id << "\" not found in scope -> " << table.getCurrentScope() << std::endl;
+            std::cerr << "Error: Variable \"" << id << "\" not found!" << std::endl;
+
         if (expr != nullptr) {
             expr->sem(table);
             if (!types::sameType(expr->getType()->getTypeName(), "IntType")){
                 RaiseSemanticError(arrayindexTypeError_c, FATAL);
-                // std::cerr << "Error: Index of array must be of type int" << std::endl;
             }
             type = varentry->getType()->getArrayType();
-            
         }
         else
             this->type = varentry->getType();
+        
+        if (varentry->getLevel() < table.getCurrentScope()) {
+            std::cout << "LValue::sem()-> found global variable with id -> " << this->getId() << " in scope -> " << table.getCurrentScope() << std::endl;
+            table.addGlobalVariables(varentry);
+        }
     };
 
     void Call::sem(sym::Table &table) {
@@ -214,6 +230,15 @@ namespace ast {
             if (!types::sameType(item->getType()->getTypeName(), funcentry->parameters[i++]->getType()->getTypeName())){
                 std::cerr << "Error: type of argument " << *item << " does not match type of parameter " << funcentry->parameters[i-1]->getId() << std::endl;
             }
+        }
+
+        for (auto global: funcentry->getGlobals()) {
+            std::cout << "Call::sem(): there is a global variable in function with id -> " << funcentry->getId() << std::endl;
+            this->addGlobalVariables(ast::ASTPtr(std::make_shared<ast::Param>(global->getId(), "reference", global->getType())));
+        }
+
+        for (auto global: this->globals_list) {
+            std::cout << "Call::sem() -> added global variable in globals with id -> " << global->getId() << std::endl; 
         }
         this->type = funcentry->getType(); 
     };

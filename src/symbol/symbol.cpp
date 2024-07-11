@@ -41,6 +41,7 @@ namespace sym {
 
     void Table::openScope(EntryPtr root) {
         scopeStack.push_back(std::make_shared<Scope>(root, this->getCurrentScope()+1, root->getType()));
+        std::cout << "Table::openScope() -> new scope with level: " << this->getCurrentScope() << " and root id -> " << root->getId() << std::endl;
     };
 
     void Table::closeScope() {
@@ -106,9 +107,30 @@ namespace sym {
     int Table::getReturns() {
        return this->scopeStack.back()->getReturns();
     }
+
+    void Table::addGlobalVariables(EntryPtr global) {
+
+        int variable_scope = global->getLevel();
+        std::cout << "Table::addGlobalVariables() -> and so, I've entered the function" << std::endl; 
+        sym::EntryPtr entry = std::make_shared<ParamEntry>(global->getId(), variable_scope, global->getType(), PassType::reference);
+        for (auto scope: scopeStack){
+            std::cout << "Table::addGlobalVariable() -> and thus, the for loop in the scopeStack works" << std::endl;
+            std::cout << "Table::addGlobalVariables() -> The current scope is " << scope->getLevel() << " and the variable scope is " << variable_scope << std::endl;
+            if (scope->getLevel() > variable_scope) {
+                std::cout << "Table::addGlobalVariable() -> and I did find nested scopes in need of this global" << std::endl;
+                scope->root->addGlobals(entry);
+                sym::EntryPtr new_entry = std::make_shared<ParamEntry>(global->getId(), scope->getLevel(), global->getType(), PassType::reference);
+                table[global->getId()].push_back(new_entry);
+                std::cout << "Table::addGlobals() -> added global variable \"" << global->getId() << "\"" << std::endl;
+            }
+        }
+
+    }
+
     types::TypePtr Table::getScopeType() {
         return this->scopeStack.back()->root->getType();
     }
+
     void Table::addLibrary() {
         EntryPtr writeInteger = std::make_shared<FuncEntry>("writeInteger", 0, types::voidType);
         sym::EntryPtr write_integer = std::make_shared<sym::ParamEntry>("write_integer", 0, types::intType, value);
