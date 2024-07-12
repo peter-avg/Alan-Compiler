@@ -282,6 +282,7 @@ namespace ast {
         }
 
         for (auto global : globals_list) {
+            std::cout << global->getId() << std::endl;
             args.push_back(getLLVMType(global->getType(), sym::PassType::reference));
         }
 
@@ -421,7 +422,9 @@ namespace ast {
         if (!hasReturnInstruction(ElseBB)) {
             builder.CreateBr(AfterBB);
         }
-        builder.SetInsertPoint(AfterBB);
+        if (!hasReturnInstruction(AfterBB)) {
+            builder.SetInsertPoint(AfterBB);
+        }
         return nullptr;
     }
 
@@ -543,12 +546,12 @@ namespace ast {
 
                     i++;
 
+                } else {
+                    llvm_args.push_back(block[i]->llvm());
+                    i++;
                 }
             } else {
                 auto variable = std::dynamic_pointer_cast<ast::LValue>(globals_list[arg.getArgNo() - block.size()]);
-                if (variable == nullptr) {
-                    std::cout << "SKATA " << std::endl;
-                }
                 // It's a variable of sorts 
                 if (variable != nullptr) {
                     // It's a variable
