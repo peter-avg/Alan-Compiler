@@ -108,11 +108,10 @@ namespace sym {
        return this->scopeStack.back()->getReturns();
     }
 
-    void Table::addGlobalVariables(EntryPtr global) {
+    void Table::addGlobalVariables(EntryPtr global, ast::ASTPtr expr) {
 
         int variable_scope = global->getLevel();
-        std::cout << "Table::addGlobalVariables() -> and so, I've entered the function" << std::endl; 
-        sym::EntryPtr entry = std::make_shared<ParamEntry>(global->getId(), variable_scope, global->getType(), PassType::reference);
+        sym::EntryPtr entry = std::make_shared<ParamEntry>(global->getId(), variable_scope, global->getType(), PassType::reference, expr);
         for (auto scope: scopeStack){
             std::cout << "Table::addGlobalVariable() -> and thus, the for loop in the scopeStack works" << std::endl;
             std::cout << "Table::addGlobalVariables() -> The current scope is " << scope->getLevel() << " and the variable scope is " << variable_scope << std::endl;
@@ -162,8 +161,8 @@ namespace sym {
         this->insertEntry(readChar);
         
         EntryPtr readString = std::make_shared<FuncEntry>("readString", 0, types::voidType);
-        sym::EntryPtr n = std::make_shared<sym::ParamEntry>("n", 0, types::BarrayType, value);
-        sym::EntryPtr read_refbyte = std::make_shared<sym::ParamEntry>("refbyte", 0, types::intType, reference);
+        sym::EntryPtr n = std::make_shared<sym::ParamEntry>("n", 0, types::intType, value);
+        sym::EntryPtr read_refbyte = std::make_shared<sym::ParamEntry>("refbyte", 0, types::BarrayType, reference);
         readString->addParameters(n);
         readString->addParameters(read_refbyte);
         this->insertEntry(readString);

@@ -70,6 +70,9 @@ namespace sym {
                 return etype;
             }
 
+            virtual ast::ASTPtr getExpression() const {
+                return expression;
+            }
             types::TypePtr getScopeType() const;
 
             ast::ASTPtr compound;
@@ -77,7 +80,7 @@ namespace sym {
             EntriesVector parameters;
             EntriesVector globals;
             types::TypePtr type;
-
+            ast::ASTPtr expression;
         private:
             std::string id;
             int level;
@@ -87,8 +90,8 @@ namespace sym {
     
     class ParamEntry : public Entry {
         public:
-            ParamEntry(const std::string &id, int level, types::TypePtr type, PassType mode) :
-                id(id), level(level), type(type), mode(mode) {};
+            ParamEntry(const std::string &id, int level, types::TypePtr type, PassType mode, ast::ASTPtr expr=nullptr) :
+                id(id), level(level), type(type), mode(mode), expression(expr) {};
 
             virtual std::string getId() const override {
                 return id;
@@ -113,19 +116,23 @@ namespace sym {
             EntryType getEType() const override {
                 return etype;
             }
+            ast::ASTPtr getExpression() const override {
+                return expression;
+            }
             types::TypePtr type;
         private:
             int value;
             std::string id;
             int level;
+            ast::ASTPtr expression;
             PassType mode;
             EntryType etype = PARAM;
     };
 
     class VarEntry : public Entry {
         public:
-            VarEntry(const std::string &id, int level, types::TypePtr type) :
-                id(id), level(level), type(type) {};
+            VarEntry(const std::string &id, int level, types::TypePtr type, ast::ASTPtr expr=nullptr) :
+                id(id), level(level), type(type) , expression(expr){};
 
             virtual std::string getId() const override {
                 return id;
@@ -149,9 +156,13 @@ namespace sym {
             EntryType getEType() const override {
                 return etype;
             }
+            ast::ASTPtr getExpression() const override {
+                return expression;
+            }
             types::TypePtr type;
         private:
             int value;
+            ast::ASTPtr expression;
             std::string id;
             int level;
             EntryType etype = VAR;
@@ -265,7 +276,7 @@ namespace sym {
             bool isEmpty() const;
             void addReturn();
             int getReturns();
-            void addGlobalVariables(EntryPtr global);
+            void addGlobalVariables(EntryPtr global, ast::ASTPtr expr);
             void addLibrary();
             types::TypePtr getScopeType();
 

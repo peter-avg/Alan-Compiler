@@ -3,8 +3,10 @@
 #include "../errors/errors.hpp"
 #include "../library/library.hpp"
 #include <iostream>
+#include <map>
 #include <memory>
 #include <ostream>
+#include <string>
 
 namespace ast {
 
@@ -15,24 +17,31 @@ namespace ast {
      * ********************************************************************************/
 
     bool main_func = false;
+    std::map<std::string, ASTPtr> globalsMap;
     
-    void Param::sem(sym::Table &table) {
+
+    bool Param::sem(sym::Table &table) {
         sym::EntryPtr exists = table.lookupEntry(id, sym::LOCAL);
         if (exists != nullptr) {
-            std::cerr << "Error: " << id << " already exists in the current scope" << std::endl;
-            return;
+            std::cerr << "Error: parameter with id ->" << id << " already exists in the scope of the function -> " << table.getCurrentScope() << std::endl;
+            return false;
         }
         sym::EntryPtr entry = std::make_shared<sym::ParamEntry>(id, table.getCurrentScope(), type, pass);
         table.insertEntry(entry);
+        return false;
     };
 
-    void Block::sem(sym::Table &table) {
+    bool Block::sem(sym::Table &table) {
+        bool hasReturn = false;
         for (auto item : list) {
-            item->sem(table);
+            hasReturn |= item->sem(table);
         }
+        return hasReturn;
+
     };
 
-    void Func::sem(sym::Table &table) {
+    bool Func::sem(sym::Table &table) {
+        std::cout << "Func::sem() -> " << this->getId() << std::endl;
         /* Check if the function already exists */
         sym::EntryPtr funcentry =  std::make_shared<sym::FuncEntry>(id, table.getCurrentScope(), type);
         funcentry = table.lookupEntry(id, sym::GLOBAL);
@@ -61,9 +70,11 @@ namespace ast {
         for (auto local: def_list) {
             local->sem(table);
         }
+        
+        bool hasReturns = false;
 
-        compound->sem(table);
-
+        hasReturns = compound->sem(table);
+        
         funcentry = table.lookupEntry(id, sym::GLOBAL);
         for (auto global: funcentry->getGlobals()) {
             this->addGlobalVariables(ast::ASTPtr(std::make_shared<ast::Param>(global->getId(), "reference", global->getType())));
@@ -74,23 +85,25 @@ namespace ast {
         }
 
         if (funcentry->getType()->getTypeName() == "VoidType") {
-            if (table.getReturns() != 0) 
+            if (hasReturns) 
                 std::cerr << "Error: Void function can't have a return statement" << std::endl;
         }
 
         else if (funcentry->getType()->getTypeName() == "IntType" || funcentry->getType()->getTypeName() == "ByteType"){
-            if (table.getReturns() == 0 )
+            if (!hasReturns)
                 std::cerr << "Error: " << *(funcentry->getType()) << " function requires one or more return statements" << std::endl;
         }
         table.closeScope();
+        return hasReturns;
 
     };
 
-    void Const::sem(sym::Table &table) {
+    bool Const::sem(sym::Table &table) {
         type = types::intType;
+        return false;
     };
 
-    void VarDef::sem(sym::Table &table) {
+    bool VarDef::sem(sym::Table &table) {
         sym::EntryPtr varentry = table.lookupEntry(id, sym::LOCAL);
         if (varentry != nullptr) {
             RaiseSemanticError(variableExistsError_c, FATAL);
@@ -98,9 +111,10 @@ namespace ast {
 
         varentry = std::make_shared<sym::VarEntry>(id, table.getCurrentScope(), type);
         table.insertEntry(varentry);
+        return false;
     };
 
-    void Cond::sem(sym::Table &table) {
+    bool Cond::sem(sym::Table &table) {
         if (operation == "true" || operation == "false") {
             type = types::byteType;
         }
@@ -129,30 +143,38 @@ namespace ast {
             // std::cerr << "Error: Expressions don't have the same type" << std::endl;
             type = types::byteType;
         }
+        return false;
     };
 
-    void While::sem(sym::Table &table) {
+    bool While::sem(sym::Table &table) {
           cond->sem(table);
           if (!types::sameType(cond->getType()->getTypeName(), "ByteType")){
               RaiseSemanticError(conditionTypeError_c, FATAL);
               // std::cerr << "Error: Condition in While Statement is not of Boolean type" << std::endl;
           }
+          return false;
     };
     
-    void If::sem(sym::Table &table) {
-       cond->sem(table);
+    bool If::sem(sym::Table &table) {
+        bool stmt1Return = false;
+        bool stmt2Return = false;
+        cond->sem(table);
 
-      if (!types::sameType(cond->getType()->getTypeName(), "ByteType")){
-          RaiseSemanticError(conditionTypeError_c, FATAL);
-          // std::cerr << "Error: Condition in If Statement is not of Boolean type" << std::endl;
-      }
+        if (!types::sameType(cond->getType()->getTypeName(), "ByteType")){
+            RaiseSemanticError(conditionTypeError_c, FATAL);
+        }
 
-      stmt1->sem(table);
-      if (stmt2 != nullptr)
-          stmt2->sem(table);
+        stmt1Return = stmt1->sem(table);
+        if (stmt2 != nullptr)
+            stmt2Return = stmt2->sem(table);
+
+        if (stmt2 != nullptr) 
+            return (stmt1Return && stmt2Return);
+
+        return stmt1Return;
     };
 
-    void Return::sem(sym::Table &table) {
+    bool Return::sem(sym::Table &table) {
         expr->sem(table);
         type  = expr->getType();
         
@@ -161,14 +183,16 @@ namespace ast {
         }
         
         table.addReturn();
+        return true;
         
     };
 
-    void Char::sem(sym::Table &table) {
+    bool Char::sem(sym::Table &table) {
         type = types::byteType; 
+        return false;
     };
 
-    void BinOp::sem(sym::Table &table) {
+    bool BinOp::sem(sym::Table &table) {
         expr1->sem(table);
         if (expr2 != nullptr) {
             expr2->sem(table);
@@ -177,17 +201,19 @@ namespace ast {
             }
         }
         type = expr1->getType();
+        return false;
     };
 
 
-    void String::sem(sym::Table &table) {
+    bool String::sem(sym::Table &table) {
         type = types::BarrayType;
+        return false;
     };
 
     /* TODO: need to add globals in ast nodes Call, Func, have them 
      * semantically analyzed and then add them in the ast nodes */ 
     
-    void LValue::sem(sym::Table &table) {
+    bool LValue::sem(sym::Table &table) {
         sym::EntryPtr varentry = table.lookupEntry(id, sym::GLOBAL);
         if (varentry == nullptr) 
             std::cerr << "Error: Variable \"" << id << "\" not found!" << std::endl;
@@ -204,11 +230,13 @@ namespace ast {
         
         if (varentry->getLevel() < table.getCurrentScope()) {
             std::cout << "LValue::sem()-> found global variable with id -> " << this->getId() << " in scope -> " << table.getCurrentScope() << std::endl;
-            table.addGlobalVariables(varentry);
+            table.addGlobalVariables(varentry, expr);
         }
+
+        return false;
     };
 
-    void Call::sem(sym::Table &table) {
+    bool Call::sem(sym::Table &table) {
         int scope = table.getCurrentScope();
         sym::EntryPtr funcentry = std::make_shared<sym::FuncEntry>(id, table.getCurrentScope(), nullptr);
         funcentry = table.lookupEntry(id, sym::GLOBAL);
@@ -234,17 +262,18 @@ namespace ast {
 
         for (auto global: funcentry->getGlobals()) {
             std::cout << "Call::sem(): there is a global variable in function with id -> " << funcentry->getId() << std::endl;
-            this->addGlobalVariables(ast::ASTPtr(std::make_shared<ast::LValue>(global->getId(), "reference", global->getType())));
+            this->addGlobalVariables(ast::ASTPtr(std::make_shared<ast::LValue>(global->getId(), global->getExpression()))); 
         }
 
         for (auto global: this->globals_list) {
             std::cout << "Call::sem() -> added global variable in globals with id -> " << global->getId() << std::endl; 
         }
-        this->type = funcentry->getType(); 
+        this->type = funcentry->getType();
+        return false;
     };
 
 
-    void Assign::sem(sym::Table &table) {
+    bool Assign::sem(sym::Table &table) {
         lvalue->sem(table); 
         expr->sem(table);
         if (!types::sameType(lvalue->getType()->getTypeName(), expr->getType()->getTypeName())) {
@@ -252,11 +281,12 @@ namespace ast {
         }            // std::cerr << "Error: type of expression does not match type of LValue" << std::endl;
 
         type = lvalue->getType();
+        return false;
         
     };
 
-    void Print::sem(sym::Table &table) {
-        
+    bool Print::sem(sym::Table &table) {
+       return false; 
     };
 
 }
