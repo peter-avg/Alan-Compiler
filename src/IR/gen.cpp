@@ -48,6 +48,25 @@ static llvm::Type * i8   = llvm::Type::getInt8Ty(context);
 static llvm::Type * proc = llvm::Type::getVoidTy(context);
 static llvm::Type * i8ptr = llvm::Type::getInt8PtrTy(context);
 
+void deleteFinalTerminatorIfMultiple(llvm::BasicBlock *BB) {
+    if (!BB) return;
+
+    llvm::Instruction *finalTerminator = nullptr;
+    int terminatorCount = 0;
+
+    for (llvm::Instruction &I : *BB) {
+        if (I.isTerminator()) {
+            terminatorCount++;
+            finalTerminator = &I;
+        }
+    }
+
+    if (terminatorCount > 1 && finalTerminator) {
+        std::cout << finalTerminator->getOpcodeName() << std::endl;
+        finalTerminator->eraseFromParent();
+    }
+}
+
 static llvm::Constant * c32(int n) {
     return llvm::ConstantInt::get(i32, n);
 }
@@ -282,7 +301,6 @@ namespace ast {
         }
 
         for (auto global : globals_list) {
-            std::cout << global->getId() << std::endl;
             args.push_back(getLLVMType(global->getType(), sym::PassType::reference));
         }
 
@@ -316,6 +334,7 @@ namespace ast {
         compound->llvm();
 
         for (auto &BB : *func) {
+
             if (BB.getTerminator() == nullptr) {
                 if (getLLVMType(type, sym::PassType::value) == proc) {
                     builder.CreateRetVoid();
@@ -328,7 +347,10 @@ namespace ast {
                     break;
                 }
             }
+
         }
+        for (auto &BB : *func)
+            deleteFinalTerminatorIfMultiple(&BB);
 
         named_variables.closeScope();
         return nullptr;
@@ -384,21 +406,37 @@ namespace ast {
     // TODO: Probably not done, we should be certain about the previous block and the current block
     llvm::Value* While::llvm() const {
         llvm::Function *function = builder.GetInsertBlock()->getParent();
+
+        // Create basic blocks for condition, loop body, and after loop
         llvm::BasicBlock *CondBB = llvm::BasicBlock::Create(context, "cond", function);
         llvm::BasicBlock *LoopBB = llvm::BasicBlock::Create(context, "loop", function);
         llvm::BasicBlock *AfterBB = llvm::BasicBlock::Create(context, "endwhile", function);
-        builder.CreateBr(CondBB);
-        builder.SetInsertPoint(CondBB);
-        llvm::Value *cond = this->cond->llvm();
-        builder.CreateCondBr(cond, LoopBB, AfterBB);
-        builder.SetInsertPoint(LoopBB);
-        stmt->llvm();
-        if (!hasReturnInstruction(LoopBB)) {
+        
+        // Ensure the current block ends with a branch to the condition block
+        if (!hasReturnInstruction(builder.GetInsertBlock())) {
             builder.CreateBr(CondBB);
         }
-        builder.SetInsertPoint(AfterBB);
+        
+        // Generate code for the condition block
+        builder.SetInsertPoint(CondBB);
+        llvm::Value *cond = this->cond->llvm(); // Evaluate condition
+        builder.CreateCondBr(cond, LoopBB, AfterBB);
+
+        // Generate code for the loop body
+        builder.SetInsertPoint(LoopBB);
+        stmt->llvm(); // Generate code for the loop body statement(s)
+        if (!hasReturnInstruction(LoopBB)) {
+            builder.CreateBr(CondBB); // Branch back to condition after loop body
+        }
+        
+        // Set the insert point to after the loop
+        if (!hasReturnInstruction(AfterBB)) {
+            builder.SetInsertPoint(AfterBB);
+        }
+
         return nullptr;
     }
+
 
     // TODO: Probably not done, we should be certain about the previous block and the current block
     llvm::Value* If::llvm() const {
@@ -422,11 +460,15 @@ namespace ast {
         if (!hasReturnInstruction(ElseBB)) {
             builder.CreateBr(AfterBB);
         }
+        builder.SetInsertPoint(AfterBB);
+
         if (!hasReturnInstruction(AfterBB)) {
-            builder.SetInsertPoint(AfterBB);
+            deleteFinalTerminatorIfMultiple(AfterBB);
         }
         return nullptr;
     }
+
+
 
     // TODO: Done
     llvm::Value* Return::llvm() const {
