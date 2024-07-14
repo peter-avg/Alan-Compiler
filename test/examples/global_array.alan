@@ -1,0 +1,18 @@
+main () : proc
+
+    a : int[20];
+
+    print () : proc
+        i : int;
+    {   
+        i = 0;
+        while (i < 20) {
+            a[i] = 1;
+            i = i + 1;
+        }
+    }
+
+{
+    print();
+    writeInteger(a[1]);
+}

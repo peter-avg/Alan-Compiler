@@ -62,7 +62,6 @@ void deleteFinalTerminatorIfMultiple(llvm::BasicBlock *BB) {
     }
 
     if (terminatorCount > 1 && finalTerminator) {
-        std::cout << finalTerminator->getOpcodeName() << std::endl;
         finalTerminator->eraseFromParent();
     }
 }
@@ -285,7 +284,8 @@ namespace ast {
     // TODO: Done
     llvm::Value* Block::llvm() const {
         for (auto stmt : list ) {
-            stmt->llvm();
+            if (stmt != nullptr)
+                stmt->llvm();
         }
         return nullptr;
     }
@@ -301,6 +301,7 @@ namespace ast {
         }
 
         for (auto global : globals_list) {
+            std::cout << global->getId() << std::endl;
             args.push_back(getLLVMType(global->getType(), sym::PassType::reference));
         }
 
@@ -349,8 +350,8 @@ namespace ast {
             }
 
         }
-        for (auto &BB : *func)
-            deleteFinalTerminatorIfMultiple(&BB);
+        // for (auto &BB : *func)
+        //     deleteFinalTerminatorIfMultiple(&BB);
 
         named_variables.closeScope();
         return nullptr;
@@ -407,32 +408,26 @@ namespace ast {
     llvm::Value* While::llvm() const {
         llvm::Function *function = builder.GetInsertBlock()->getParent();
 
-        // Create basic blocks for condition, loop body, and after loop
         llvm::BasicBlock *CondBB = llvm::BasicBlock::Create(context, "cond", function);
         llvm::BasicBlock *LoopBB = llvm::BasicBlock::Create(context, "loop", function);
         llvm::BasicBlock *AfterBB = llvm::BasicBlock::Create(context, "endwhile", function);
         
-        // Ensure the current block ends with a branch to the condition block
         if (!hasReturnInstruction(builder.GetInsertBlock())) {
             builder.CreateBr(CondBB);
         }
         
-        // Generate code for the condition block
         builder.SetInsertPoint(CondBB);
         llvm::Value *cond = this->cond->llvm(); // Evaluate condition
         builder.CreateCondBr(cond, LoopBB, AfterBB);
 
-        // Generate code for the loop body
         builder.SetInsertPoint(LoopBB);
-        stmt->llvm(); // Generate code for the loop body statement(s)
-        if (!hasReturnInstruction(LoopBB)) {
-            builder.CreateBr(CondBB); // Branch back to condition after loop body
+        stmt->llvm();
+        auto PrevBB = builder.GetInsertBlock();
+        if (!hasReturnInstruction(PrevBB)) {
+            builder.CreateBr(CondBB);
         }
         
-        // Set the insert point to after the loop
-        if (!hasReturnInstruction(AfterBB)) {
-            builder.SetInsertPoint(AfterBB);
-        }
+        builder.SetInsertPoint(AfterBB);
 
         return nullptr;
     }
@@ -449,22 +444,24 @@ namespace ast {
         builder.CreateCondBr(n, ThenBB, ElseBB);
         builder.SetInsertPoint(ThenBB);
         llvm::Value *then = stmt1->llvm();
-        if (!hasReturnInstruction(ThenBB)) {
+        PrevBB = builder.GetInsertBlock();
+        if (!hasReturnInstruction(PrevBB)) {
             builder.CreateBr(AfterBB);
         }
         llvm::Value *else_;
         builder.SetInsertPoint(ElseBB);
         if (stmt2 != nullptr) {
             else_ = stmt2->llvm();
-        }
-        if (!hasReturnInstruction(ElseBB)) {
+            PrevBB = builder.GetInsertBlock();
+            if (!hasReturnInstruction(PrevBB)) {
+                builder.CreateBr(AfterBB);
+            }
+        } else {
             builder.CreateBr(AfterBB);
         }
+
         builder.SetInsertPoint(AfterBB);
 
-        if (!hasReturnInstruction(AfterBB)) {
-            deleteFinalTerminatorIfMultiple(AfterBB);
-        }
         return nullptr;
     }
 
@@ -482,7 +479,10 @@ namespace ast {
 
     // TODO: Done
     llvm::Value* BinOp::llvm() const {
-        llvm::Value *exp1 = expr1->llvm();
+        llvm::Value *exp1 = nullptr;
+        if (expr1  == nullptr) return c32(0);
+        if (expr1 != nullptr)
+            exp1 = expr1->llvm();
         llvm::Value *exp2 = nullptr;
         if (expr2 != nullptr) {
             exp2 = expr2->llvm();
@@ -610,16 +610,30 @@ namespace ast {
                     // It's an array
                     } else {
                         auto array_index = variable->getExpr()->llvm();
-                        IR::Value val = named_variables.getVariable(variable->getId());
-                        // Pass by reference
-                        if (val.valueType == sym::reference) {
-                            llvm::Value *alloca = builder.CreateLoad(val.value);
-                            llvm::Value *v = builder.CreateGEP(alloca, array_index);
-                            llvm_args.push_back(v);
-                        // Pass by value
+                        if (array_index != nullptr) {
+                            IR::Value val = named_variables.getVariable(variable->getId());
+                            // Pass by reference
+                            if (val.valueType == sym::reference) {
+                                llvm::Value *alloca = builder.CreateLoad(val.value);
+                                llvm::Value *v = builder.CreateGEP(alloca, array_index);
+                                llvm_args.push_back(v);
+                            // Pass by value
+                            } else {
+                                llvm::Value *v = builder.CreateGEP(val.value, std::vector<llvm::Value *>{c32(0), array_index});
+                                llvm_args.push_back(v);
+                            }
+                            // it's an entire array
                         } else {
-                            llvm::Value *v = builder.CreateGEP(val.value, std::vector<llvm::Value *>{c32(0), array_index});
-                            llvm_args.push_back(v);
+                            IR::Value val = named_variables.getVariable(variable->getId());
+                            // Pass by reference
+                            if (val.valueType == sym::reference) {
+                                llvm::Value *alloca = builder.CreateLoad(val.value);
+                                llvm_args.push_back(alloca);
+                            // Pass by value
+                            } else {
+                                llvm_args.push_back(val.value);
+                            }
+
                         }
                     }
                 }
