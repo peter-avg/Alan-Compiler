@@ -41,8 +41,8 @@ void Help() {
     std::cout << green_normal << "  -h, --help" << white_normal << "    Display this information\n";
     std::cout << green_normal << "  -v, --version" << white_normal << " Display the version of the compiler\n";
     std::cout << green_normal << "  -o" << white_normal << "            Optimize the code\n";
-    std::cout << green_normal << "  -f" << white_normal << "            Output Intermediate Representation\n";
-    std::cout << green_normal << "  -s" << white_normal << "            Output Assembly\n";
+    std::cout << green_normal << "  -i" << white_normal << "            Output Intermediate Representation\n";
+    std::cout << green_normal << "  -f" << white_normal << "            Output Assembly\n";
     std::cout << green_normal << "  -p" << white_normal << "            Output the AST tree\n";
     exit(0);
 }
@@ -86,11 +86,6 @@ int main(int argc, char *argv[]) {
         if (arg == "-p") {
             count++;
             command += " -P ";
-        }
-
-        if (arg == "-c") {
-            count++;
-            clean_up = true;
         }
 
         size_t pos = arg.find_last_of('.');

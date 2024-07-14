@@ -304,7 +304,6 @@ namespace ast {
         }
 
         for (auto global : globals_list) {
-            std::cout << global->getId() << std::endl;
             args.push_back(getLLVMType(global->getType(), sym::PassType::reference));
         }
 
