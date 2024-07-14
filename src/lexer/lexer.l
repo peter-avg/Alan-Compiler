@@ -3,8 +3,8 @@
 //#define YYSTYPE union yylval
 #include "../types/types.hpp"
 #include "../ast/ast.hpp"
-//#include "../parser/parser.tab.h"
-#include "../parser/parser.hpp"
+#include "../parser/parser.tab.h"
+//#include "../parser/parser.hpp"
 #include "../correcting/correcting.hpp"
 #include "../lexer/lexer.h"
 #include "../errors/errors.hpp"
@@ -52,7 +52,7 @@ N [a-fA-F0-9]
 \"(\\.|[^\\"])*\"                    {   std::string current = correctString(yytext+1);
                                     yylval.sval = strdup(current.c_str());
                                     return T_string; }
-\'({L}|\\(x{N}{N}|{E}))\'      {    int next = 0;
+\'({L}|[ ]|\\(x{N}{N}|{E}))\'      {    int next = 0;
                                     yylval.cval =  correctChars(yytext+1, next); return T_char; }
 
 \-\-.*\n            { line_number++; }
