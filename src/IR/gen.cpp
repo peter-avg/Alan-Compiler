@@ -377,9 +377,15 @@ namespace ast {
             // return value;
         // Array
         } else { 
-            llvm::Value* value = builder.CreateAlloca(getLLVMType(type, sym::PassType::reference), nullptr, id);
-            IR::Value val = {value, getLLVMType(type, sym::PassType::reference), sym::reference};
-            named_variables.addVariable(id, val);
+            if (type->getTypeName() == "IArrayType") {
+                llvm::Value* value = builder.CreateAlloca(getLLVMType(type, sym::PassType::reference), c32(indeces), id);
+                IR::Value val = {value, getLLVMType(type, sym::PassType::reference), sym::reference};
+                named_variables.addVariable(id, val);
+            } else if (type->getTypeName() == "BArrayType") {
+                llvm::Value* value = builder.CreateAlloca(getLLVMType(type, sym::PassType::reference), c8(indeces), id);
+                IR::Value val = {value, getLLVMType(type, sym::PassType::reference), sym::reference};
+                named_variables.addVariable(id, val);
+            }
         }
         return nullptr;
     }
@@ -512,6 +518,7 @@ namespace ast {
 
     // TODO: Done
     llvm::Value* LValue::llvm() const {
+
         // Variable
         if (expr == nullptr) {
             IR::Value val = named_variables.getVariable(id);
@@ -597,44 +604,39 @@ namespace ast {
                 // It's a variable of sorts 
                 if (variable != nullptr) {
                     // It's a variable
-                    if (variable->getExpr() == nullptr) {
-                        IR::Value val = named_variables.getVariable(variable->getId());
-                        // Pass by reference
-                        if (val.valueType == sym::reference) {
-                            llvm::Value *alloca = builder.CreateLoad(val.value);
-                            llvm_args.push_back(alloca);
-                        // Pass by value
-                        } else {
-                            llvm_args.push_back(val.value);
-                        }
-                    // It's an array
-                    } else {
-                        auto array_index = variable->getExpr()->llvm();
-                        if (array_index != nullptr) {
-                            IR::Value val = named_variables.getVariable(variable->getId());
-                            // Pass by reference
-                            if (val.valueType == sym::reference) {
-                                llvm::Value *alloca = builder.CreateLoad(val.value);
-                                llvm::Value *v = builder.CreateGEP(alloca, array_index);
-                                llvm_args.push_back(v);
-                            // Pass by value
-                            } else {
-                                llvm::Value *v = builder.CreateGEP(val.value, std::vector<llvm::Value *>{c32(0), array_index});
-                                llvm_args.push_back(v);
-                            }
-                            // it's an entire array
-                        } else {
-                            IR::Value val = named_variables.getVariable(variable->getId());
-                            // Pass by reference
-                            if (val.valueType == sym::reference) {
-                                llvm::Value *alloca = builder.CreateLoad(val.value);
-                                llvm_args.push_back(alloca);
-                            // Pass by value
-                            } else {
-                                llvm_args.push_back(val.value);
-                            }
+                    // if (variable->getExpr() == nullptr) {
+                    //     IR::Value val = named_variables.getVariable(variable->getId());
+                    //     // Pass by reference
+                    //     if (val.valueType == sym::reference) {
+                    //         llvm::Value *alloca = builder.CreateLoad(val.value);
+                    //         llvm_args.push_back(alloca);
+                    //     // Pass by value
+                    //     } else {
+                    //         llvm_args.push_back(val.value);
+                    //     }
+                    // // It's an array
+                    // } else {
+                    //     auto array_index = variable->getExpr()->llvm();
+                    //     IR::Value val = named_variables.getVariable(variable->getId());
+                    //     // Pass by reference
+                    //     if (val.valueType == sym::reference) {
+                    //         llvm::Value *alloca = builder.CreateLoad(val.value);
+                    //         llvm::Value *v = builder.CreateAlloca(alloca);
+                    //         // llvm::Value *v = builder.CreateGEP(alloca, array_index);
+                    //         llvm_args.push_back(v);
+                    //     // Pass by value
+                    //     } else {
+                    //         llvm::Value *v = builder.CreateGEP(val.value, std::vector<llvm::Value *>{c32(0), array_index});
+                    //         llvm_args.push_back(v);
+                    //     }
+                    // }
 
-                        }
+                    IR::Value val = named_variables.getVariable(variable->getId());
+                    if (val.valueType == sym::reference) {
+                        llvm::Value *alloca = builder.CreateLoad(val.value);
+                        llvm_args.push_back(alloca);
+                    } else {
+                        llvm_args.push_back(val.value);
                     }
                 }
                 // It's a string 
