@@ -50,6 +50,7 @@ typedef enum {
     toomanyparamsError_c,
     argumentTypeMismatchError_c,
     operandMismatchType_c,
+    nonArrayWrongIndexing_c,
 } SemanticErrorCodes;
 
 typedef enum {

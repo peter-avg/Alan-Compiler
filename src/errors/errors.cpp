@@ -117,6 +117,8 @@ std::string newSemanticError(int code) {
         case argumentTypeMismatchError_c:
             message = "Argument type mismatch";
             break;
+        case nonArrayWrongIndexing_c:
+            message = "Non-array variable cannot be indexed";
     }
 
     return message;

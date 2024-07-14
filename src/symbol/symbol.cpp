@@ -1,6 +1,7 @@
 #include "symbol.hpp"
 #include <iterator>
 #include <memory>
+#include <vector>
 namespace sym {
     bool main_func = false;
     /**************************************************************************/
@@ -41,22 +42,21 @@ namespace sym {
 
     void Table::openScope(EntryPtr root) {
         scopeStack.push_back(std::make_shared<Scope>(root, this->getCurrentScope()+1, root->getType()));
-        std::cout << "Table::openScope() -> new scope with level: " << this->getCurrentScope() << " and root id -> " << root->getId() << std::endl;
     };
 
     void Table::closeScope() {
-        scopeStack.pop_back();
-    };
-
+    for (auto &entry : table) {
+        auto &entriesVector = entry.second;
+        auto newEnd = std::remove_if(entriesVector.begin(), entriesVector.end(),
+                                     [this](const sym::EntryPtr &e) {
+                                         return e->getLevel() >= this->getCurrentScope();
+                                     });
+        entriesVector.erase(newEnd, entriesVector.end());
+    }
+    scopeStack.pop_back();
+}
     void Table::insertEntry(EntryPtr entry) {
         table[entry->getId()].push_back(entry);
-        /*std::cout << "insertEntry: id of Entry -> \"" << entry->getId() << "\" of EType -> ";
-        switch(entry->getEType()){
-            case VAR: std::cout << "VAR"; break;
-            case FUNC: std::cout << "FUNC"; break;
-            case PARAM: std::cout << "PARAM"; break;
-        }
-        std::cout << " in scope -> " << entry->getLevel() << std::endl; */
     };
 
     EntryPtr Table::lookupEntry(std::string entry_id, SearchType searchtype) {
@@ -113,14 +113,10 @@ namespace sym {
         int variable_scope = global->getLevel();
         sym::EntryPtr entry = std::make_shared<ParamEntry>(global->getId(), variable_scope, global->getType(), PassType::reference, expr);
         for (auto scope: scopeStack){
-            std::cout << "Table::addGlobalVariable() -> and thus, the for loop in the scopeStack works" << std::endl;
-            std::cout << "Table::addGlobalVariables() -> The current scope is " << scope->getLevel() << " and the variable scope is " << variable_scope << std::endl;
             if (scope->getLevel() > variable_scope) {
-                std::cout << "Table::addGlobalVariable() -> and I did find nested scopes in need of this global" << std::endl;
                 scope->root->addGlobals(entry);
                 sym::EntryPtr new_entry = std::make_shared<ParamEntry>(global->getId(), scope->getLevel(), global->getType(), PassType::reference);
                 table[global->getId()].push_back(new_entry);
-                std::cout << "Table::addGlobals() -> added global variable \"" << global->getId() << "\"" << std::endl;
             }
         }
 

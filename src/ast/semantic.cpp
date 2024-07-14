@@ -2,6 +2,7 @@
 #include "ast.hpp"
 #include "../errors/errors.hpp"
 #include "../library/library.hpp"
+#include <csignal>
 #include <iostream>
 #include <map>
 #include <memory>
@@ -9,6 +10,7 @@
 #include <string>
 
 namespace ast {
+    /* TODO: Probably have to do something with the uninitialized Variables*/
 
     /**********************************************************************************
      *                                                                                *
@@ -17,12 +19,12 @@ namespace ast {
      * ********************************************************************************/
 
     bool main_func = false;
-    std::map<std::string, ASTPtr> globalsMap;
     
 
     bool Param::sem(sym::Table &table) {
         sym::EntryPtr exists = table.lookupEntry(id, sym::LOCAL);
         if (exists != nullptr) {
+            RaiseSemanticError(parameterExistsError_c, FATAL);
             std::cerr << "Error: parameter with id ->" << id << " already exists in the scope of the function -> " << table.getCurrentScope() << std::endl;
             return false;
         }
@@ -41,11 +43,11 @@ namespace ast {
     };
 
     bool Func::sem(sym::Table &table) {
-        std::cout << "Func::sem() -> " << this->getId() << std::endl;
         /* Check if the function already exists */
         sym::EntryPtr funcentry =  std::make_shared<sym::FuncEntry>(id, table.getCurrentScope(), type);
         funcentry = table.lookupEntry(id, sym::GLOBAL);
         if (funcentry != nullptr) {
+            RaiseSemanticError(functionExistsError_c, FATAL);
             std::cerr << "Error: " << id << "already exists in the current scope" << std::endl;
         }
         /* Check if this function is the main */               
@@ -80,17 +82,15 @@ namespace ast {
             this->addGlobalVariables(ast::ASTPtr(std::make_shared<ast::Param>(global->getId(), "reference", global->getType())));
         }
 
-        for (auto global: this->globals_list) {
-            std::cout << "Func::sem() -> added global variable in globals with id -> " << global->getId() << std::endl; 
-        }
-
         if (funcentry->getType()->getTypeName() == "VoidType") {
             if (hasReturns) 
+                RaiseSemanticError(voidFunctionWrongReturnError_c, FATAL);
                 std::cerr << "Error: Void function can't have a return statement" << std::endl;
         }
 
         else if (funcentry->getType()->getTypeName() == "IntType" || funcentry->getType()->getTypeName() == "ByteType"){
             if (!hasReturns)
+                RaiseSemanticError(functionRequiresMoreParamsError_c, FATAL);
                 std::cerr << "Error: " << *(funcentry->getType()) << " function requires one or more return statements" << std::endl;
         }
         table.closeScope();
@@ -175,15 +175,18 @@ namespace ast {
     };
 
     bool Return::sem(sym::Table &table) {
-        expr->sem(table);
-        type  = expr->getType();
+        if (expr != nullptr) {
+            expr->sem(table);
+            type  = expr->getType();
         
-        if (!types::sameType(this->type->getTypeName(), table.getScopeType()->getTypeName())){
-            std::cerr << "Error: Type of function does not match type of Return statement" << std::endl;
+            if (!types::sameType(this->type->getTypeName(), table.getScopeType()->getTypeName())){
+                std::cerr << "Error: Type of function does not match type of Return statement" << std::endl;
+                RaiseSemanticError(returnTypeMismatchError_c, FATAL);
+            }
+            return true;
         }
-        
         table.addReturn();
-        return true;
+        return false;
         
     };
 
@@ -210,15 +213,20 @@ namespace ast {
         return false;
     };
 
-    /* TODO: need to add globals in ast nodes Call, Func, have them 
-     * semantically analyzed and then add them in the ast nodes */ 
     
     bool LValue::sem(sym::Table &table) {
         sym::EntryPtr varentry = table.lookupEntry(id, sym::GLOBAL);
-        if (varentry == nullptr) 
+        if (varentry == nullptr){ 
+            RaiseSemanticError(variableNotFoundError_c, FATAL);
             std::cerr << "Error: Variable \"" << id << "\" not found!" << std::endl;
-
+        }
         if (expr != nullptr) {
+            if (!types::sameType(varentry->getType()->getTypeName(), "IArrayType")){
+                if(!types::sameType(varentry->getType()->getTypeName(), "BArrayType")) {
+                std::cerr << "Error: Non array variable cannot be indexed!" << std::endl;
+                RaiseSemanticError(nonArrayWrongIndexing_c, FATAL);
+                }
+            }  
             expr->sem(table);
             if (!types::sameType(expr->getType()->getTypeName(), "IntType")){
                 RaiseSemanticError(arrayindexTypeError_c, FATAL);
@@ -229,26 +237,32 @@ namespace ast {
             this->type = varentry->getType();
         
         if (varentry->getLevel() < table.getCurrentScope()) {
-            std::cout << "LValue::sem()-> found global variable with id -> " << this->getId() << " in scope -> " << table.getCurrentScope() << std::endl;
-            table.addGlobalVariables(varentry, expr);
+            table.addGlobalVariables(varentry, this->getExpr());
         }
 
         return false;
     };
 
-    bool Call::sem(sym::Table &table) {
+ bool Call::sem(sym::Table &table) {
         int scope = table.getCurrentScope();
         sym::EntryPtr funcentry = std::make_shared<sym::FuncEntry>(id, table.getCurrentScope(), nullptr);
         funcentry = table.lookupEntry(id, sym::GLOBAL);
-        if (funcentry == nullptr) 
+        if (funcentry == nullptr) {
            std::cerr << "Error: No function " << id << " found in this scope" <<  std::endl;
+           RaiseLLVMError(FunctionNotFoundError_c);
+        }
         if (funcentry->getEType() != sym::FUNC) {
            std::cerr << "Error: " << id << " is not a function" <<  std::endl;
+           RaiseSemanticError(idnotfunctionError_c, FATAL);
         }
-        if (block.size() < funcentry->parameters.size()) 
-           std::cerr << "Error: Not enough arguments" << std::endl;
-        else if (block.size() > funcentry->parameters.size())
-           std::cerr << "Error: Too many arguments" << std::endl;
+        if (block.size() < funcentry->parameters.size()) {
+            std::cerr << "Error: Not enough arguments" << std::endl;
+            RaiseSemanticError(notenoughparamsError_c, FATAL);
+        }
+        else if (block.size() > funcentry->parameters.size()) {
+            std::cerr << "Error: Too many arguments" << std::endl;
+            RaiseSemanticError(toomanyparamsError_c, FATAL);
+        }
 
         for(auto &item: block) {
            item->sem(table);
@@ -257,17 +271,18 @@ namespace ast {
         for (auto &item: block) {
             if (!types::sameType(item->getType()->getTypeName(), funcentry->parameters[i++]->getType()->getTypeName())){
                 std::cerr << "Error: type of argument " << *item << " does not match type of parameter " << funcentry->parameters[i-1]->getId() << std::endl;
+                RaiseSemanticError(argumentTypeMismatchError_c, FATAL);
             }
         }
 
         for (auto global: funcentry->getGlobals()) {
-            std::cout << "Call::sem(): there is a global variable in function with id -> " << funcentry->getId() << std::endl;
-            this->addGlobalVariables(ast::ASTPtr(std::make_shared<ast::LValue>(global->getId(), global->getExpression()))); 
+            ast::ASTPtr globalVar = std::make_shared<ast::LValue>(global->getId(), global->getExpression());
+            this->addGlobalVariables(globalVar);
+            if (global->getExpression() != nullptr) 
+                std::cout << "The global has an expression: " << *(global->getExpression()) << std::endl;
+
         }
 
-        for (auto global: this->globals_list) {
-            std::cout << "Call::sem() -> added global variable in globals with id -> " << global->getId() << std::endl; 
-        }
         this->type = funcentry->getType();
         return false;
     };
