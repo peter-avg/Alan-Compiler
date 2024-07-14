@@ -378,8 +378,8 @@ namespace ast {
         // Array
         } else { 
             if (type->getTypeName() == "IArrayType") {
-                llvm::Value* value = builder.CreateAlloca(getLLVMType(type, sym::PassType::reference), c32(indeces), id);
-                IR::Value val = {value, getLLVMType(type, sym::PassType::reference), sym::reference};
+                llvm::Value* value = builder.CreateAlloca(getLLVMType(type, sym::PassType::value), c32(indeces), id);
+                IR::Value val = {value, getLLVMType(type, sym::PassType::value), sym::value};
                 named_variables.addVariable(id, val);
             } else if (type->getTypeName() == "BArrayType") {
                 llvm::Value* value = builder.CreateAlloca(getLLVMType(type, sym::PassType::reference), c8(indeces), id);
@@ -542,7 +542,7 @@ namespace ast {
                 return builder.CreateLoad(alloca);
             // Pass by value
             } else {
-                llvm::Value *alloca = builder.CreateGEP(val.value, std::vector<llvm::Value *>{c32(0), array_index});
+                llvm::Value *alloca = builder.CreateGEP(val.value, array_index);
                 return builder.CreateLoad(alloca);
             }
         }
@@ -680,7 +680,7 @@ namespace ast {
                 return builder.CreateStore(exp, v);
             // Pass by value
             } else {
-                llvm::Value * v = builder.CreateGEP(val.value, std::vector<llvm::Value *>{c32(0), array_index});
+                llvm::Value * v = builder.CreateGEP(val.value, array_index);
                 return builder.CreateStore(exp, v);
             }
         }
