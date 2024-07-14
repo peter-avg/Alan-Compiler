@@ -178,6 +178,18 @@ void RaiseTokenError(int code, char token, int ascii) {
     exit(EXIT_FAILURE);
 }
 
+void RaiseParserError(const char* message, int line_number) {
+    colors::Font green_bold = {colors::Color::GREEN,colors::Style::BOLD};
+    colors::Font red_normal = {colors::Color::RED,colors::Style::NORMAL};
+    colors::Font white_normal = {colors::Color::WHITE,colors::Style::NORMAL};
+    colors::Font reset = {colors::Color::RESET,colors::Style::NORMAL};
+    std::cout << green_bold << "{File: " 
+              << filename << "}::" << "{Line: " << line_number 
+              << "}" << red_normal << "\nParserError: " 
+              << white_normal << message << std::endl << reset;
+    exit(EXIT_FAILURE);
+}
+
 void RaiseTypeError(int code) {
     std::string message = newTypeError(code);
     colors::Font green_bold = {colors::Color::GREEN,colors::Style::BLINK};

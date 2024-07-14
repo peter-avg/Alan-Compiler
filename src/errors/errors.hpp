@@ -68,6 +68,7 @@ std::string newLLVMError(int code);
 
 void RaiseTypeError(int code);
 void RaiseTokenError(int code, char token, int ascii);
+void RaiseParserError(const char *message, int line_number);
 void RaiseSemanticError(int code, Fatality fatality, std::string id = "");
 void RaiseFileError(int code);
 void RaiseLLVMError(int code);

@@ -71,7 +71,7 @@ N [a-fA-F0-9]
 %%
 
 void yyerror(const char *s) {
-
+    RaiseParserError(s, line_number);
 }
 
 /*
