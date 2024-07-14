@@ -11,6 +11,7 @@
 
 namespace ast {
     /* TODO: Probably have to do something with the uninitialized Variables*/
+    /* TODO: Also turns out expressions aren't really needed */
 
     /**********************************************************************************
      *                                                                                *
@@ -110,7 +111,6 @@ namespace ast {
         if (varentry != nullptr) {
             RaiseSemanticError(variableExistsError_c, FATAL);
         }
-
         varentry = std::make_shared<sym::VarEntry>(id, table.getCurrentScope(), type);
         table.insertEntry(varentry);
         return false;
@@ -149,12 +149,16 @@ namespace ast {
     };
 
     bool While::sem(sym::Table &table) {
-          cond->sem(table);
-          if (!types::sameType(cond->getType()->getTypeName(), "ByteType")){
+        bool hasReturn = false;  
+        cond->sem(table);
+        if (!types::sameType(cond->getType()->getTypeName(), "ByteType")){
               RaiseSemanticError(conditionTypeError_c, FATAL);
               // std::cerr << "Error: Condition in While Statement is not of Boolean type" << std::endl;
-          }
-          return false;
+        }
+
+        hasReturn = stmt->sem(table);
+        
+        return hasReturn;
     };
     
     bool If::sem(sym::Table &table) {
@@ -223,14 +227,14 @@ namespace ast {
     bool LValue::sem(sym::Table &table) {
         sym::EntryPtr varentry = table.lookupEntry(id, sym::GLOBAL);
         if (varentry == nullptr){ 
+            std::cerr << "Error: Variable \"" << id << "\" not found in scope " << table.getCurrentScope() << "!" << std::endl;
             RaiseSemanticError(variableNotFoundError_c, FATAL);
-            std::cerr << "Error: Variable \"" << id << "\" not found!" << std::endl;
         }
         if (expr != nullptr) {
             if (!types::sameType(varentry->getType()->getTypeName(), "IArrayType")){
                 if(!types::sameType(varentry->getType()->getTypeName(), "BArrayType")) {
-                std::cerr << "Error: Non array variable cannot be indexed!" << std::endl;
-                RaiseSemanticError(nonArrayWrongIndexing_c, FATAL);
+                    std::cerr << "Error: Non array variable cannot be indexed!" << std::endl;
+                    RaiseSemanticError(nonArrayWrongIndexing_c, FATAL);
                 }
             }  
             expr->sem(table);
@@ -299,7 +303,7 @@ namespace ast {
         expr->sem(table);
         if (!types::sameType(lvalue->getType()->getTypeName(), expr->getType()->getTypeName())) {
             RaiseSemanticError(expressionsDiffTypeError_c, FATAL);
-        }            // std::cerr << "Error: type of expression does not match type of LValue" << std::endl;
+        }           
 
         type = lvalue->getType();
         return false;
