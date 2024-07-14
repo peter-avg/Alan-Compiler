@@ -181,6 +181,7 @@ stmt
     | "if" '(' cond ')' stmt "else" stmt    { $$ = new ast::ASTPtr(std::make_shared<ast::If>(*$3, *$5, *$7)); }
     | "while" '(' cond ')' stmt             { $$ = new ast::ASTPtr(std::make_shared<ast::While>(*$3, *$5));  }
     | "return" expr ';'                     { $$ = new ast::ASTPtr(std::make_shared<ast::Return>(*$2));     }
+    | "return" ';'                          { $$ = new ast::ASTPtr(std::make_shared<ast::Return>());}
     ;
 
 stmt_list
