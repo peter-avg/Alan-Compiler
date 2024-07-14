@@ -125,7 +125,10 @@ namespace IR {
             }
             module->print(llvm::outs(), nullptr);
         }
-        FILE *file = fopen("out.ll", "w");
+        std::string filename = std::string(::filename);
+        filename = filename.substr(0, filename.size() - 5);
+        std::string output_file = filename + std::string(".imm");
+        FILE *file = fopen(output_file.c_str(), "w");
 
         if (file == nullptr) {
             RaiseFileError(badfileError_c);

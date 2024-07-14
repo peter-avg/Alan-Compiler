@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <iostream>
 #include "../src/colors/colors.hpp"
+#include <string.h>
 #include <filesystem>
 
 std::string version = "0.0.1";
@@ -72,12 +73,12 @@ int main(int argc, char *argv[]) {
             command += " -O ";
         }
 
-        if (arg == "-f") {
+        if (arg == "-i") {
             count++;
             command += " -L ";
         }
 
-        if (arg == "-s") {
+        if (arg == "-f") {
             count++;
             output_asm = true;
         }
@@ -114,12 +115,16 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
 
-    if (system("llc -o out.s out.ll") != 0) {
+    filename = filename.substr(0, filename.find_last_of('.'));
+    std::string command2 = "llc -o " + filename + ".asm " + filename + ".imm";
+
+    if (system(command2.c_str()) != 0) {
         exit(1);
     }
 
     if (output_asm) {
-        system("cat out.s");
+        command2 = "cat " + filename + ".asm";
+        system(command2.c_str());
     }
 
     std::string alan_lib_path = std::getenv("ALAN_LIB_VARIABLE_PATH");
@@ -128,11 +133,7 @@ int main(int argc, char *argv[]) {
     }
 
 
-    std::string last_command = "gcc -no-pie -o a.out out.s " + alan_lib_path + "/lib.a";
-
-    if (clean_up) {
-        last_command += " && rm out.s out.ll";
-    }
+    std::string last_command = "gcc -no-pie -o " + outputname + " " + filename + ".asm " + alan_lib_path + "/lib.a";
 
     if (system(last_command.c_str()) != 0) {
         exit(1);

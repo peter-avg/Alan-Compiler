@@ -1,5 +1,11 @@
 .PHONY: all clean distclean install-path
 
+MAIN_PATH = ../
+BIN_PATH = $(MAIN_PATH)bin/
+TEST_PATH = $(MAIN_PATH)test/examples/
+BUILD_PATH = $(MAIN_PATH)build/
+SRC_DIR = $(MAIN_PATH)src
+
 CXXFLAGS = -std=c++11 -Wall -Wextra -Werror -pedantic -O3 -g
 SRCS = alan.cpp
 OS := $(shell uname)
@@ -40,11 +46,13 @@ install-path:
 	fi
 
 clean:
-	$(MAKE) clean -C ../build/macos/
-	rm -f ../out.ll ../out.s ../a.out ../out ../bin/out.ll ../bin/out.s ../bin/a.out ../bin/out
-	rm -rf ../dSYM ../alan.dSYM ../bin/alan.dSYM ../bin/dSYM
+	rm $(SRC_DIR)/library/library.a $(SRC_DIR)/library/library.o \
+	$(SRC_DIR)/lexer/lexer.cpp $(SRC_DIR)/parser/parser.cpp $(SRC_DIR)/parser/parser.hpp
+	rm -f $(TEST_PATH)*.imm $(TEST_PATH)*.asm $(BIN_PATH)*.imm $(BIN_PATH)*.asm
+	rm -rf $(BIN_PATH)dSYM $(BIN_PATH)alan.dSYM $(BIN_PATH)alan.dSYM $(BIN_PATH)dSYM
+
 
 distclean: clean
-	rm -f ../bin/alan ../bin/comp
+	rm -f $(BIN_PATH)alan $(BIN_PATH)comp
 
 
