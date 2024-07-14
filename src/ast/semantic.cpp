@@ -83,15 +83,17 @@ namespace ast {
         }
 
         if (funcentry->getType()->getTypeName() == "VoidType") {
-            if (hasReturns) 
+            if (hasReturns) {
                 RaiseSemanticError(voidFunctionWrongReturnError_c, FATAL);
                 std::cerr << "Error: Void function can't have a return statement" << std::endl;
+            }
         }
 
         else if (funcentry->getType()->getTypeName() == "IntType" || funcentry->getType()->getTypeName() == "ByteType"){
-            if (!hasReturns)
+            if (!hasReturns) {
                 RaiseSemanticError(functionRequiresMoreParamsError_c, FATAL);
                 std::cerr << "Error: " << *(funcentry->getType()) << " function requires one or more return statements" << std::endl;
+            }
         }
         table.closeScope();
         return hasReturns;
@@ -185,6 +187,10 @@ namespace ast {
             }
             return true;
         }
+        if (!types::sameType(table.getScopeType()->getTypeName(), "VoidType")) {
+            RaiseSemanticError(returnTypeMismatchError_c, FATAL);
+        }
+        type = types::voidType;
         table.addReturn();
         return false;
         
