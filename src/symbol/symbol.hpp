@@ -70,9 +70,15 @@ namespace sym {
                 return etype;
             }
 
-            virtual ast::ASTPtr getExpression() const {
-                return expression;
+            
+            virtual void initializeVariable() {
+                this->initialized = true;
             }
+            
+            virtual bool isInitialized() {
+                return initialized;
+            }
+
             types::TypePtr getScopeType() const;
 
             ast::ASTPtr compound;
@@ -80,8 +86,9 @@ namespace sym {
             EntriesVector parameters;
             EntriesVector globals;
             types::TypePtr type;
-            ast::ASTPtr expression;
+
         private:
+            bool initialized;
             std::string id;
             int level;
             EntryType etype;
@@ -90,8 +97,8 @@ namespace sym {
     
     class ParamEntry : public Entry {
         public:
-            ParamEntry(const std::string &id, int level, types::TypePtr type, PassType mode, ast::ASTPtr expr=nullptr) :
-                id(id), level(level), type(type), mode(mode), expression(expr) {};
+            ParamEntry(const std::string &id, int level, types::TypePtr type, PassType mode, bool init=false) :
+                id(id), level(level), type(type), mode(mode), initialized(init){};
 
             virtual std::string getId() const override {
                 return id;
@@ -110,29 +117,32 @@ namespace sym {
                 this->value = value;
             }
 
+            void initializeVariable() override {
+                this->initialized = true;
+            }
+            bool isInitialized() override {
+                return initialized;
+            }
             types::TypePtr getType() const override {
                 return type;
             }
             EntryType getEType() const override {
                 return etype;
             }
-            ast::ASTPtr getExpression() const override {
-                return expression;
-            }
             types::TypePtr type;
         private:
             int value;
             std::string id;
             int level;
-            ast::ASTPtr expression;
+            bool initialized;
             PassType mode;
             EntryType etype = PARAM;
     };
 
     class VarEntry : public Entry {
         public:
-            VarEntry(const std::string &id, int level, types::TypePtr type, ast::ASTPtr expr=nullptr) :
-                id(id), level(level), type(type) , expression(expr){};
+            VarEntry(const std::string &id, int level, types::TypePtr type, bool init = false) :
+                id(id), level(level), type(type), initialized(init){};
 
             virtual std::string getId() const override {
                 return id;
@@ -149,22 +159,24 @@ namespace sym {
             void setValue(int value) override {
                 this->value = value;
             }
-
+            void initializeVariable() override {
+                this->initialized = true;
+            }
+            bool isInitialized() override {
+                return initialized;
+            }
             types::TypePtr getType() const override {
                 return type;
             }
             EntryType getEType() const override {
                 return etype;
             }
-            ast::ASTPtr getExpression() const override {
-                return expression;
-            }
             types::TypePtr type;
         private:
             int value;
-            ast::ASTPtr expression;
             std::string id;
             int level;
+            bool initialized;
             EntryType etype = VAR;
     };
 
@@ -276,7 +288,7 @@ namespace sym {
             bool isEmpty() const;
             void addReturn();
             int getReturns();
-            void addGlobalVariables(EntryPtr global, ast::ASTPtr expr);
+            void addGlobalVariables(EntryPtr global);
             void addLibrary();
             types::TypePtr getScopeType();
 

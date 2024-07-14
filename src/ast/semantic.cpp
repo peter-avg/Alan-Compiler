@@ -29,7 +29,7 @@ namespace ast {
             std::cerr << "Error: parameter with id ->" << id << " already exists in the scope of the function -> " << table.getCurrentScope() << std::endl;
             return false;
         }
-        sym::EntryPtr entry = std::make_shared<sym::ParamEntry>(id, table.getCurrentScope(), type, pass);
+        sym::EntryPtr entry = std::make_shared<sym::ParamEntry>(id, table.getCurrentScope(), type, pass, true);
         table.insertEntry(entry);
         return false;
     };
@@ -230,6 +230,9 @@ namespace ast {
             std::cerr << "Error: Variable \"" << id << "\" not found in scope " << table.getCurrentScope() << "!" << std::endl;
             RaiseSemanticError(variableNotFoundError_c, FATAL);
         }
+        if (!varentry->isInitialized()) {
+            std::cerr << "Warning: Variable \"" << id << "\" may be used uninitialized!" << std::endl;
+        }
         if (expr != nullptr) {
             if (!types::sameType(varentry->getType()->getTypeName(), "IArrayType")){
                 if(!types::sameType(varentry->getType()->getTypeName(), "BArrayType")) {
@@ -247,7 +250,7 @@ namespace ast {
             this->type = varentry->getType();
         
         if (varentry->getLevel() < table.getCurrentScope()) {
-            table.addGlobalVariables(varentry, this->getExpr());
+            table.addGlobalVariables(varentry);
         }
 
         return false;
@@ -284,12 +287,10 @@ namespace ast {
                 RaiseSemanticError(argumentTypeMismatchError_c, FATAL);
             }
         }
-
+        
         for (auto global: funcentry->getGlobals()) {
-            ast::ASTPtr globalVar = std::make_shared<ast::LValue>(global->getId(), global->getExpression());
+            ast::ASTPtr globalVar = std::make_shared<ast::LValue>(global->getId());
             this->addGlobalVariables(globalVar);
-            if (global->getExpression() != nullptr) 
-                std::cout << "The global has an expression: " << *(global->getExpression()) << std::endl;
 
         }
 
@@ -299,12 +300,15 @@ namespace ast {
 
 
     bool Assign::sem(sym::Table &table) {
-        lvalue->sem(table); 
         expr->sem(table);
+        sym::EntryPtr lvalEntry = table.lookupEntry(lvalue->getId(), sym::GLOBAL);
+        lvalEntry->initializeVariable();
+        lvalue->sem(table);
         if (!types::sameType(lvalue->getType()->getTypeName(), expr->getType()->getTypeName())) {
             RaiseSemanticError(expressionsDiffTypeError_c, FATAL);
         }           
-
+         
+        
         type = lvalue->getType();
         return false;
         
