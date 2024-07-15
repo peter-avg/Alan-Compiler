@@ -265,7 +265,7 @@ int main(int argc, char *argv[]) {
     FILE *inputFile = fopen(filename, "r");
 
     if (!inputFile) {
-        RaiseFileError(fileError_c);
+        RaiseFileError(nofileError_c);
         return 1;
     }
 
