@@ -25,12 +25,15 @@ The building process of the compiler adds the lib.a and bin paths to your
 
 The compiler can be used with any of these options
 ```c++
-    -h, --help        Display this information
-    -v, --version     Display the version of the compiler
-    -o                Optimize the code
-    -f                Output Intermediate Representation to Standard Output
-    -s                Output Assembly to Standard Output
-    -p                Output the AST tree 
+    -h, --help                Display this information
+    -v, --version             Display the version of the compiler
+    -o                        Optimize the code
+    -i                        Output Intermediate Representation to Standard Output
+    -f                        Output Assembly to Standard Output
+    -p                        Output the AST tree
+    --changesuffix [suffix]   Change the suffix of the assembly file
+    --changellc [llc]         Change the llc command
+    --changeout [file]        Change the output name
 ```
 
 The compiler will provide an executable of the program named ```a.out```.
