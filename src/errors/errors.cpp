@@ -11,6 +11,7 @@ extern int line_number;
 
 std::string version = "1.0.0";
 
+
 void ClearScreen() {
     sleep(1);
     system("clear");
@@ -59,69 +60,79 @@ std::string newTypeError(int code) {
     return message;
 }
 
-std::string newSemanticError(int code) {
-    std::string message;
-
+void newSemanticError(int code, std::string &message_1, std::string &message_2) {
+    message_2 = "";
     switch (code){
         case entryExistsError_c:
-            message = "Entry already exists error";
+            message_1 = "Entry already exists";
             break;
         case variableExistsError_c:
-            message = "Variable already exists error";
+            message_1 = "Variable ";
+            message_2 = " already exists";
             break;
         case variableNotFoundError_c:
-            message = "Variable not found error";
+            message_1 = "Variable ";
+            message_2 = " not found";
             break;
         case parameterExistsError_c:
-            message = "Parameter already exists error";
+            message_1 = "Parameter "; 
+            message_2 = " already exists in function ";
             break;
         case functionExistsError_c:
-            message = "Function already exists error";
+            message_1 = "Function ";
+            message_2 = " already exists";
             break;
         case voidFunctionWrongReturnError_c:
-            message = "Void function wrong return error";
+            message_1 = "Void function "; 
+            message_2 = " has a return type ";
             break;
         case functionRequiresMoreParamsError_c:
-            message = "Int function wrong return error";
+            message_1 = " function requires one or more return statements";
             break;
         case conditionTypeError_c:
-            message = "Condition not byte type";
+            message_1 = "Condition is not of byte type";
             break;
         case expressionsDiffTypeError_c:
-            message = "Expressions have different types";
+            message_1 = "Expressions ";
+            message_2 = " have different types";
             break;
         case operandMismatchType_c: 
-            message = "Operands have different types";
+            message_1 = "Operands have different types";
             break;
         case returnTypeMismatchError_c:
-            message = "Function Return type mismatch";
+            message_1 = "Function return type mismatch";
             break;
         case BinOpTypeMismatchError_c:
-            message = "Binary operation expressions don't have the same type";
+            message_1 = "Binary operation expressions don't have the same type";
             break;
         case arrayindexTypeError_c:
-            message = "Index of array must be of type int";
+            message_1 = "Index of array must be of type int";
             break;
         case nosuchfunctionError_c:
-            message = "No such function with id";
+            message_1 = "No such function with id";
             break;
         case idnotfunctionError_c:
-            message = "This id is not a function";
+            message_1 = "This is not a function";
             break;
         case notenoughparamsError_c:
-            message = "Not enough parameters";
+            message_1 = "Call to function requires more arguments";
             break;
         case toomanyparamsError_c:
-            message = "Too many parameters";
+            message_1 = "Call to function contains too many arguments";
             break;
         case argumentTypeMismatchError_c:
-            message = "Argument type mismatch";
+            message_1 = "Type of argument ";
+            message_2 = " does not match type of parameter";
             break;
         case nonArrayWrongIndexing_c:
-            message = "Non-array variable cannot be indexed";
+            message_1 = "Non-array variable";
+            message_2 = " cannot be indexed";
+            break;
+        case uninitializedVariableWarning_c:
+            message_1 = "Variable ";
+            message_2 = " may be used uninitialized";
+            break;
     }
-
-    return message;
 }
 
 std::string newFileError(int code) {
@@ -203,33 +214,35 @@ void RaiseTypeError(int code) {
     exit(EXIT_FAILURE);
 }
 
-void RaiseSemanticError(int code, Fatality type, std::string id) {
-    if (id == "") {
-        std::string message = newSemanticError(code);
-        colors::Font green_bold = {colors::Color::GREEN,colors::Style::BOLD};
-        colors::Font red_normal = {colors::Color::RED,colors::Style::NORMAL};
-        colors::Font white_normal = {colors::Color::WHITE,colors::Style::NORMAL};
-        colors::Font reset = {colors::Color::RESET,colors::Style::HIDDEN};
-        std::cout << green_bold << "{File: " 
-                  << filename << "}::" << "{Line: " << line_number 
-                  << "}" << red_normal << "\n SemanticError: " 
-                  << white_normal << message << std::endl << reset;
-
-    } else {
-        std::string message = newSemanticError(code);
-        colors::Font green_bold = {colors::Color::GREEN,colors::Style::BOLD};
-        colors::Font red_normal = {colors::Color::RED,colors::Style::NORMAL};
-        colors::Font white_normal = {colors::Color::WHITE,colors::Style::NORMAL};
-        colors::Font reset = {colors::Color::RESET,colors::Style::HIDDEN};
-        std::cout << green_bold << "{File: " 
-                  << filename << "}::" << "{Line: " << line_number 
-                  << "}" << red_normal << "\n SemanticError: " 
-                  << white_normal << message << ": " << id << std::endl << reset;
-
-    }
-
+void RaiseSemanticError(int code, Fatality type, std::string id_1, std::string id_2) {
+    std::string message_1="";
+    std::string message_2="";
+    newSemanticError(code, message_1, message_2);
     if (type == FATAL) {
+        colors::Font green_bold = {colors::Color::GREEN,colors::Style::BOLD};
+        colors::Font red_normal = {colors::Color::RED,colors::Style::NORMAL};
+        colors::Font white_faded = {colors::Color::WHITE, colors::Style::UNDERLINED};
+        colors::Font white_normal = {colors::Color::WHITE,colors::Style::NORMAL};
+        colors::Font reset = {colors::Color::RESET,colors::Style::HIDDEN};
+        std::cout << green_bold << "{File: " 
+                  << filename << "}::" << "{Line: " << line_number 
+                  << "}" << red_normal << "\n SemanticError: " 
+                  << white_normal << message_1 << white_faded << id_1 
+                  << white_normal << message_2 << id_2 << std::endl << reset;
+
         exit(EXIT_FAILURE);
+    }
+    else if (type == WARNING) {
+        colors::Font green_bold = {colors::Color::GREEN,colors::Style::BOLD};
+        colors::Font magenta_normal = {colors::Color::MAGENTA,colors::Style::NORMAL};
+        colors::Font white_faded = {colors::Color::WHITE, colors::Style::UNDERLINED};
+        colors::Font white_normal = {colors::Color::WHITE,colors::Style::NORMAL};
+        colors::Font reset = {colors::Color::RESET,colors::Style::HIDDEN};
+        std::cout << green_bold << "{File: " 
+                  << filename << "}::" << "{Line: " << line_number 
+                  << "}" << magenta_normal << "\n SemanticWarning: " 
+                  << white_normal << message_1 << white_faded << id_1 
+                  << white_normal << message_2 << id_2 << std::endl << reset;
     }
 }
 

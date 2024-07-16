@@ -51,6 +51,7 @@ typedef enum {
     argumentTypeMismatchError_c,
     operandMismatchType_c,
     nonArrayWrongIndexing_c,
+    uninitializedVariableWarning_c,
 } SemanticErrorCodes;
 
 typedef enum {
@@ -62,14 +63,14 @@ typedef enum {
 
 std::string newTokenError(int code);
 std::string newTypeError(int code);
-std::string newSemanticError(int code);
+void newSemanticError(int code, std::string &message_1, std::string &message_2);
 std::string newFileError(int code);
 std::string newLLVMError(int code);
 
 void RaiseTypeError(int code);
 void RaiseTokenError(int code, char token, int ascii);
 void RaiseParserError(const char *message, int line_number);
-void RaiseSemanticError(int code, Fatality fatality, std::string id = "");
+void RaiseSemanticError(int code, Fatality fatality, std::string id_1 = "", std::string id_2 = "");
 void RaiseFileError(int code);
 void RaiseLLVMError(int code);
 void ClearScreen();
