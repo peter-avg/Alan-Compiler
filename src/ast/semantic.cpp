@@ -79,6 +79,7 @@ namespace ast {
         
         funcentry = table.lookupEntry(id, sym::GLOBAL);
         for (auto global: funcentry->getGlobals()) {
+            this->addGlobalVariables(ast::ASTPtr(std::make_shared<ast::Param>(global->getId(), "reference", global->getType())));
         }
 
         if (funcentry->getType()->getTypeName() == "VoidType") {
