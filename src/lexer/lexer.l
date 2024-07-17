@@ -3,15 +3,15 @@
 //#define YYSTYPE union yylval
 #include "../types/types.hpp"
 #include "../ast/ast.hpp"
-//#include "../parser/parser.tab.h"
-#include "../parser/parser.hpp"
+#include "../parser/parser.tab.h"
+//#include "../parser/parser.hpp"
 #include "../correcting/correcting.hpp"
 #include "../lexer/lexer.h"
 #include "../errors/errors.hpp"
 #include <cstdlib>
 #include <cstring>
 
-int line_number = 0;
+int line_number = 1;
 int nested_comments = 0;
 %}
 
@@ -55,11 +55,11 @@ N [a-fA-F0-9]
 \'({L}|[ ]|\\(x{N}{N}|{E}))\'      {    int next = 0;
                                     yylval.cval =  correctChars(yytext+1, next); return T_char; }
 
-\-\-.*\n            { line_number++; }
+\-\-.*\n            { ++line_number; }
 "(*"                { BEGIN(COMMENT); }
 <COMMENT>"*)"       { if (nested_comments == 0) BEGIN(INITIAL); else nested_comments--; }
 <COMMENT>"(*"       { nested_comments++; }
-<COMMENT>\n         { line_number++; }
+<COMMENT>\n         { ++line_number; }
 <COMMENT>"*"+[^)\n] { /* ignore alone '*' */ }
 <COMMENT>"("+[^(*\n] { /* ignore alone '(' that are not followed by '*' */}
 <COMMENT>[^(*\n]+   { /* ignore any number of symbols that's not '\n' or '(*' */}

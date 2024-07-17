@@ -10,6 +10,8 @@
 #include <vector>
 #include <memory>
 #include <limits.h>
+
+extern int line_number;
 namespace ast {
 
     class AST;
@@ -19,6 +21,7 @@ namespace ast {
 
     class AST {
         public:
+            AST() { this->line = line_number; }
             virtual void printOn(std::ostream &out) const = 0;
             virtual bool sem(sym::Table &table) { return false; };
             virtual llvm::Value* llvm() const;
