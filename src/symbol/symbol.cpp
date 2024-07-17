@@ -116,7 +116,6 @@ namespace sym {
 
         int variable_scope = global->getLevel();
         sym::EntryPtr entry = std::make_shared<ParamEntry>(global->getId(), variable_scope, global->getType(), PassType::reference, global->isInitialized());
-        if (global->isInitialized())
         for (auto scope: scopeStack){
             if (scope->getLevel() > variable_scope) {
                 scope->root->addGlobals(entry);
