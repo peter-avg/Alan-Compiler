@@ -265,7 +265,7 @@ int main(int argc, char *argv[]) {
     FILE *inputFile = fopen(filename, "r");
 
     if (!inputFile) {
-        std::cerr << "Error: Unable to open file " << filename << std::endl;
+        RaiseFileError(nofileError_c);
         return 1;
     }
 

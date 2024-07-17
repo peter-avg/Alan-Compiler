@@ -82,12 +82,16 @@ void newSemanticError(int code, std::string &message_1, std::string &message_2) 
             message_1 = "Function ";
             message_2 = " already exists";
             break;
+        case nonVoidFunctionVoidReturn:
+            message_1 = "Non-Void function ";
+            message_2 = " does not return anything";
         case voidFunctionWrongReturnError_c:
             message_1 = "Void function "; 
-            message_2 = " has a return type ";
+            message_2 = " has a return type";
             break;
-        case functionRequiresMoreParamsError_c:
-            message_1 = " function requires one or more return statements";
+        case functionRequiresMoreReturnsError_c:
+            message_1 = "Non-Void function ";
+            message_2 = " requires one or more return statements";
             break;
         case conditionTypeError_c:
             message_1 = "Condition is not of byte type";
@@ -97,35 +101,42 @@ void newSemanticError(int code, std::string &message_1, std::string &message_2) 
             message_2 = " have different types";
             break;
         case operandMismatchType_c: 
-            message_1 = "Operands have different types";
+            message_1 = "Operands of"; 
+            message_2 = " condition have different types";
             break;
         case returnTypeMismatchError_c:
-            message_1 = "Function return type mismatch";
+            message_1 = "Function ";
+            message_2 = " return-type mismatch";
             break;
         case BinOpTypeMismatchError_c:
             message_1 = "Binary operation expressions don't have the same type";
             break;
         case arrayindexTypeError_c:
-            message_1 = "Index of array must be of type int";
+            message_1 = "Index of array ";
+            message_2 = " must be of type int";
             break;
         case nosuchfunctionError_c:
-            message_1 = "No such function with id";
+            message_1 = "Function ";
+            message_2 = " not found";
             break;
         case idnotfunctionError_c:
-            message_1 = "This is not a function";
+            message_1 = "Entry ";
+            message_2 = " is not a function";
             break;
         case notenoughparamsError_c:
-            message_1 = "Call to function requires more arguments";
+            message_1 = "Call to function ";
+            message_2 = " requires more arguments";
             break;
         case toomanyparamsError_c:
-            message_1 = "Call to function contains too many arguments";
+            message_1 = "Call to function ";
+            message_2 = " contains too many arguments";
             break;
         case argumentTypeMismatchError_c:
             message_1 = "Type of argument ";
-            message_2 = " does not match type of parameter";
+            message_2 = " does not match type of parameter ";
             break;
         case nonArrayWrongIndexing_c:
-            message_1 = "Non-array variable";
+            message_1 = "Non-array variable ";
             message_2 = " cannot be indexed";
             break;
         case uninitializedVariableWarning_c:

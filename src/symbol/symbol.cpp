@@ -96,6 +96,10 @@ namespace sym {
             return scopeStack.back()->getLevel();
     }
     
+    std::string Table::getCurrentFunctionId() const {
+        return scopeStack.back()->root->getId();
+    }
+    
     bool Table::isEmpty() const {
         return table.empty();
     }
@@ -112,10 +116,11 @@ namespace sym {
 
         int variable_scope = global->getLevel();
         sym::EntryPtr entry = std::make_shared<ParamEntry>(global->getId(), variable_scope, global->getType(), PassType::reference, global->isInitialized());
+        if (global->isInitialized())
         for (auto scope: scopeStack){
             if (scope->getLevel() > variable_scope) {
                 scope->root->addGlobals(entry);
-                sym::EntryPtr new_entry = std::make_shared<ParamEntry>(global->getId(), scope->getLevel(), global->getType(), PassType::reference);
+                sym::EntryPtr new_entry = std::make_shared<ParamEntry>(global->getId(), scope->getLevel(), global->getType(), PassType::reference, global->isInitialized());
                 table[global->getId()].push_back(new_entry);
             }
         }

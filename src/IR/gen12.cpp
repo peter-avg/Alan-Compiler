@@ -8,7 +8,7 @@
 #include <llvm/IR/Verifier.h>
 #include <llvm/IR/Value.h>
 #include <llvm/IR/Verifier.h>
-// #include <llvm/Transforms/InstCombine/InstCombine.h>
+#include <llvm/Transforms/InstCombine/InstCombine.h>
 #include <llvm/Transforms/Scalar.h>
 #include <llvm/Transforms/Scalar/GVN.h>
 #include <llvm/Transforms/Utils.h>
@@ -163,8 +163,7 @@ namespace IR {
     void optimise() {
         if (opt) {
             fpm = new llvm::legacy::FunctionPassManager(module.get());
-            // fpm->add(llvm::createInstructionCombiningPass());
-            fpm->add(llvm::createLCSSAPass());
+            fpm->add(llvm::createInstructionCombiningPass());
             fpm->add(llvm::createReassociatePass());
             fpm->add(llvm::createGVNPass());
             fpm->add(llvm::createCFGSimplificationPass());
@@ -527,31 +526,30 @@ namespace ast {
             IR::Value val = named_variables.getVariable(id);
             // Pass by reference
             if (val.valueType == sym::reference) {
-                llvm::Value *alloca = builder.CreateLoad(val.value->getType()->getPointerElementType(), val.value);
-                return builder.CreateLoad(alloca->getType()->getPointerElementType(), alloca);
+                llvm::Value *alloca = builder.CreateLoad(val.value);
+                return builder.CreateLoad(alloca);
             // Pass by value
             } else {
-                return builder.CreateLoad(val.value->getType()->getPointerElementType(), val.value);
+                return builder.CreateLoad(val.value);
             }
         }
         // Array
         else {
-            llvm::Value *array_index = expr->llvm();
+            llvm::Value * array_index = expr->llvm();
             IR::Value val = named_variables.getVariable(id);
             // Pass by reference
             if (val.valueType == sym::reference) {
-                llvm::Value *pointer_to = builder.CreateLoad(val.value->getType()->getPointerElementType(), val.value);
-                llvm::Value *alloca = builder.CreateGEP(pointer_to->getType()->getPointerElementType(), pointer_to, array_index);
-                return builder.CreateLoad(alloca->getType()->getPointerElementType(), alloca);
+                llvm::Value *pointer_to = builder.CreateLoad(val.value);
+                llvm::Value *alloca = builder.CreateGEP(pointer_to, array_index);
+                return builder.CreateLoad(alloca);
             // Pass by value
             } else {
-                llvm::Value *alloca = builder.CreateGEP(val.value->getType()->getPointerElementType(), val.value, array_index);
-                return builder.CreateLoad(alloca->getType()->getPointerElementType(), alloca);
+                llvm::Value *alloca = builder.CreateGEP(val.value, array_index);
+                return builder.CreateLoad(alloca);
             }
         }
         return nullptr;
     }
-
 
     // TODO: This could be a bit of a mess, no sure yet
     llvm::Value* Call::llvm() const {
@@ -569,7 +567,7 @@ namespace ast {
                             IR::Value val = named_variables.getVariable(variable->getId());
                             // Pass by reference
                             if (val.valueType == sym::reference) {
-                                llvm::Value *alloca = builder.CreateLoad(val.value->getType()->getPointerElementType(), val.value);
+                                llvm::Value *alloca = builder.CreateLoad(val.value);
                                 llvm_args.push_back(alloca);
                             // Pass by value
                             } else {
@@ -581,12 +579,12 @@ namespace ast {
                             IR::Value val = named_variables.getVariable(variable->getId());
                             // Pass by reference
                             if (val.valueType == sym::reference) {
-                                llvm::Value *alloca = builder.CreateLoad(val.value->getType()->getPointerElementType(), val.value);
-                                llvm::Value *v = builder.CreateGEP(alloca->getType()->getPointerElementType(), alloca, array_index);
+                                llvm::Value *alloca = builder.CreateLoad(val.value);
+                                llvm::Value *v = builder.CreateGEP(alloca, array_index);
                                 llvm_args.push_back(v);
                             // Pass by value
                             } else {
-                                llvm::Value *v = builder.CreateGEP(val.value->getType()->getPointerElementType(), val.value, std::vector<llvm::Value *>{c32(0), array_index});
+                                llvm::Value *v = builder.CreateGEP(val.value, std::vector<llvm::Value *>{c32(0), array_index});
                                 llvm_args.push_back(v);
                             }
                         }
@@ -607,9 +605,37 @@ namespace ast {
                 auto variable = std::dynamic_pointer_cast<ast::LValue>(globals_list[arg.getArgNo() - block.size()]);
                 // It's a variable of sorts 
                 if (variable != nullptr) {
+                    // It's a variable
+                    // if (variable->getExpr() == nullptr) {
+                    //     IR::Value val = named_variables.getVariable(variable->getId());
+                    //     // Pass by reference
+                    //     if (val.valueType == sym::reference) {
+                    //         llvm::Value *alloca = builder.CreateLoad(val.value);
+                    //         llvm_args.push_back(alloca);
+                    //     // Pass by value
+                    //     } else {
+                    //         llvm_args.push_back(val.value);
+                    //     }
+                    // // It's an array
+                    // } else {
+                    //     auto array_index = variable->getExpr()->llvm();
+                    //     IR::Value val = named_variables.getVariable(variable->getId());
+                    //     // Pass by reference
+                    //     if (val.valueType == sym::reference) {
+                    //         llvm::Value *alloca = builder.CreateLoad(val.value);
+                    //         llvm::Value *v = builder.CreateAlloca(alloca);
+                    //         // llvm::Value *v = builder.CreateGEP(alloca, array_index);
+                    //         llvm_args.push_back(v);
+                    //     // Pass by value
+                    //     } else {
+                    //         llvm::Value *v = builder.CreateGEP(val.value, std::vector<llvm::Value *>{c32(0), array_index});
+                    //         llvm_args.push_back(v);
+                    //     }
+                    // }
+
                     IR::Value val = named_variables.getVariable(variable->getId());
                     if (val.valueType == sym::reference) {
-                        llvm::Value *alloca = builder.CreateLoad(val.value->getType()->getPointerElementType(), val.value);
+                        llvm::Value *alloca = builder.CreateLoad(val.value);
                         llvm_args.push_back(alloca);
                     } else {
                         llvm_args.push_back(val.value);
@@ -639,7 +665,7 @@ namespace ast {
             }
             // Pass by reference
             if (val.valueType == sym::reference) {
-                llvm::Value *alloca = builder.CreateLoad(val.value->getType()->getPointerElementType(), val.value);
+                llvm::Value * alloca = builder.CreateLoad(val.value);
                 return builder.CreateStore(exp,alloca);
             // Pass by value
             } else {
@@ -651,12 +677,12 @@ namespace ast {
             auto *array_index = lval->getExpr()->llvm();
             // Pass by reference
             if (val.valueType == sym::reference) {
-                llvm::Value * v = builder.CreateLoad(val.value->getType()->getPointerElementType(), val.value);
-                v = builder.CreateGEP(v->getType()->getPointerElementType(), v, array_index);
+                llvm::Value * v = builder.CreateLoad(val.value);
+                v = builder.CreateGEP(v, array_index);
                 return builder.CreateStore(exp, v);
             // Pass by value
             } else {
-                llvm::Value * v = builder.CreateGEP(val.value->getType()->getPointerElementType(), val.value, array_index);
+                llvm::Value * v = builder.CreateGEP(val.value, array_index);
                 return builder.CreateStore(exp, v);
             }
         }

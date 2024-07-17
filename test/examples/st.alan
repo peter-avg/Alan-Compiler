@@ -1,0 +1,13 @@
+main () : proc
+    a : int[20];
+
+    aux (i : int) : proc
+    {
+        a[0] = i;
+    }
+
+{
+    aux(1);
+    writeInteger(a[0]);
+
+}

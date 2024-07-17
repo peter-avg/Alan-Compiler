@@ -285,6 +285,7 @@ namespace sym {
             EntryPtr lookupEntry(std::string entry_id, SearchType searchtype);
             void removeEntry(EntryPtr entry);
             int getCurrentScope() const;
+            std::string getCurrentFunctionId() const;
             bool isEmpty() const;
             void addReturn();
             int getReturns();
