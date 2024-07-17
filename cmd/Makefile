@@ -48,7 +48,7 @@ install-path:
 clean:
 	rm $(SRC_DIR)/library/library.a $(SRC_DIR)/library/library.o \
 	$(SRC_DIR)/lexer/lexer.cpp $(SRC_DIR)/parser/parser.cpp $(SRC_DIR)/parser/parser.hpp
-	rm -f $(TEST_PATH)*.imm $(TEST_PATH)*.asm $(BIN_PATH)*.imm $(BIN_PATH)*.asm
+	rm -f $(TEST_PATH)*.imm $(TEST_PATH)*.asm $(TEST_PATH)*.s $(BIN_PATH)*.imm $(BIN_PATH)*.asm
 	rm -rf $(BIN_PATH)dSYM $(BIN_PATH)alan.dSYM $(BIN_PATH)alan.dSYM $(BIN_PATH)dSYM
 
 
