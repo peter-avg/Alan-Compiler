@@ -170,13 +170,12 @@ namespace ast {
         }
 
         stmt1Return = stmt1->sem(table);
-        if (stmt2 != nullptr)
+        if (stmt2 != nullptr) {
             stmt2Return = stmt2->sem(table);
-
-        if (stmt2 != nullptr) 
             return (stmt1Return && stmt2Return);
+        }
 
-        return stmt1Return;
+        return false;
     };
 
     bool Return::sem(sym::Table &table) {
