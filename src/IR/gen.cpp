@@ -147,7 +147,7 @@ namespace IR {
     }
 
     void setupMain(ast::ASTPtr root) {
-        llvm::FunctionType *mainType = llvm::FunctionType::get(proc, false);
+        llvm::FunctionType *mainType = llvm::FunctionType::get(i32, false);
         llvm::Function *mainFunc = llvm::Function::Create(mainType, llvm::Function::ExternalLinkage, "main", module.get());
         llvm::BasicBlock *entry = llvm::BasicBlock::Create(context, "entry", mainFunc);
         root->llvm();
@@ -157,14 +157,16 @@ namespace IR {
         } else {
             builder.CreateCall(module->getFunction(root->getId()));
         }
-        builder.CreateRetVoid();
+        builder.CreateRet(c32(0));
     }
     
     void optimise() {
         if (opt) {
             fpm = new llvm::legacy::FunctionPassManager(module.get());
             // fpm->add(llvm::createInstructionCombiningPass());
+            fpm->add(llvm::createPromoteMemoryToRegisterPass());
             fpm->add(llvm::createLCSSAPass());
+            fpm->add(llvm::createAggressiveDCEPass());
             fpm->add(llvm::createReassociatePass());
             fpm->add(llvm::createGVNPass());
             fpm->add(llvm::createCFGSimplificationPass());
