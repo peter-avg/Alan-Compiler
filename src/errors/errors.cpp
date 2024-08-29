@@ -133,7 +133,7 @@ void newSemanticError(int code, std::string &message_1, std::string &message_2) 
             break;
         case argumentTypeMismatchError_c:
             message_1 = "Type of argument ";
-            message_2 = " does not match type of parameter ";
+            message_2 = " does not match type of parameter";
             break;
         case nonArrayWrongIndexing_c:
             message_1 = "Non-array variable ";
@@ -143,6 +143,9 @@ void newSemanticError(int code, std::string &message_1, std::string &message_2) 
             message_1 = "Variable ";
             message_2 = " may be used uninitialized";
             break;
+        case entryIsAFunction_c:
+            message_1 = "Right part of assignment ";
+            message_2 = " cannot be a function";
     }
 }
 
@@ -252,7 +255,7 @@ void RaiseSemanticError(int code, Fatality type, std::string id_1, std::string i
         std::cout << green_bold << "{File: " 
                   << filename << "}::" << "{Line: " << line_number 
                   << "}" << magenta_normal << "\n SemanticWarning: " 
-                  << white_normal << message_1 << white_faded << id_1 
+                  << white_normal << message_1 << white_faded << id_1 << reset 
                   << white_normal << message_2 << id_2 << std::endl << reset;
     }
 }
