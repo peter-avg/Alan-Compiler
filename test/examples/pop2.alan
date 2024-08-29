@@ -1,0 +1,8 @@
+main () : proc
+   aaa (a : reference int) : proc { writeInteger(a); }
+   f (a : int) : proc { aaa(a + 1); }
+   i : int;
+{
+   i = 3;
+   f(i + 1);
+}

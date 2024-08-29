@@ -1,5 +1,7 @@
 #include <cstdio>
 #include <iostream>
+#include <cstdlib>
+#include <unistd.h>
 #include "../src/colors/colors.hpp"
 #include <string.h>
 
@@ -264,9 +266,15 @@ int main(int argc, char *argv[]) {
     }
 
 
-    std::string last_command = "gcc -no-pie -o " + outputname + " " + filename + assembly_suffix + " " + alan_lib_path + "/lib.a";
+    // std::string last_command = "gcc -no-pie -o " + outputname + " " + filename + assembly_suffix + " " + alan_lib_path + "/lib.a";
+    // std::string clean_up = "rm " + filename + assembly_suffix + " " + filename + ".imm";
+    //
+    // if (system(last_command.c_str()) != 0) {
+    //     system(clean_up.c_str());
+    //     exit(1);
+    // }
+    //
+    // system(clean_up.c_str());
 
-    if (system(last_command.c_str()) != 0) {
-        exit(1);
-    }
+    return 0;
 }

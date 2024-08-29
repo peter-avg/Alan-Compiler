@@ -564,6 +564,7 @@ namespace ast {
             if (arg.getArgNo() < block.size()) {
                 if (arg.getType()->isPointerTy()) {
                     auto variable = std::dynamic_pointer_cast<ast::LValue>(block[i]);
+
                     // It's a variable of sorts 
                     if (variable != nullptr) {
                         // It's a variable
@@ -599,15 +600,25 @@ namespace ast {
                         llvm_args.push_back(string->llvm());
                     }
 
+                    // It's a binop
+                    auto binop = std::dynamic_pointer_cast<ast::BinOp>(block[i]);
+                    if (binop != nullptr) {
+                        auto value = binop->llvm();
+                        auto alloca = builder.CreateAlloca(value->getType(), nullptr, "tmp");
+                        builder.CreateStore(value, alloca);
+                        llvm_args.push_back(alloca);
+                    }
+
                     i++;
 
                 } else {
-                    llvm_args.push_back(block[i]->llvm());
+                    llvm::Value* value = block[i]->llvm();
+                    llvm_args.push_back(value);
                     i++;
                 }
             } else {
-                auto variable = std::dynamic_pointer_cast<ast::LValue>(globals_list[arg.getArgNo() - block.size()]);
                 // It's a variable of sorts 
+                auto variable = std::dynamic_pointer_cast<ast::LValue>(globals_list[arg.getArgNo() - block.size()]);
                 if (variable != nullptr) {
                     IR::Value val = named_variables.getVariable(variable->getId());
                     if (val.valueType == sym::reference) {
@@ -621,6 +632,12 @@ namespace ast {
                 auto string = std::dynamic_pointer_cast<ast::String>(globals_list[arg.getArgNo() - block.size()]);
                 if (string != nullptr) {
                     llvm_args.push_back(string->llvm());
+                }
+
+                auto binop = std::dynamic_pointer_cast<ast::BinOp>(globals_list[arg.getArgNo() - block.size()]);
+                if (binop != nullptr) {
+                    auto value = binop->llvm();
+                    llvm_args.push_back(binop->llvm());
                 }
             }
         }
