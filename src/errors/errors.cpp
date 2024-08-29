@@ -148,8 +148,8 @@ void newSemanticError(int code, std::string &message_1, std::string &message_2) 
             message_2 = " cannot be a function";
             break;
         case assignmentOfAFunction_c:
-            message_1 = "Right part of assignment ";
-            message_2 = " cannot be a function";
+            message_1 = "Function ";
+            message_2 = " is not a variable";
             break;
 
     }

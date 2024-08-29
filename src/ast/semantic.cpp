@@ -230,6 +230,9 @@ namespace ast {
         if (varentry == nullptr){ 
             RaiseSemanticError(variableNotFoundError_c, FATAL, id);
         }
+        if (varentry->getEType() == sym::FUNC) {
+            RaiseSemanticError(assignmentOfAFunction_c, FATAL, id);
+        }
         if (!varentry->isInitialized()) {
             RaiseSemanticError(uninitializedVariableWarning_c, WARNING, id);
         }
