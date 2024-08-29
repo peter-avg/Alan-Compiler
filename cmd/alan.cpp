@@ -266,15 +266,15 @@ int main(int argc, char *argv[]) {
     }
 
 
-    // std::string last_command = "gcc -no-pie -o " + outputname + " " + filename + assembly_suffix + " " + alan_lib_path + "/lib.a";
-    // std::string clean_up = "rm " + filename + assembly_suffix + " " + filename + ".imm";
-    //
-    // if (system(last_command.c_str()) != 0) {
-    //     system(clean_up.c_str());
-    //     exit(1);
-    // }
-    //
-    // system(clean_up.c_str());
+     std::string last_command = "gcc -no-pie -o " + outputname + " " + filename + assembly_suffix + " " + alan_lib_path + "/lib.a";
+     std::string clean_up = "rm " + filename + assembly_suffix + " " + filename + ".imm";
+    
+     if (system(last_command.c_str()) != 0) {
+         system(clean_up.c_str());
+         exit(1);
+     }
+    
+     system(clean_up.c_str());
 
     return 0;
 }
