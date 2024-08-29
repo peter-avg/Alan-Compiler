@@ -303,17 +303,20 @@ namespace ast {
         line_number = this->line;
         expr->sem(table);
         sym::EntryPtr lvalEntry = table.lookupEntry(lvalue->getId(), sym::GLOBAL);
+        
         if (lvalEntry == nullptr) 
             RaiseSemanticError(variableNotFoundError_c, FATAL, lvalue->getId());
+
         if (lvalEntry->getEType() == sym::FUNC)
-            RaiseSemanticError(entryIsAFunction_c, FATAL, lvalue->getId());
+            RaiseSemanticError(assignmentToAFunction_c, FATAL, lvalue->getId());
+        
         lvalEntry->initializeVariable();
         lvalue->sem(table);
+
         if (!types::sameType(lvalue->getType()->getTypeName(), expr->getType()->getTypeName())) {
             RaiseSemanticError(expressionsDiffTypeError_c, FATAL);
         }           
          
-        
         type = lvalue->getType();
         return false;
         
