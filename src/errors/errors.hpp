@@ -53,7 +53,8 @@ typedef enum {
     operandMismatchType_c,
     nonArrayWrongIndexing_c,
     uninitializedVariableWarning_c,
-    entryIsAFunction_c,
+    assignmentToAFunction_c,
+    assignmentOfAFunction_c,
 } SemanticErrorCodes;
 
 typedef enum {

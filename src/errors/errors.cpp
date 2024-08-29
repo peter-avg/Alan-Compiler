@@ -143,9 +143,15 @@ void newSemanticError(int code, std::string &message_1, std::string &message_2) 
             message_1 = "Variable ";
             message_2 = " may be used uninitialized";
             break;
-        case entryIsAFunction_c:
+        case assignmentToAFunction_c:
+            message_1 = "Left part of assignment ";
+            message_2 = " cannot be a function";
+            break;
+        case assignmentOfAFunction_c:
             message_1 = "Right part of assignment ";
             message_2 = " cannot be a function";
+            break;
+
     }
 }
 
