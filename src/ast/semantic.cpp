@@ -47,7 +47,7 @@ namespace ast {
         line_number = this->line;
         /* Check if the function already exists */
         sym::EntryPtr funcentry =  std::make_shared<sym::FuncEntry>(id, table.getCurrentScope(), type);
-        funcentry = table.lookupEntry(id, sym::GLOBAL);
+        funcentry = table.lookupEntry(id, sym::LOCAL);
         if (funcentry != nullptr) {
             RaiseSemanticError(functionExistsError_c, FATAL, id);
         }
@@ -77,7 +77,6 @@ namespace ast {
         bool hasReturns = false;
         hasReturns = compound->sem(table);
         
-        funcentry = table.lookupEntry(id, sym::GLOBAL);
         for (auto global: funcentry->getGlobals()) {
             this->addGlobalVariables(ast::ASTPtr(std::make_shared<ast::Param>(global->getId(), "reference", global->getType())));
         }
@@ -258,7 +257,7 @@ namespace ast {
         return false;
     };
 
- bool Call::sem(sym::Table &table) {
+     bool Call::sem(sym::Table &table) {
         line_number = this->line;
         int scope = table.getCurrentScope();
         sym::EntryPtr funcentry = std::make_shared<sym::FuncEntry>(id, table.getCurrentScope(), nullptr);
