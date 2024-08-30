@@ -168,7 +168,7 @@ namespace sym {
         this->insertEntry(readString);
         
         EntryPtr extend = std::make_shared<FuncEntry>("extend", 0, types::intType);
-        sym::EntryPtr extend_byte = std::make_shared<sym::ParamEntry>("extend_byte", 0, types::BarrayType, value);
+        sym::EntryPtr extend_byte = std::make_shared<sym::ParamEntry>("extend_byte", 0, types::byteType, value);
         extend ->addParameters(extend_byte);
         this->insertEntry(extend);
         
