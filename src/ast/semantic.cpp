@@ -40,7 +40,6 @@ namespace ast {
             hasReturn |= item->sem(table);
         }
         return hasReturn;
-
     };
 
     bool Func::sem(sym::Table &table) {
@@ -58,9 +57,11 @@ namespace ast {
             this->main = true;
             main_func = true;
         }
-        
-        /* Add the function in the Table */
 
+        /* Set the scope of the function for llvm */ 
+        this->setScope(table.getCurrentScope());
+
+        /* Add the function in the Table */
         table.insertEntry(funcentry);
         table.openScope(funcentry);
         for (auto param: param_list) {
@@ -274,7 +275,7 @@ namespace ast {
         else if (block.size() > funcentry->parameters.size()) {
             RaiseSemanticError(toomanyparamsError_c, FATAL, id);
         }
-
+        this->setScope(funcentry->getLevel());
         int i = 0;
         for (auto &item: block) {
             if (funcentry->getId() == "readString") {
