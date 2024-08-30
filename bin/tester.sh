@@ -1,5 +1,7 @@
 #!/bin/bash
 
+make -C ../cmd
+
 files=(../test/examples/*.alan)
 counter=0
 failed_files=()

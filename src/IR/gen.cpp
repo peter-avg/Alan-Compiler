@@ -48,6 +48,23 @@ static llvm::Type * i8   = llvm::Type::getInt8Ty(context);
 static llvm::Type * proc = llvm::Type::getVoidTy(context);
 static llvm::Type * i8ptr = llvm::Type::getInt8PtrTy(context);
 
+std::vector<std::string> library_functions = {
+    "writeInteger",
+    "writeByte",
+    "writeChar",
+    "writeString",
+    "readInteger",
+    "readByte",
+    "readChar",
+    "readString",
+    "extend",
+    "shrink",
+    "strlen",
+    "strcmp",
+    "strcpy",
+    "strcat"
+};
+
 void deleteFinalTerminatorIfMultiple(llvm::BasicBlock *BB) {
     if (!BB) return;
 
@@ -153,9 +170,9 @@ namespace IR {
         root->llvm();
         builder.SetInsertPoint(entry);
         if (root->getId() == "main") {
-            builder.CreateCall(module->getFunction("main.1"));
+            builder.CreateCall(module->getFunction("main.0"));
         } else {
-            builder.CreateCall(module->getFunction(root->getId()));
+            builder.CreateCall(module->getFunction(root->getId() + ".0"));
         }
         builder.CreateRet(c32(0));
     }
@@ -203,6 +220,7 @@ namespace IR {
         llvm::FunctionType *writeStringType = llvm::FunctionType::get(proc, i8->getPointerTo(), false);
         llvm::Function *writeStringFunc =
             llvm::Function::Create(writeStringType, llvm::Function::ExternalLinkage, "writeString", module.get());
+
         // readInteger
         // ===========
         llvm::FunctionType *readIntegerType = llvm::FunctionType::get(i32, {}, false);
@@ -223,7 +241,7 @@ namespace IR {
 
         // readString
         // ==========
-        llvm::FunctionType *readStringType = llvm::FunctionType::get(proc, {i32, i8->getPointerTo()}, false);
+        llvm::FunctionType *readStringType = llvm::FunctionType::get(proc, {i32,i8->getPointerTo()}, false);
         llvm::Function *readStringFunc =
             llvm::Function::Create(readStringType, llvm::Function::ExternalLinkage, "readString", module.get());
 
@@ -262,15 +280,16 @@ namespace IR {
 
         // strcpy
         // ======
-        llvm::FunctionType *strcpyType = llvm::FunctionType::get(proc, {i8->getPointerTo(), i8->getPointerTo()}, false);
+        llvm::FunctionType *strcpyType = llvm::FunctionType::get(proc, {i8->getPointerTo(),i8->getPointerTo()}, false);
         llvm::Function *strcpyFunc =
-            llvm::Function::Create(strcpyType, llvm::Function::ExternalLinkage, "strcpy", module.get());
+        llvm::Function::Create(strcpyType, llvm::Function::ExternalLinkage, "strcpy", module.get());
 
         // strcat
         // ======
-        llvm::FunctionType *strcatType = llvm::FunctionType::get(proc, {i8->getPointerTo(), i8->getPointerTo()}, false);
+        llvm::FunctionType *strcatType = llvm::FunctionType::get(proc, {i8->getPointerTo(),i8->getPointerTo()}, false);
         llvm::Function *strcatFunc =
-            llvm::Function::Create(strcatType, llvm::Function::ExternalLinkage, "strcat", module.get());
+        llvm::Function::Create(strcatType, llvm::Function::ExternalLinkage, "strcat", module.get());
+
     }
 
     void gen(ast::ASTPtr root) {
@@ -309,6 +328,8 @@ namespace ast {
     llvm::Value* Func::llvm() const {
 
         named_variables.openScope();
+        int scope = this->getScope();
+        std::string id = this->getId() + "." + std::to_string(this->getScope());
 
         std::vector<llvm::Type *> args;
         for (auto param : param_list) {
@@ -318,7 +339,6 @@ namespace ast {
         for (auto global : globals_list) {
             args.push_back(getLLVMType(global->getType(), sym::PassType::reference));
         }
-
 
         llvm::FunctionType *funcType = llvm::FunctionType::get(getLLVMType(type, sym::PassType::value), args, false);
         llvm::Function *func = llvm::Function::Create(funcType, llvm::Function::ExternalLinkage, id, module.get());
@@ -339,7 +359,6 @@ namespace ast {
                 named_variables.addVariable(globals_list[arg.getArgNo() - param_list.size()]->getId(), val); 
             }
         }
-
 
         for (auto decl : def_list) {
             builder.SetInsertPoint(entry);
@@ -366,6 +385,7 @@ namespace ast {
         }
         // for (auto &BB : *func)
         //     deleteFinalTerminatorIfMultiple(&BB);
+        
 
         named_variables.closeScope();
         return nullptr;
@@ -566,7 +586,24 @@ namespace ast {
 
     // TODO: This could be a bit of a mess, no sure yet
     llvm::Value* Call::llvm() const {
-        llvm::Function *func = module->getFunction(id);
+
+        int lib_flag = 0;
+        for (auto library_function : library_functions) {
+            if (id == library_function) {
+                lib_flag = 1;
+            }
+        }
+
+        llvm::Function *func;
+
+        if (lib_flag == 1) {
+            func = module->getFunction(id);
+        } else {
+            std::string new_id = this->getId() + "." + std::to_string(this->getScope());
+            func = module->getFunction(new_id);
+        }
+
+
         std::vector<llvm::Value*> llvm_args;
         int i = 0;
         for (auto &arg : func->args()) {
