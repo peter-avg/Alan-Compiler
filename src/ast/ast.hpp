@@ -35,7 +35,7 @@ namespace ast {
             virtual sym::PassType getPass() const { return sym::value; }
             virtual void addGlobalVariables(ASTPtr global) {};
             virtual ASTPtr getExpr() const { return nullptr; };
-            virtual int getScope() { return 0; }
+            virtual int getScope() const { return 0; }
             virtual void setScope(int sc) {};
 
             sym::PassType pass;
@@ -136,7 +136,7 @@ namespace ast {
                 this->scope = sc;
             }
             
-            int getScope() override {
+            int getScope() const override {
                 return this->scope;
             }
 
@@ -343,9 +343,11 @@ namespace ast {
             void setScope(int sc) override {
                 this->scope = sc;
             }
-            int getScope() override {
+            int getScope() const override {
                 return this->scope;
             }
+
+            std::string getId() const override { return id; }
         private:
             int scope;
             std::string id;
