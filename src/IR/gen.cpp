@@ -232,12 +232,21 @@ namespace IR {
         llvm::FunctionType *extendType = llvm::FunctionType::get(i32, i8, false);
         llvm::Function *extendFunc =
             llvm::Function::Create(extendType, llvm::Function::ExternalLinkage, "extend", module.get());
+        llvm::BasicBlock *entry = llvm::BasicBlock::Create(context, "entry", extendFunc);
+        builder.SetInsertPoint(entry);
+        llvm::Value *val = extendFunc->args().begin();
+        builder.CreateRet(builder.CreateSExt(val, i32));
+
 
         // shrink
         // ======
         llvm::FunctionType *shrinkType = llvm::FunctionType::get(i8, i32, false);
         llvm::Function *shrinkFunc =
             llvm::Function::Create(shrinkType, llvm::Function::ExternalLinkage, "shrink", module.get());
+        entry = llvm::BasicBlock::Create(context, "entry", shrinkFunc);
+        builder.SetInsertPoint(entry);
+        val = shrinkFunc->args().begin();
+        builder.CreateRet(builder.CreateTrunc(val, i8));
 
         // strlen
         // ======
