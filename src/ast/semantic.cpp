@@ -66,7 +66,7 @@ namespace ast {
         for (auto param: param_list) {
             param->sem(table);
             std::string par_id = std::static_pointer_cast<Param>(param)->getId();
-            sym::EntryPtr paramentry = std::make_shared<sym::ParamEntry>(par_id, table.getCurrentScope(), param->getType(), param->pass);
+            sym::EntryPtr paramentry = std::make_shared<sym::ParamEntry>(par_id, table.getCurrentScope(), param->getType(), param->getPass());
             funcentry->addParameters(paramentry);
         }
 
@@ -285,6 +285,15 @@ namespace ast {
                 }
             }
             item->sem(table);
+            
+            if (funcentry->parameters[i]->getPassType() == sym::reference) {
+                if ((std::dynamic_pointer_cast<ast::BinOp>(item) != nullptr) || 
+                    (std::dynamic_pointer_cast<ast::Const>(item) != nullptr) ||
+                    (std::dynamic_pointer_cast<ast::Func>(item) != nullptr)) {
+                    RaiseSemanticError(invalidReferenceParameterError_c, FATAL, funcentry->getId());
+                }
+            }
+
             if (!types::sameType(item->getType()->getTypeName(), funcentry->parameters[i++]->getType()->getTypeName())){
                 RaiseSemanticError(argumentTypeMismatchError_c, FATAL, id, funcentry->parameters[i-1]->getId());
             }

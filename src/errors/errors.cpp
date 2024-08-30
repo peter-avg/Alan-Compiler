@@ -151,7 +151,9 @@ void newSemanticError(int code, std::string &message_1, std::string &message_2) 
             message_1 = "Function ";
             message_2 = " is not a variable";
             break;
-
+        case invalidReferenceParameterError_c:
+            message_1 = "Argument of call is not a variable to be passed by reference in function ";
+            message_2 = "";
     }
 }
 

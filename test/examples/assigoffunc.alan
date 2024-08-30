@@ -1,0 +1,11 @@
+main () : proc
+   f () : int { return 0; }
+   g () : int { return 0; }
+   r: int;
+   a: int;
+{
+   a = 1;
+   r = f();
+   r = a; 
+   writeString("\nThis program is wrong!\n");
+}

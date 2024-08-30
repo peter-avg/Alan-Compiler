@@ -55,6 +55,7 @@ typedef enum {
     uninitializedVariableWarning_c,
     assignmentToAFunction_c,
     assignmentOfAFunction_c,
+    invalidReferenceParameterError_c,
 } SemanticErrorCodes;
 
 typedef enum {

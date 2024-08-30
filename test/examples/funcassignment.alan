@@ -1,0 +1,7 @@
+main () : proc
+   f () : int { return 0; }
+   g () : int { return 0; }
+{
+   f = g;
+   writeString("\nThis program is wrong!\n");
+}

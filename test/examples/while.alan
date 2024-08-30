@@ -1,0 +1,17 @@
+main(): proc 
+    a: int[10];
+    whilefunc(i: int): int
+    {
+       while (i < 20) {
+           i = i + 1;
+           if (i == 2)
+               return i;
+       }
+       return 1;
+    }
+    
+{
+    a[1] = 10;
+    a[2] = whilefunc(a[1]);
+}
+

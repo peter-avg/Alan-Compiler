@@ -1,0 +1,24 @@
+main(): proc
+    a:int;
+    b:int; 
+
+    andi(c: int): proc 
+        or(c: int): int
+        {
+            if (a == c | b == c){
+                return c;
+            }
+            else {
+                return 3;
+            }
+        }
+    {
+        if (a < c & b < c) {
+            or(b); 
+        }
+    }
+{
+    a = 1;
+    b = 2;
+    andi(b);
+}

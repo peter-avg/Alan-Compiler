@@ -11,6 +11,7 @@ namespace ast {
     using ASTPtr = std::shared_ptr<AST>;
     using ASTList = std::vector<ASTPtr>;
 }
+
 namespace sym {
     typedef enum {
         GLOBAL, 
@@ -79,6 +80,10 @@ namespace sym {
                 return initialized;
             }
 
+            virtual sym::PassType getPassType() const {
+                return mode;
+            }
+
             types::TypePtr getScopeType() const;
 
             ast::ASTPtr compound;
@@ -92,6 +97,8 @@ namespace sym {
             std::string id;
             int level;
             EntryType etype;
+            PassType mode;
+
     };
 
     
@@ -108,7 +115,6 @@ namespace sym {
                 return level;
             }
 
-            
             int getValue() const override {
                 return value;
             }
@@ -120,6 +126,7 @@ namespace sym {
             void initializeVariable() override {
                 this->initialized = true;
             }
+
             bool isInitialized() override {
                 return initialized;
             }
@@ -128,6 +135,9 @@ namespace sym {
             }
             EntryType getEType() const override {
                 return etype;
+            }
+            PassType getPassType() const override {
+                return mode;
             }
             types::TypePtr type;
         private:
