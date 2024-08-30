@@ -35,6 +35,8 @@ namespace ast {
             virtual sym::PassType getPass() const { return sym::value; }
             virtual void addGlobalVariables(ASTPtr global) {};
             virtual ASTPtr getExpr() const { return nullptr; };
+            virtual int getScope() { return 0; }
+            virtual void setScope(int sc) {};
 
             sym::PassType pass;
             int line;
@@ -130,12 +132,20 @@ namespace ast {
             void addGlobalVariables(ASTPtr global) override {
                 globals_list.push_back(global);
             }
+            void setScope(int sc) override {
+                this->scope = sc;
+            }
+            
+            int getScope() override {
+                return this->scope;
+            }
 
             std::string getId() const override { return id; }
 
             types::TypePtr type;
         protected:
             std::string id;
+            int scope;
             ASTList param_list;
             ASTList def_list;
             ASTPtr compound;
@@ -330,7 +340,14 @@ namespace ast {
             void addGlobalVariables(ASTPtr global) override {
                 globals_list.push_back(global);
             }
+            void setScope(int sc) override {
+                this->scope = sc;
+            }
+            int getScope() override {
+                return this->scope;
+            }
         private:
+            int scope;
             std::string id;
             ASTList globals_list;
             ASTList block;
