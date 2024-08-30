@@ -2,6 +2,7 @@
 #include <iterator>
 #include <memory>
 #include <vector>
+
 namespace sym {
     bool main_func = false;
     /**************************************************************************/
@@ -113,7 +114,6 @@ namespace sym {
     }
 
     void Table::addGlobalVariables(EntryPtr global) {
-
         int variable_scope = global->getLevel();
         sym::EntryPtr entry = std::make_shared<ParamEntry>(global->getId(), variable_scope, global->getType(), PassType::reference, global->isInitialized());
         for (auto scope: scopeStack){
@@ -167,12 +167,12 @@ namespace sym {
         readString->addParameters(read_refbyte);
         this->insertEntry(readString);
         
-        EntryPtr extend = std::make_shared<FuncEntry>("writeString", 0, types::intType);
+        EntryPtr extend = std::make_shared<FuncEntry>("extend", 0, types::intType);
         sym::EntryPtr extend_byte = std::make_shared<sym::ParamEntry>("extend_byte", 0, types::BarrayType, value);
         extend ->addParameters(extend_byte);
         this->insertEntry(extend);
         
-        EntryPtr shrink = std::make_shared<FuncEntry>("shrink", 0, types::intType);
+        EntryPtr shrink = std::make_shared<FuncEntry>("shrink", 0, types::byteType);
         sym::EntryPtr shrink_integer = std::make_shared<sym::ParamEntry>("shrink_integer", 0, types::intType, value);
         shrink->addParameters(shrink_integer);
         this->insertEntry(shrink);
